@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Portal.API.Attributes;
 using Portal.Domain.AggregatesModel.UserAggregate;
 using Portal.Domain.Interfaces.External;
+using Portal.Domain.Interfaces.Infrastructure;
 using Portal.Domain.Interfaces.Messaging;
 using Portal.Domain.Models.ImageUploadModels;
 
@@ -24,6 +25,7 @@ namespace Portal.API.Controllers
         private readonly IHelloWorldPublisher _helloWorldSender;
         private readonly ISendMailPublisher _sendMailPublisher;
         private readonly IServiceLogPublisher _serviceLogPublisher;
+        private readonly IElasticsearchService _elasticsearchService;
 
         public TestController(
             IUnitOfWork unitOfWork,
@@ -32,7 +34,8 @@ namespace Portal.API.Controllers
             IAmazonS3Service amazonS3Service,
             IHelloWorldPublisher helloWorldSender,
             ISendMailPublisher sendMailPublisher,
-            IServiceLogPublisher serviceLogPublisher)
+            IServiceLogPublisher serviceLogPublisher,
+            IElasticsearchService elasticsearchService)
         {
             _unitOfWork = unitOfWork;
             _backgroundJobClient = backgroundJobClient;
@@ -41,6 +44,7 @@ namespace Portal.API.Controllers
             _helloWorldSender = helloWorldSender;
             _sendMailPublisher = sendMailPublisher;
             _serviceLogPublisher = serviceLogPublisher;
+            _elasticsearchService = elasticsearchService;
         }
 
         [HttpGet]
@@ -146,6 +150,27 @@ namespace Portal.API.Controllers
                 Description = description
             });
             return Ok();
+        }
+
+        [HttpPost("elasticsearch")]
+        public async Task<IActionResult> TestElasticsearchSyncAlbumsAsync()
+        {
+            await _elasticsearchService.SyncAlbumsAsync();
+            return Ok();
+        }
+
+        [HttpDelete("elasticsearch")]
+        public async Task<IActionResult> DeleteElasticsearchAsync()
+        {
+            await _elasticsearchService.ResetIndexes();
+            return Ok();
+        }
+
+        [HttpGet("elasticsearch")]
+        public async Task<IActionResult> GetElasticsearchSyncAlbumsAsync()
+        {
+            var response = await _elasticsearchService.GetDocumentsAsync();
+            return Ok(response);
         }
     }
 }

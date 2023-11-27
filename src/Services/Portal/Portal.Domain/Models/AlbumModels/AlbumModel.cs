@@ -42,4 +42,19 @@ namespace Portal.Domain.Models.AlbumModels
         [JsonIgnore]
         public bool IsTotalRecord { get; set; }
     }
+
+    public class AlbumDocument
+    {
+        public int Id { get; set; }
+
+        public string Title { get; set; } = null!;
+        public string? Description { get; set; }
+
+        public int? AlbumAlertMessageId { get; set; }
+        public string? AlbumAlertMessageName { get; set; }
+
+        public string? ContentTypes { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
 }

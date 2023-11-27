@@ -73,5 +73,16 @@ namespace Portal.API.Controllers
 
             return Ok(response);
         }
+
+        [HttpGet("paging-elk")]
+        public async Task<IActionResult> GetPagingByElkAsync([FromQuery] PagingCommonRequest request)
+        {
+            var response = await _albumService.GetPagingByELKAsync(request);
+
+            if (!response.IsSuccess)
+                return BadRequest(response);
+
+            return Ok(response);
+        }
     }
 }

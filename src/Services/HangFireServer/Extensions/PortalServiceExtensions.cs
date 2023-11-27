@@ -4,7 +4,9 @@ using System.Security.Cryptography.X509Certificates;
 using Amazon;
 using Amazon.S3;
 using Common.Implements;
+using Common.Implements.Messaging;
 using Common.Interfaces;
+using Common.Interfaces.Messaging;
 using Common.Models.Redis;
 using EmailHelper.Models;
 using EmailHelper.Services;
@@ -17,6 +19,7 @@ using Portal.Domain.SeedWork;
 using Portal.Infrastructure;
 using Portal.Infrastructure.Helpers;
 using Portal.Infrastructure.Implements.External;
+using Portal.Infrastructure.Implements.Infrastructure;
 using Portal.Infrastructure.Implements.Services;
 using Portal.Infrastructure.SeedWork;
 using Raven.Client.Documents;
@@ -67,11 +70,15 @@ public static class PortalServiceExtensions
             });
         });
 
+        // Publisher for RabitMQ
+        services.AddScoped<IServiceLogPublisher, ServiceLogPublisher>();
+
         // Inject Services
         services.AddScoped<IApiService, ApiService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAmazonS3Service, AmazonS3Service>();
+        services.AddScoped<IElasticsearchService, ElasticsearchService>();
 
         // Hangfire use service differnce than Portal
         #region Email Service

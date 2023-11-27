@@ -13,6 +13,7 @@ using Portal.Domain.Interfaces.Infrastructure;
 using Portal.Domain.Interfaces.Messaging;
 using Portal.Infrastructure;
 using Portal.Infrastructure.Implements.External;
+using Portal.Infrastructure.Implements.Infrastructure;
 using Portal.Infrastructure.Implements.Messaging;
 using Portal.Infrastructure.Implements.Services;
 using Portal.Infrastructure.SeedWork;
@@ -67,6 +68,7 @@ public static class PortalServiceExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAmazonS3Service, AmazonS3Service>();
+        services.AddScoped<IElasticsearchService, ElasticsearchService>();
         return services;
     }
 }

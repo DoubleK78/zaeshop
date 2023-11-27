@@ -23,6 +23,7 @@ builder.Services.AddSwaggerServices();
 builder.Services.AddCors();
 builder.Services.AddGrpc().AddJsonTranscoding();
 builder.Services.AddGrpcReflection();
+builder.Services.AddElasticsearch(builder.Configuration);
 
 var app = builder.Build();
 

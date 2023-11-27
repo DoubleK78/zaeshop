@@ -14,6 +14,7 @@ builder.Services.AddHangFireServices(builder.Configuration);
 // Hangfire will DI of Portal to background jobs
 builder.Services.AddPortalServices(builder.Configuration);
 builder.Services.AddBusinessServices();
+builder.Services.AddElasticsearch(builder.Configuration);
 
 var app = builder.Build();
 
