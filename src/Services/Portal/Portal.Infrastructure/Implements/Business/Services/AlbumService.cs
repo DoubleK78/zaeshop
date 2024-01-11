@@ -97,6 +97,19 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 entity.CdnThumbnailUrl = $"https://s3.codegota.me/{result.RelativeUrl}";
             }
 
+            // We can upload background
+            if (!string.IsNullOrEmpty(requestModel.FileNameOriginal) && requestModel.FileDataOriginal != null)
+            {
+                var result = await _amazonS3Service.UploadImageAsync(new ImageUploadRequestModel
+                {
+                    FileName = requestModel.FileNameOriginal,
+                    ImageData = requestModel.FileDataOriginal
+                }, entity.FriendlyName);
+
+                entity.OriginalUrl = result.AbsoluteUrl;
+                entity.CdnOriginalUrl = $"https://s3.codegota.me/{result.RelativeUrl}";
+            }
+
             _repository.Add(entity);
             await _unitOfWork.SaveChangesAsync();
 
@@ -208,6 +221,19 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 existingAlbum.CdnThumbnailUrl = $"https://s3.codegota.me/{result.RelativeUrl}";
             }
 
+            // We can upload background
+            if (requestModel.IsUpdateOriginalUrl && !string.IsNullOrEmpty(requestModel.FileNameOriginal) && requestModel.FileDataOriginal != null)
+            {
+                var result = await _amazonS3Service.UploadImageAsync(new ImageUploadRequestModel
+                {
+                    FileName = requestModel.FileNameOriginal,
+                    ImageData = requestModel.FileDataOriginal
+                }, existingAlbum.FriendlyName);
+
+                existingAlbum.OriginalUrl = result.AbsoluteUrl;
+                existingAlbum.CdnOriginalUrl = $"https://s3.codegota.me/{result.RelativeUrl}";
+            }
+
             // Update
             _repository.Update(existingAlbum);
             await _unitOfWork.SaveChangesAsync();
@@ -238,7 +264,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 AlbumAlertMessageName = x.AlbumAlertMessage?.Name,
                 ContentTypeNames = string.Join(", ", x.AlbumContentTypes.Select(y => y.ContentType.Name)),
                 CreatedDate = x.CreatedOnUtc,
-                CdnThumbnailUrl = x.CdnThumbnailUrl
+                CdnThumbnailUrl = x.CdnThumbnailUrl,
+                CdnOriginUrl = x.CdnOriginalUrl
             }).ToList();
 
             return new ServiceResponse<List<AlbumResponseModel>>(response);
@@ -313,7 +340,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 CreatedDate = album.CreatedOnUtc,
                 UpdatedDate = album.UpdatedOnUtc,
                 IsPublic = album.IsPublic,
-                CdnThumbnailUrl = album.CdnThumbnailUrl
+                CdnThumbnailUrl = album.CdnThumbnailUrl,
+                CdnOriginUrl = album.CdnOriginalUrl
             };
 
             return new ServiceResponse<AlbumResponseModel>(albumResponse);

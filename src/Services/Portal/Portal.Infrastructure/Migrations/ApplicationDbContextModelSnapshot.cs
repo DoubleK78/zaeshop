@@ -48,6 +48,9 @@ namespace Portal.Infrastructure.Migrations
                     b.Property<string>("AuthorNames")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CdnOriginalUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CdnThumbnailUrl")
                         .HasColumnType("nvarchar(max)");
 

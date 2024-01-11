@@ -12,7 +12,7 @@ using Portal.Infrastructure;
 namespace Portal.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240111053847_AddOriginalAlbum")]
+    [Migration("20240111085128_AddOriginalAlbum")]
     partial class AddOriginalAlbum
     {
         /// <inheritdoc />
@@ -49,6 +49,9 @@ namespace Portal.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AuthorNames")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CdnOriginalUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CdnThumbnailUrl")

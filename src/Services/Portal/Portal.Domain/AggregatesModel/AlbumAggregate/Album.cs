@@ -22,6 +22,7 @@ namespace Portal.Domain.AggregatesModel.AlbumAggregate
         public string? ArtitstNames { get; set; }
         public string? Tags { get; set; }
         public string? OriginalUrl { get; set; }
+        public string? CdnOriginalUrl { get; set; }
         #endregion
 
         public bool IsPublic { get; set; }

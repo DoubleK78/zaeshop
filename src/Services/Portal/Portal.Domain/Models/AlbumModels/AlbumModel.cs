@@ -12,13 +12,15 @@ namespace Portal.Domain.Models.AlbumModels
         public string? OriginalUrl { get; set; }
         public int? AlbumAlertMessageId { get; set; }
         public List<int>? ContentTypeIds { get; set; }
-
         public bool? IsPublic { get; set; }
-
         public string? FileName { get; set; }
         public string? Base64File { get; set; }
         public byte[]? FileData => !string.IsNullOrEmpty(Base64File) ? Convert.FromBase64String(Base64File) : null;
         public bool IsUpdateThumbnail { get; set; }
+        public string? FileNameOriginal { get; set; }
+        public string? Base64FileOriginal { get; set; }
+        public byte[]? FileDataOriginal => !string.IsNullOrEmpty(Base64FileOriginal) ? Convert.FromBase64String(Base64FileOriginal) : null;
+        public bool IsUpdateOriginalUrl { get; set; }
     }
 
     public class AlbumResponseModel
@@ -38,6 +40,7 @@ namespace Portal.Domain.Models.AlbumModels
 
         public bool IsPublic { get; set; }
         public string? CdnThumbnailUrl { get; set; }
+        public string? CdnOriginUrl { get; set; }
     }
 
     public class AlbumPagingResponse
@@ -56,6 +59,7 @@ namespace Portal.Domain.Models.AlbumModels
         public DateTime? UpdatedOnUtc { get; set; }
 
         public string? CdnThumbnailUrl { get; set; }
+        public string? CdnOriginUrl { get; set; }
 
         [JsonIgnore]
         public long RowNum { get; set; }
