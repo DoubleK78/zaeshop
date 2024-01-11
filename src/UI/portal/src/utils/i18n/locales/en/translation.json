@@ -106,7 +106,8 @@
             "title_is_required": "Title is required.",
             "description": "Description",
             "alert_message": "Alert Message",
-            "content_types": "Content Types"
+            "content_types": "Content Types",
+            "thumbnail": "Thumbnail"
         },
         "ongoing": "Ongoing",
         "completed": "Completed",

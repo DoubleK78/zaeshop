@@ -11,6 +11,9 @@ import ContentType from "../../models/content-type/ContentType";
 import AlbumAlertMessage from "../../models/album-alert-mesage/AlbumAlertMessage";
 import Select from 'react-select';
 import { toast } from "react-toastify";
+import { FilePond } from "react-filepond";
+import { ActualFileObject, FilePondFile } from "filepond";
+import convertFileToBase64 from "../../utils/covert-base64";
 
 type CreateAlbumProps = {
     closeModal: (isReload?: boolean) => void;
@@ -18,7 +21,13 @@ type CreateAlbumProps = {
 
 const CreateAlbum: React.FC<CreateAlbumProps> = ({ closeModal }) => {
     const [t] = useTranslation();
+    const [files, setFiles] = useState<(ActualFileObject)[]>([]);
     const { albumAlertMessages, contentTypes } = useSelector((state: StoreState) => state.album);
+
+    const onUpdateFiles = (filesPondFiles: FilePondFile[]) => {
+        const files = filesPondFiles.map(item => item.file);
+        setFiles(files);
+    }
 
     // Dropdown options
     const contentTypesDropDown = useMemo((): DropDownOption<number>[] => {
@@ -64,17 +73,27 @@ const CreateAlbum: React.FC<CreateAlbumProps> = ({ closeModal }) => {
         const toastId = toast.loading(t("toast.please_wait"), {
             hideProgressBar: true
         });
-        const response = await createAlbum({
+
+        const request: AlbumRequestModel = {
             ...albumRequestModel,
             albumAlertMessageId: albumAlertMessageSelectedOption ? Number(albumAlertMessageSelectedOption.value) : undefined,
-            contentTypeIds: contentTypesSelectedOptions?.map(option => Number(option.value))
-        });
+            contentTypeIds: contentTypesSelectedOptions?.map(option => Number(option.value)),
+        };
+
+        if (files.length > 0) {
+            const base64File = await convertFileToBase64(files[0]);
+
+            request.fileName = files[0].name;
+            request.base64File = base64File?.split(',')[1];
+        }
+
+        const response = await createAlbum(request);
         if (response.status === 200) {
             toast.update(toastId, {
                 render: t("toast.create_sucessfully"), type: toast.TYPE.SUCCESS, isLoading: false,
                 autoClose: 2000
             });
-            
+
             closeModal(true);
             return;
         }
@@ -173,6 +192,23 @@ const CreateAlbum: React.FC<CreateAlbumProps> = ({ closeModal }) => {
                                                 isClearable={true}
                                             />
                                         </div>
+                                    </div>
+                                    <div className="mb-3 row">
+                                        <FilePond
+                                            files={files}
+                                            onupdatefiles={onUpdateFiles}
+                                            maxFiles={1}
+                                            name="files"
+                                            labelIdle='Drag & Drop your file or <span class="filepond--label-action">Browse</span>'
+                                            beforeAddFile={(file) => {
+                                                return new Promise((resolve) => {
+                                                    if (!file.fileType.includes('image/')) {
+                                                        resolve(false);
+                                                    }
+                                                    resolve(true);
+                                                })
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             </div>

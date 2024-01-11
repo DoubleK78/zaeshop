@@ -12,6 +12,9 @@ import AlbumPagingResponse from '../../models/album/AlbumPagingResponse';
 import Select from 'react-select';
 import classNames from 'classnames';
 import AlbumAlertMessage from '../../models/album-alert-mesage/AlbumAlertMessage';
+import { FilePond } from "react-filepond";
+import { ActualFileObject, FilePondFile } from "filepond";
+import convertFileToBase64 from "../../utils/covert-base64";
 
 type UpdateAlbumProps = {
     album: AlbumPagingResponse,
@@ -20,7 +23,19 @@ type UpdateAlbumProps = {
 
 const UpdateAlbum: React.FC<UpdateAlbumProps> = ({ album, closeModal }) => {
     const [t] = useTranslation();
+    const [files, setFiles] = useState<(ActualFileObject)[]>([]);
+    const [isUpdateThumbnail, setIsUpdateThumbnail] = useState<boolean>(false);
     const { albumAlertMessages, contentTypes } = useSelector((state: StoreState) => state.album);
+
+    const onUpdateFiles = (filesPondFiles: FilePondFile[]) => {
+        const files = filesPondFiles.map(item => item.file);
+        setFiles(files);
+        setIsUpdateThumbnail(true);
+    }
+
+    const onChangeImage = () => {
+        setIsUpdateThumbnail(true);
+    }
 
     // Dropdown options
     const contentTypesDropDown = useMemo((): DropDownOption<number>[] => {
@@ -75,11 +90,23 @@ const UpdateAlbum: React.FC<UpdateAlbumProps> = ({ album, closeModal }) => {
         const toastId = toast.loading(t("toast.please_wait"), {
             hideProgressBar: true
         });
-        const response = await updateAlbum(album.id, {
+
+        const request: AlbumRequestModel = {
             ...albumRequestModel,
             albumAlertMessageId: albumAlertMessageSelectedOption ? Number(albumAlertMessageSelectedOption.value) : undefined,
-            contentTypeIds: contentTypesSelectedOptions?.map(option => Number(option.value))
-        });
+            contentTypeIds: contentTypesSelectedOptions?.map(option => Number(option.value)),
+            isUpdateThumbnail
+        };
+
+        if (files.length > 0) {
+            const base64File = await convertFileToBase64(files[0]);
+
+            request.fileName = files[0].name;
+            request.base64File = base64File?.split(',')[1];
+        }
+
+        const response = await updateAlbum(album.id, request);
+
         if (response.status === 200) {
             toast.update(toastId, {
                 render: t("toast.update_sucessfully"),
@@ -186,6 +213,48 @@ const UpdateAlbum: React.FC<UpdateAlbumProps> = ({ album, closeModal }) => {
                                                 isClearable={true}
                                             />
                                         </div>
+                                    </div>
+
+                                    <div className="mb-3 row">
+                                        <label
+                                            className="col-sm-2 col-form-label text-end">
+                                            {t('album.modal.thumbnail')}
+                                        </label>
+                                        {album?.cdnThumbnailUrl &&
+                                            <div>
+                                                <img src={album?.cdnThumbnailUrl} alt={t('album.modal.thumbnail')}
+                                                    style={{
+                                                        maxWidth: "100%",
+                                                        height: "auto",
+                                                    }} />
+                                                <button className="btn" onChange={onChangeImage}>
+                                                    <i className="ri-close-circle-line text-muted"
+                                                        style={{
+                                                            position: 'absolute',
+                                                            left: "12px",
+                                                            top: '2px',
+                                                            fontSize: '1.4rem',
+                                                            cursor: 'pointer'
+                                                        }}></i>
+                                                </button>
+                                            </div>
+                                        }
+                                        {!album?.cdnThumbnailUrl && <FilePond
+                                            files={files}
+                                            onupdatefiles={onUpdateFiles}
+                                            maxFiles={1}
+                                            name="files"
+                                            labelIdle='Drag & Drop your file or <span class="filepond--label-action">Browse</span>'
+                                            beforeAddFile={(file) => {
+                                                return new Promise((resolve) => {
+                                                    if (!file.fileType.includes('image/')) {
+                                                        resolve(false);
+                                                    }
+                                                    resolve(true);
+                                                })
+                                            }}
+                                        />
+                                        }
                                     </div>
                                 </div>
                             </div>

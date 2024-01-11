@@ -8,4 +8,5 @@ export default interface AlbumPagingResponse {
     contentTypes?: string;
     createdOnUtc: Date;
     updatedOnUtc?: Date;
+    cdnThumbnailUrl?: string;
 }

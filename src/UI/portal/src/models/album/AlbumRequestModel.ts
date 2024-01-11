@@ -3,4 +3,7 @@ export default interface AlbumRequestModel {
     description?: string;
     albumAlertMessageId?: number;
     contentTypeIds?: number[];
+    fileName?: string;
+    base64File?: string;
+    isUpdateThumbnail: boolean;
 }
