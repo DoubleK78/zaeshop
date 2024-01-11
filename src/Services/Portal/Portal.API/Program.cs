@@ -1,9 +1,12 @@
 using System.Text.Json;
+using Google.Api;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Portal.API.Controllers;
 using Portal.API.Extensions;
 using Portal.API.Middlewares;
+using Portal.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +45,23 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using var scope = app.Services.CreateScope();
+var services = scope.ServiceProvider;
+var portalContext = services.GetRequiredService<ApplicationDbContext>();
+var logger = services.GetRequiredService<ILogger<Program>>();
+
+try
+{
+    if (app.Environment.IsProduction())
+    {
+        await portalContext.Database.MigrateAsync();
+    }
+}
+catch (Exception ex)
+{
+    logger.LogError(ex, "An error occured during migration");
 }
 
 app.UseHttpsRedirection();

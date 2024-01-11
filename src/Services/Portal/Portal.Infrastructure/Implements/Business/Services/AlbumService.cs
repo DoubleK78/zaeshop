@@ -142,6 +142,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             existingAlbum.Description = requestModel.Description;
             existingAlbum.AlbumAlertMessageId = requestModel.AlbumAlertMessageId;
             existingAlbum.FriendlyName = CommonHelper.GenerateFriendlyName(requestModel.Title);
+            existingAlbum.OriginalUrl = requestModel.OriginalUrl;
 
             if (requestModel.IsPublic.HasValue)
             {

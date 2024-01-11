@@ -21,10 +21,11 @@ namespace Portal.Domain.AggregatesModel.AlbumAggregate
         public string? AuthorNames { get; set; }
         public string? ArtitstNames { get; set; }
         public string? Tags { get; set; }
+        public string? OriginalUrl { get; set; }
         #endregion
 
         public bool IsPublic { get; set; }
-        
+
         [Column(TypeName = "varchar(350)")]
         public string? FriendlyName { get; set; }
 
