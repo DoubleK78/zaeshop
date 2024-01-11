@@ -143,12 +143,12 @@ const AlbumPage: React.FC = () => {
                                                 <tbody>
                                                     {albums.map((album) => (
                                                         <tr key={uuidv4()}>
+                                                             <td>{album.id}</td>
                                                             <td>
                                                                 <Link className="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
-                                                                    to={`${album.id}`}>{album.id}
+                                                                    to={`${album.id}`}>{album.title}
                                                                 </Link>
                                                             </td>
-                                                            <td>{album.title}</td>
                                                             <td>{album.description}</td>
                                                             <td>{album.contentTypes}</td>
                                                             <td>{dayjsCustom.utc(album.createdOnUtc).local().format('DD-MM-YYYY HH:mm')}</td>

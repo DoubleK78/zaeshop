@@ -144,9 +144,10 @@ const AlbumDetailCollectionPage: React.FC = () => {
                                                 <tbody>
                                                     {collections.map((collection) => (
                                                         <tr key={uuidv4()}>
+                                                             <td>{collection.id}</td>
                                                             <td>
                                                                 <Link className="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
-                                                                    to={`/collections/${collection.id}`}>{collection.id}
+                                                                    to={`/collections/${collection.id}`}>{collection.title}
                                                                 </Link>
                                                             </td>
                                                             <td>{collection.title}</td>
