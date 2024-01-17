@@ -9,7 +9,7 @@ CREATE OR ALTER PROCEDURE Album_All_Paging
 	@country VARCHAR(100) = null,
 	@genre VARCHAR(100) = null,
 	@status BIT = 0,
-	@year INT
+	@year VARCHAR(100) = null
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -59,8 +59,15 @@ BEGIN
 			LEFT JOIN dbo.ContentType ct ON ct.Id = act.ContentTypeId
 		WHERE (ISNULL(@searchTerm, '') = '' OR 
 			(a.Title LIKE '' + @searchTerm + '%') OR
-			(a.Description LIKE '' + @searchTerm + '%')
-		)
+			(a.Description LIKE '' + @searchTerm + '%'))
+			AND (ISNULL(@firstChar, '') = '' OR
+			(a.FriendlyName LIKE @firstChar + '%'))
+			AND (ISNULL(@genre, '') = '' OR
+				(SELECT COUNT(*) FROM STRING_SPLIT(@genre, ',') g
+				 WHERE CHARINDEX(CAST(g.value AS VARCHAR(10)), ct.Id) > 0) = (SELECT COUNT(*) FROM STRING_SPLIT(@genre, ',')))
+			AND (ISNULL(@year, '') = '' OR
+				(@year LIKE '%' + CONVERT(VARCHAR, YEAR(a.ReleaseYear)) + '%'))
+			AND (a.AlbumStatus = @status)
         GROUP BY a.Id,
 			   a.Title,
 			   a.Description,
