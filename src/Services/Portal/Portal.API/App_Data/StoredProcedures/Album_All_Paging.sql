@@ -52,7 +52,8 @@ BEGIN
 			   a.UpdatedOnUtc,
 			   a.CdnThumbnailUrl,
 			   a.CdnOriginalUrl,
-			   a.FriendlyName -- Include the FriendlyName column
+			   a.FriendlyName,
+			   a.Views
         FROM dbo.Album a
 			LEFT JOIN dbo.AlbumAlertMessage aam ON aam.Id = a.AlbumAlertMessageId
 			LEFT JOIN dbo.AlbumContentType act ON act.AlbumId = a.Id
@@ -78,7 +79,8 @@ BEGIN
 			   a.UpdatedOnUtc,
 			   a.CdnThumbnailUrl,
 			   a.CdnOriginalUrl,
-			   a.FriendlyName
+			   a.FriendlyName,
+			   a.Views
 	)
     SELECT COUNT_BIG(1) AS RowNum,
 		 0 Id,
@@ -95,6 +97,7 @@ BEGIN
 		 null [CdnThumbnailUrl],
 		 null [CdnOriginalUrl],
 		 NULL FriendlyName,
+		 NULL Views,
 		 1 AS IsTotalRecord
     FROM FilteredData
     UNION

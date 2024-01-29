@@ -60,6 +60,7 @@ namespace Portal.Domain.Models.AlbumModels
 
         public string? CdnThumbnailUrl { get; set; }
         public string? CdnOriginalUrl { get; set; }
+        public ulong? Views { get; set; }
 
         [JsonIgnore]
         public long RowNum { get; set; }

@@ -32,23 +32,23 @@ namespace Portal.API.Controllers
         [HttpGet("comics/{comicFriendlyName}/contents/{contentFriendlyName}")]
         public async Task<IActionResult> GetByIdAsync(string comicFriendlyName, string contentFriendlyName)
         {
-            #region Using cache if exists
-            var value = await _redisService.GetAsync<ContentAppModel>(string.Format(Const.RedisCacheKey.ComicContent, comicFriendlyName, contentFriendlyName));
-            if (value != null)
-            {
-                // Hangfire
-                _backgroundJobClient.Enqueue<ICollectionService>(x => x.AddViewFromUserToRedisAsync(new CollectionViewUserBuildModel
-                {
-                    CollectionId = value!.Id,
-                    IdentityUserId = User.FindFirstValue("id"),
-                    AtViewedOnUtc = DateTime.UtcNow,
-                    IpAddress = IpAddress(),
-                    SessionId = HttpContext.Session.Id
-                }));
+            //#region Using cache if exists
+            //var value = await _redisService.GetAsync<ContentAppModel>(string.Format(Const.RedisCacheKey.ComicContent, comicFriendlyName, contentFriendlyName));
+            //if (value != null)
+            //{
+            //    // Hangfire
+            //    _backgroundJobClient.Enqueue<ICollectionService>(x => x.AddViewFromUserToRedisAsync(new CollectionViewUserBuildModel
+            //    {
+            //        CollectionId = value!.Id,
+            //        IdentityUserId = User.FindFirstValue("id"),
+            //        AtViewedOnUtc = DateTime.UtcNow,
+            //        IpAddress = IpAddress(),
+            //        SessionId = HttpContext.Session.Id
+            //    }));
 
-                return Ok(new ServiceResponse<ContentAppModel>(value));
-            }
-            #endregion
+            //    return Ok(new ServiceResponse<ContentAppModel>(value));
+            //}
+            //#endregion
             var parameters = new Dictionary<string, object?>
             {
                 { "comicFriendlyName", comicFriendlyName },
@@ -61,7 +61,7 @@ namespace Portal.API.Controllers
             }
 
             var contentItems = await _contentItemRepository.GetQueryable()
-                            .Where(o => o.CollectionId == collection.Id)
+                            .Where(o => o.CollectionId == collection.Id).OrderBy(o => o.OrderBy)
                             .Select(x => x.DisplayUrl).ToListAsync();
             collection.ContentItems = contentItems;
 
