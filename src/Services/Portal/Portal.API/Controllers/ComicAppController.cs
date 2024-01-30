@@ -91,7 +91,7 @@ namespace Portal.API.Controllers
                 AlbumTitle = comic.Title,
                 AlbumFriendlyName = comic.FriendlyName,
                 Views = z.Views,
-            }).OrderByDescending(x => RegexHelper.GetChapterNumber(x.Title)).ToList();
+            }).OrderByDescending(x => RegexHelper.GetNumberByText(x.Title)).ToList();
 
             var result = new ServiceResponse<ComicAppModel>(comic);
 

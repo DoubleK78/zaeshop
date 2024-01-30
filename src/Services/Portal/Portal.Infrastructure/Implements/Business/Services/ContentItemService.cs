@@ -82,14 +82,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
             #endregion
 
             // Store database
-            var addItems = results.OrderBy(r => r.FileName).Select((x, index) => new ContentItem
+            var addItems = results.Select(x => new ContentItem
             {
                 CollectionId = collectionId,
                 Name = x.FileName,
                 OriginalUrl = x.AbsoluteUrl,
                 DisplayUrl = $"https://s3.codegota.me/{x.RelativeUrl}",
                 RelativeUrl = x.RelativeUrl,
-                OrderBy = index
+                OrderBy = RegexHelper.GetNumberByText(x.FileName)
             }).OrderBy(x => x.OrderBy).ToList();
 
             _contentItemRepository.AddRange(addItems);
@@ -139,7 +139,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     {
                         contentItem.Name = item.FileName;
                         contentItem.OriginalUrl = item.AbsoluteUrl;
-                        contentItem.DisplayUrl = item.AbsoluteUrl;
+                        contentItem.DisplayUrl = $"https://s3.codegota.me/{item.RelativeUrl}";
                         contentItem.RelativeUrl = item.RelativeUrl;
                     }
                 }
@@ -149,7 +149,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     var contentItem = contentItems.Find(x => x.Id == item.Id);
                     if (contentItem != null)
                     {
-                        contentItem.OrderBy = item.OrderBy;
+                        contentItem.OrderBy = RegexHelper.GetNumberByText(contentItem.Name);
                         updateContentItems.Add(contentItem);
                     }
                 }
@@ -182,9 +182,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         CollectionId = collectionId,
                         Name = newItem.FileName,
                         OriginalUrl = newItem.AbsoluteUrl,
-                        DisplayUrl = newItem.AbsoluteUrl,
+                        DisplayUrl = $"https://s3.codegota.me/{newItem.RelativeUrl}",
                         RelativeUrl = newItem.RelativeUrl,
-                        OrderBy = newItem.OrderBy
+                        OrderBy = RegexHelper.GetNumberByText(newItem.FileName)
                     });
                 }
             }

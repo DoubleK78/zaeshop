@@ -112,13 +112,6 @@ namespace Portal.API.Controllers
             return Ok();
         }
 
-        private static byte[] GetFileBytes(IFormFile file)
-        {
-            using var ms = new MemoryStream();
-            file.CopyTo(ms);
-            return ms.ToArray();
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetPagingAsync([FromQuery] CollectionPagingRequest request)
         {

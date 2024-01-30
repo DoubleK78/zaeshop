@@ -4,6 +4,7 @@ import { FilePond } from "react-filepond";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { createContentItems } from "../../services/content-item/cotentItemService";
+import { RegexHelper } from "../../utils/regex";
 
 type ContentItemBlankUploadProps = {
     id: string | undefined;
@@ -15,7 +16,7 @@ const ContentItemBlankUpload: React.FC<ContentItemBlankUploadProps> = ({ id }: C
     const [files, setFiles] = useState<(ActualFileObject)[]>([]);
 
     const onUpdateFiles = (filesPondFiles: FilePondFile[]) => {
-        const files = filesPondFiles.map(item => item.file);
+        const files = filesPondFiles.sort((a, b) => RegexHelper.getNumberByText(a.filename) - RegexHelper.getNumberByText(b.filename)).map(item => item.file);
         setFiles(files);
     }
 

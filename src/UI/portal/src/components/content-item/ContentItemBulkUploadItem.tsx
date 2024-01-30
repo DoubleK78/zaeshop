@@ -8,11 +8,12 @@ import { useTranslation } from "react-i18next";
 import classNames from "classnames";
 import { FilePond } from "react-filepond";
 import { ContentItemBulkUploadItemModel } from "../../models/content-item/ContentItemBulkUploadModel";
+import { RegexHelper } from "../../utils/regex";
 
 type ContentItemBulkUploadItemProps = {
     contentItem: ContentItemModel;
     contentItemBulkUploadItemModel: ContentItemBulkUploadItemModel;
-    updateExistItem: (id: number, isPublic: boolean, orderBy: number, file?: ActualFileObject) => Promise<void>;
+    updateExistItem: (id: number, isPublic: boolean, file?: ActualFileObject) => Promise<void>;
     deleteExistItem: (id: number) => void;
 }
 
@@ -21,7 +22,7 @@ type ContentItemBlankUploadItemDialogProps = {
     openModal: () => void;
     closeModal: () => void;
     contentItem: ContentItemModel;
-    updateExistItem: (id: number, isPublic: boolean, orderBy: number, file?: ActualFileObject) => Promise<void>;
+    updateExistItem: (id: number, isPublic: boolean, file?: ActualFileObject) => Promise<void>;
 }
 
 const ContentItemBlankUploadItemDialog: React.FC<ContentItemBlankUploadItemDialogProps> = ({ closeModal, contentItem, updateExistItem }) => {
@@ -34,7 +35,7 @@ const ContentItemBlankUploadItemDialog: React.FC<ContentItemBlankUploadItemDialo
     }
 
     const onSubmit = async (model: ContentItemModel & { isPublic: boolean }) => {
-        await updateExistItem(model.id, model.isPublic, model.orderBy, files[0]);
+        await updateExistItem(model.id, model.isPublic, files[0]);
         closeModal();
     }
 
@@ -46,7 +47,7 @@ const ContentItemBlankUploadItemDialog: React.FC<ContentItemBlankUploadItemDialo
         defaultValues: {
             id: contentItem.id,
             name: contentItem.name,
-            orderBy: contentItem.orderBy,
+            orderBy: RegexHelper.getNumberByText(contentItem.name),
             type: contentItem.type,
             createdOnUtc: contentItem.createdOnUtc,
             relativeUrl: contentItem.relativeUrl,
@@ -84,11 +85,11 @@ const ContentItemBlankUploadItemDialog: React.FC<ContentItemBlankUploadItemDialo
                             <div className="card-body">
                                 <div className="mb-3 row">
                                     <label
-                                        className="col-sm-2 text-muted text-end"
+                                        className="col-sm-3 text-muted text-end"
                                     >
                                         {t('content_item.is_public')}
                                     </label>
-                                    <div className="col-sm-10">
+                                    <div className="col-sm-9">
                                         <input
                                             className="col-sm-2 form-check-input"
                                             type="checkbox"
@@ -98,13 +99,14 @@ const ContentItemBlankUploadItemDialog: React.FC<ContentItemBlankUploadItemDialo
                                 </div>
                                 <div className="mb-3 row">
                                     <label
-                                        className="col-sm-2 col-form-label text-end">
+                                        className="col-sm-3 col-form-label text-end">
                                         {t('content_item.order_by')}
                                     </label>
-                                    <div className="col-sm-10">
+                                    <div className="col-sm-9">
                                         <input
                                             className="form-control"
                                             type="number"
+                                            readOnly={true}
                                             {...register('orderBy', { min: 0, valueAsNumber: true })}
                                         />
                                         <div className={classNames("invalid-feedback", {

@@ -123,7 +123,7 @@ namespace Common
         [GeneratedRegex(@"\d+")]
         private static partial Regex DigitRegex();
 
-        public static int GetChapterNumber(string title)
+        public static int GetNumberByText(string title)
         {
             var match = DigitRegex().Match(title);
             return match.Success ? int.Parse(match.Value) : int.MaxValue;

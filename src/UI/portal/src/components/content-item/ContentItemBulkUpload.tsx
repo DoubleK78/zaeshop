@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { bulkUpdateContentItems } from "../../services/content-item/cotentItemService";
 import { useAppDispatch } from "../../store";
 import { getContentItemsAsyncThunk } from "../../store/reducers/ContentItemSlice";
+import { RegexHelper } from "../../utils/regex";
 
 type ContentItemBulkUploadProps = {
     id: string | undefined;
@@ -24,7 +25,7 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
     const [files, setFiles] = useState<(ActualFileObject)[]>([]);
 
     const onUpdateFiles = (filesPondFiles: FilePondFile[]) => {
-        const files = filesPondFiles.map(item => item.file);
+        const files = filesPondFiles.sort((a, b) => RegexHelper.getNumberByText(a.filename) - RegexHelper.getNumberByText(b.filename)).map(item => item.file);
         setFiles(files);
     }
 
@@ -32,23 +33,23 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
 
     useEffect(() => {
         if (!contentItems) return;
-        const exsitsItems = [...contentItems].sort((a, b) => a.orderBy - b.orderBy).map(item => {
+        const exsitsItems = [...contentItems].sort((a, b) =>  RegexHelper.getNumberByText(a.name) - RegexHelper.getNumberByText(b.name)).map(item => {
             return {
                 id: item.id,
                 fileName: item.name,
                 isPublic: false,
-                orderBy: item.orderBy
+                orderBy: RegexHelper.getNumberByText(item.name)
             };
         });
 
         setContentItemBulkUploadItems(exsitsItems);
     }, [contentItems]);
 
-    const updateExistItem = async (id: number, isPublic: boolean, orderBy: number, file?: ActualFileObject) => {
+    const updateExistItem = async (id: number, isPublic: boolean, file?: ActualFileObject) => {
         const existsItem = contentItemBulkUploadItems.find(item => item.id === id);
         if (existsItem) {
             existsItem.isPublic = isPublic;
-            existsItem.orderBy = orderBy;
+            existsItem.orderBy = RegexHelper.getNumberByText(existsItem.fileName);
 
             if (file) {
                 const base64File = await convertFileToBase64(file);
@@ -57,7 +58,7 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
                 existsItem.base64File = base64File;
             }
 
-            setContentItemBulkUploadItems([...contentItemBulkUploadItems.filter(item => item.id !== id), existsItem].sort((a, b) => a.orderBy - b.orderBy));
+            setContentItemBulkUploadItems([...contentItemBulkUploadItems.filter(item => item.id !== id), existsItem].sort((a, b) => RegexHelper.getNumberByText(a.fileName) - RegexHelper.getNumberByText(b.fileName)));
         }
     }
 
@@ -76,12 +77,11 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
                 fileName: item.fileName,
                 base64File: item.base64File?.split(',')[1],
                 isPublic: false,
-                orderBy: item.orderBy
+                orderBy: RegexHelper.getNumberByText(item.fileName)
             };
         });
 
         // Build new items
-        let orderBy = Math.max(...existsItems.map(item => item.orderBy));
         const items: ContentItemBulkUploadItemModel[] = await Promise.all(files.map(async (item) => {
             const base64File = await convertFileToBase64(item);
 
@@ -89,7 +89,7 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
                 fileName: item.name,
                 base64File: base64File?.split(',')[1],
                 isPublic: false,
-                orderBy: ++orderBy
+                orderBy: RegexHelper.getNumberByText(item.name)
             };
             return newItem;
         }));
@@ -117,12 +117,12 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
 
     const onReset = () => {
         setFiles([]);
-        setContentItemBulkUploadItems([...contentItems].sort((a, b) => a.orderBy - b.orderBy).map(item => {
+        setContentItemBulkUploadItems([...contentItems].sort((a, b) => RegexHelper.getNumberByText(a.name) - RegexHelper.getNumberByText(b.name)).map(item => {
             return {
                 id: item.id,
                 fileName: item.name,
                 isPublic: false,
-                orderBy: item.orderBy
+                orderBy: RegexHelper.getNumberByText(item.name)
             };
         }));
 
@@ -230,7 +230,7 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
                                                 }
                                                 resolve(true);
                                             })
-                                        }}
+                                        }}                                     
                                     />
                                 </div>
                                 <div className="row">
