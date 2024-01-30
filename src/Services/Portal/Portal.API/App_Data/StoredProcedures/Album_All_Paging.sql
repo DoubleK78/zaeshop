@@ -53,11 +53,18 @@ BEGIN
 			   a.CdnThumbnailUrl,
 			   a.CdnOriginalUrl,
 			   a.FriendlyName,
-			   a.Views
+			   a.Views,
+			   c.Title AS LastCollectionTitle
         FROM dbo.Album a
 			LEFT JOIN dbo.AlbumAlertMessage aam ON aam.Id = a.AlbumAlertMessageId
 			LEFT JOIN dbo.AlbumContentType act ON act.AlbumId = a.Id
 			LEFT JOIN dbo.ContentType ct ON ct.Id = act.ContentTypeId
+			OUTER APPLY (
+                SELECT TOP 1 c.Title
+                FROM dbo.Collection c
+                WHERE c.AlbumId = a.Id
+                ORDER BY c.CreatedOnUtc DESC
+            ) c
 		WHERE (ISNULL(@searchTerm, '') = '' OR 
 			(a.Title LIKE '' + @searchTerm + '%') OR
 			(a.Description LIKE '' + @searchTerm + '%'))
@@ -80,7 +87,8 @@ BEGIN
 			   a.CdnThumbnailUrl,
 			   a.CdnOriginalUrl,
 			   a.FriendlyName,
-			   a.Views
+			   a.Views,
+			   c.Title
 	)
     SELECT COUNT_BIG(1) AS RowNum,
 		 0 Id,
@@ -98,6 +106,7 @@ BEGIN
 		 null [CdnOriginalUrl],
 		 NULL FriendlyName,
 		 NULL Views,
+		 NULL LastCollectionTitle,
 		 1 AS IsTotalRecord
     FROM FilteredData
     UNION

@@ -39,7 +39,7 @@ namespace Portal.Domain.Models.AlbumModels
         public DateTime? UpdatedDate { get; set; }
 
         public bool IsPublic { get; set; }
-        public string? CdnThumbnailUrl { get; set; }
+        public string? CdnThumbnailUrl { get; set; } 
         public string? CdnOriginalUrl { get; set; }
     }
 
@@ -61,6 +61,7 @@ namespace Portal.Domain.Models.AlbumModels
         public string? CdnThumbnailUrl { get; set; }
         public string? CdnOriginalUrl { get; set; }
         public ulong? Views { get; set; }
+        public string? LastCollectionTitle { get; set; }
 
         [JsonIgnore]
         public long RowNum { get; set; }
