@@ -7,7 +7,6 @@ namespace Portal.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class CommentController : BaseApiController
     {
         private readonly ICommentService _commentService;
@@ -17,6 +16,7 @@ namespace Portal.API.Controllers
             _commentService = commentService;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CommentRequestModel model)
         {
@@ -35,6 +35,7 @@ namespace Portal.API.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpPut]
         [Route("{id}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] CommentRequestModel model)
@@ -54,6 +55,7 @@ namespace Portal.API.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
