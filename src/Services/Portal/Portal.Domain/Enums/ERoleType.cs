@@ -6,6 +6,6 @@ namespace Portal.Domain.Enums
         Partner = 1,
         Administrator = 2,
         UserPremium = 3,
-        UserSuperPremium = 3
+        UserSuperPremium = 4
     }
 }
