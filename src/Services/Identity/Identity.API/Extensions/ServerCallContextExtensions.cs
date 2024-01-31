@@ -1,3 +1,5 @@
+using Common;
+using Common.Enums;
 using Grpc.Core;
 
 namespace Identity.API.Extensions
@@ -8,8 +10,7 @@ namespace Identity.API.Extensions
         {
             bool isDeployed = bool.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT_DEPLOYED") ?? "false");
             return (!isDeployed && (context.Host.Contains("localhost") || context.Host.Contains("127.0.0.1")))
-                || context.Host.EndsWith(".codegota.me")
-                || context.Host != "http://identity:5287";
+                || context.Host != CommonHelper.GetServiceUrl(EServiceHost.Identity);
         }
     }
 }
