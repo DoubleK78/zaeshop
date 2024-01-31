@@ -44,6 +44,7 @@ BEGIN
                 c2.Title,
                 a.FriendlyName as AlbumFriendlyName,
                 c2.FriendlyName as FriendlyName,
+                u.RoleType,
 				COUNT(reply.Id) AS ReplyCount
             FROM dbo.Comment c
                 JOIN dbo.[User] u ON u.Id = c.UserId
@@ -69,7 +70,8 @@ BEGIN
                 u.Avatar,
                 c2.Title,
                 a.FriendlyName,
-                c2.FriendlyName
+                c2.FriendlyName,
+                u.RoleType
         )
             SELECT COUNT_BIG(1) AS RowNum,
             0 Id,
@@ -86,6 +88,7 @@ BEGIN
             NULL Title,
             NULL AlbumFriendlyName,
             NULL FriendlyName,
+            0 RoleType,
 			0 ReplyCount,
             1 AS IsTotalRecord
         FROM FilteredData

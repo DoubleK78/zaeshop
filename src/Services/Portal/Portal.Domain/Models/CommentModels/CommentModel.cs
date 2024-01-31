@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Common.Models;
+using Portal.Domain.Enums;
 
 namespace Portal.Domain.Models.CommentModels
 {
@@ -19,6 +20,7 @@ namespace Portal.Domain.Models.CommentModels
         public string? Title { get; set; }
         public string? AlbumFriendlyName { get; set; }
         public string? FriendlyName { get; set; }
+        public ERoleType RoleType { get; set; }
         public DateTime CreatedOnUtc { get; set; }
         public DateTime? UpdatedOnUtc { get; set; }
     }
