@@ -199,7 +199,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 IdentityId = user.Id,
                 FullName = user.FullName,
                 Email = user.Email,
-                Username = user.UserName
+                UserName = user.UserName
             });
 
             if (resultApi != null && !resultApi.IsSuccess)
@@ -222,7 +222,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
             {
                 Email = user.Email,
                 FullName = user.FullName,
-                Username = user.UserName
+                UserName = user.UserName
             };
         }
 
@@ -456,7 +456,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
                     IdentityId = user.Id,
                     FullName = user.FullName,
                     Email = user.Email,
-                    Username = user.UserName,
+                    UserName = user.UserName,
                     Avatar = user.Avatar
                 });
 
