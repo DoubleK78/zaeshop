@@ -1,5 +1,6 @@
 using System.Net;
 using Grpc.Core;
+using Portal.API.Extensions;
 using Portal.Domain.AggregatesModel.UserAggregate;
 using PortalGrpc;
 
@@ -16,8 +17,12 @@ namespace Portal.API.Controllers
 
         public override async Task<UsersReply> GetUsers(UserRequest request, ServerCallContext context)
         {
+            if (!context.IsAllowedHost())
+            {
+                return new UsersReply();
+            }
+
             var users = await _unitOfWork.Repository<User>().GetQueryable()
-                .Filter(o => o.Id == 1)
                 .Project(x => new User { Id = x.Id, FullName = x.FullName, IdentityUserId = x.IdentityUserId })
                 .ToListAsync();
             var usersReply = new UsersReply();
@@ -37,6 +42,16 @@ namespace Portal.API.Controllers
 
         public override async Task<SyncUserReply> SyncUserFromIdentity(SyncUserRequest request, ServerCallContext context)
         {
+            if (!context.IsAllowedHost())
+            {
+                return new SyncUserReply
+                {
+                    PortalId = 0,
+                    IsSuccess = false,
+                    Message = "Unauthorized"
+                };
+            }
+
             // Validate model
             if (string.IsNullOrEmpty(request.IdentityId))
             {
@@ -97,7 +112,8 @@ namespace Portal.API.Controllers
                 IdentityUserId = request.IdentityId,
                 FullName = request.FullName,
                 Email = request.Email,
-                UserName = request.UserName
+                UserName = request.UserName,
+                Avatar = request.Avatar
             };
 
             _unitOfWork.Repository<User>().Add(user);
