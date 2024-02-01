@@ -98,8 +98,8 @@ BEGIN
 			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN a.UpdatedOnUtc END DESC,
 			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'ASC' THEN a.Views END,
 			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'DESC' THEN a.Views END DESC,
-			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'Views' AND @sortDirection = 'ASC' THEN ta.ViewByTopType END,
-			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'Views' AND @sortDirection = 'DESC' THEN ta.ViewByTopType END DESC
+			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'ViewByTopType' AND @sortDirection = 'ASC' THEN ta.ViewByTopType END,
+			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'ViewByTopType' AND @sortDirection = 'DESC' THEN ta.ViewByTopType END DESC
 		) AS RowNum,
                a.Id,
 			   a.Title,
