@@ -120,7 +120,8 @@ BEGIN
 			   a.CdnOriginalUrl,
 			   a.FriendlyName,
 			   a.Views,
-			   c.Title AS LastCollectionTitle
+			   c.Title AS LastCollectionTitle,
+			   ta.ViewByTopType
         FROM dbo.Album a
 			LEFT JOIN #topAlbums ta ON ta.AlbumId = a.Id
 			LEFT JOIN dbo.AlbumAlertMessage aam ON aam.Id = a.AlbumAlertMessageId
@@ -176,6 +177,7 @@ BEGIN
 		 NULL FriendlyName,
 		 NULL Views,
 		 NULL LastCollectionTitle,
+		 0 ViewByTopType,
 		 1 AS IsTotalRecord
     FROM FilteredData
     UNION
