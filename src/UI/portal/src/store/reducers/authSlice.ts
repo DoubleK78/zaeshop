@@ -41,16 +41,20 @@ const authSlice = createSlice({
         loginFailure(state, action: PayloadAction<string>) {
             localStorage.removeItem('token');
             localStorage.removeItem("user");
+            localStorage.removeItem("roles");
             state.loading = false;
             state.error = action.payload;
             state.isAuthenticate = false;
+            state.user = null;
         },
         logout(state) {
             localStorage.removeItem('token');
             localStorage.removeItem("user");
+            localStorage.removeItem("roles");
             state.token = '';
             state.error = null;
             state.isAuthenticate = false;
+            state.user = null;
         },
     },
 });

@@ -21,7 +21,6 @@ namespace Identity.Domain.Models.Authenticates
 
         public AuthenticateResponse()
         {
-
         }
 
         public AuthenticateResponse(User user, string? jwtToken, UserToken userToken)
@@ -34,12 +33,31 @@ namespace Identity.Domain.Models.Authenticates
             ExpiresOnUtc = userToken?.ExpiresOnUtc;
         }
 
-         public AuthenticateResponse(User user, string? jwtToken)
+        public AuthenticateResponse(User user, string? jwtToken)
         {
             Id = user.Id;
             FullName = user.FullName;
             UserName = user.UserName;
             JwtToken = jwtToken;
+        }
+    }
+
+    public class AuthenticateWithRolesResponse : AuthenticateResponse
+    {
+        public List<string> Roles { get; set; } = null!;
+
+        public AuthenticateWithRolesResponse(User user, string? jwtToken, UserToken userToken, List<string> roles) : base(user, jwtToken, userToken)
+        {
+            Roles = roles;
+        }
+
+        public AuthenticateWithRolesResponse(User user, string? jwtToken, List<string> roles) : base(user, jwtToken)
+        {
+            Roles = roles;
+        }
+
+        public AuthenticateWithRolesResponse()
+        {
         }
     }
 }

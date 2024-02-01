@@ -7,7 +7,7 @@ namespace Identity.Domain.Business.Interfaces.Services
 {
     public interface IAccountService
     {
-        Task<AuthenticateResponse?> AuthenticateAsync(AuthenticateRequest model, string ipAddress);
+        Task<AuthenticateWithRolesResponse?> AuthenticateAsync(AuthenticateRequest model, string ipAddress);
         Task<AuthenticateResponse> RefreshTokenAsync(string token, string ipAddress);
         Task RevokeTokenAsync(string token, string ipAddress);
         Task<UserRegisterResponseModel?> RegisterAsync(UserRegisterRequestModel userModel, ErrorResult errorResult);
@@ -15,6 +15,6 @@ namespace Identity.Domain.Business.Interfaces.Services
         Task ValidateResetTokenAsync(ValidateResetTokenRequest model, ErrorResult errorResult);
         Task ForgotPasswordAsync(ForgotPasswordRequest model, string origin, ErrorResult errorResult);
         Task<AuthenticateResponse?> ResetPasswordAsync(ResetPasswordRequest model, string ipAddress, ErrorResult errorResult);
-        Task<ServiceResponse<AuthenticateResponse>> ClientAuthenticateAsync(ClientAuthenticateRequest model);
+        Task<ServiceResponse<AuthenticateWithRolesResponse>> ClientAuthenticateAsync(ClientAuthenticateRequest model);
     }
 }

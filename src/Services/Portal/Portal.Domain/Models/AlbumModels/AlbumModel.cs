@@ -61,6 +61,7 @@ namespace Portal.Domain.Models.AlbumModels
         public string? CdnThumbnailUrl { get; set; }
         public string? CdnOriginalUrl { get; set; }
         public ulong? Views { get; set; }
+        public ulong? ViewByTopType { get; set; }
         public string? LastCollectionTitle { get; set; }
 
         [JsonIgnore]

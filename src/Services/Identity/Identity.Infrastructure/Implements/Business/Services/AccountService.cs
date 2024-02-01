@@ -55,7 +55,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
         }
 
         #region Token
-        public async Task<AuthenticateResponse?> AuthenticateAsync(AuthenticateRequest model, string ipAddress)
+        public async Task<AuthenticateWithRolesResponse?> AuthenticateAsync(AuthenticateRequest model, string ipAddress)
         {
             var user = await _context.Users.FirstOrDefaultAsync(o => o.UserName == model.Username);
 
@@ -65,7 +65,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
             var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
             if (!result.Succeeded)
             {
-                return new AuthenticateResponse
+                return new AuthenticateWithRolesResponse
                 {
                     ErrorResult = CommonHelper.GetDescription(ErrorCodes.UserOrPasswordNotCorrect)
                 };
@@ -83,7 +83,10 @@ namespace Identity.Infrastructure.Implements.Business.Services
             // save changes to db
             await _context.SaveChangesAsync();
 
-            return new AuthenticateResponse(user, jwtToken, refreshToken);
+            // Response roles when user login
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return new AuthenticateWithRolesResponse(user, jwtToken, refreshToken, roles.ToList());
         }
 
         public async Task<AuthenticateResponse> RefreshTokenAsync(string token, string ipAddress)
@@ -424,7 +427,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
         }
         #endregion
 
-        public async Task<ServiceResponse<AuthenticateResponse>> ClientAuthenticateAsync(ClientAuthenticateRequest model)
+        public async Task<ServiceResponse<AuthenticateWithRolesResponse>> ClientAuthenticateAsync(ClientAuthenticateRequest model)
         {
             // check providerAccountId and email in database
             // if not then create a new user
@@ -447,7 +450,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 var result = await _userManager.CreateAsync(user);
                 if (!result.Succeeded)
                 {
-                    return new ServiceResponse<AuthenticateResponse>(string.Join(", ", result.Errors.Select(o => o.Description)));
+                    return new ServiceResponse<AuthenticateWithRolesResponse>(string.Join(", ", result.Errors.Select(o => o.Description)));
                 }
 
                 // Sync to portal
@@ -463,7 +466,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 if (resultApi != null && !resultApi.IsSuccess)
                 {
                     await _userManager.DeleteAsync(user);
-                    return new ServiceResponse<AuthenticateResponse>(resultApi.Message ?? string.Empty);
+                    return new ServiceResponse<AuthenticateWithRolesResponse>(resultApi.Message ?? string.Empty);
                 }
             }
             else if (string.IsNullOrEmpty(user.ProviderAccountId))
@@ -496,7 +499,11 @@ namespace Identity.Infrastructure.Implements.Business.Services
             // Token expries in 30 days
             var expirationInMinutes = 60 * 24 * 30;
             var jwtToken = _jwtService.GenerateJwtToken(user, expirationInMinutes);
-            return new ServiceResponse<AuthenticateResponse>(new AuthenticateResponse(user, jwtToken));
+
+            // Response roles when user login
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return new ServiceResponse<AuthenticateWithRolesResponse>(new AuthenticateWithRolesResponse(user, jwtToken, roles.ToList()));
         }
     }
 }
