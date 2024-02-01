@@ -315,7 +315,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 { "Country", filter.Country },
                 { "Genre", filter.Genre },
                 { "Status", filter.Status },
-                { "Year", filter.Year }
+                { "Year", filter.Year },
+                { "TopType", filter.TopType }
             };
             var result = await _unitOfWork.QueryAsync<AlbumPagingResponse>("Album_All_Paging", parameters);
 
