@@ -11,5 +11,5 @@ export default interface User {
     resetPasswordOnUtc?: Date;
     createdOnUtc: Date;
     updatedOnUtc?: Date;
-    roles?: Array<string> | null;
+    roles?: string;
 }

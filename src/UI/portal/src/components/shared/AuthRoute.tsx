@@ -13,7 +13,7 @@ const AuthRole: React.FC<AuthRoleProps> = ({ path, Component, roles }) => {
     const auth = useSelector((state: StoreState) => state.auth);
 
     useEffect(() => {
-        if (!auth.isAuthenticate && !auth.loading && !auth?.user?.roles?.some(r => roles.includes(r))) {
+        if (!auth.isAuthenticate && !auth.loading && !auth?.roles?.some(r => roles.includes(r))) {
             redirect("/login");
         }
     }, [auth]);
