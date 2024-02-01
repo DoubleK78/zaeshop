@@ -10,7 +10,7 @@ namespace Identity.API.Extensions
         {
             bool isDeployed = bool.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT_DEPLOYED") ?? "false");
             return (!isDeployed && (context.Host.Contains("localhost") || context.Host.Contains("127.0.0.1")))
-                || context.Host != CommonHelper.GetServiceUrl(EServiceHost.Identity);
+                || context.Host == CommonHelper.GetServiceUrl(EServiceHost.Identity);
         }
     }
 }
