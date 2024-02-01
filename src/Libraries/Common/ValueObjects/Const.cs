@@ -2,6 +2,11 @@ namespace Common.ValueObjects
 {
     public static class Const
     {
+        public static class RoleName
+        {
+            public const string User = "User";
+        }
+
         public static class RedisCacheKey
         {
             public const string ComicContent = "ComicContent_ComicFriendlyName_{0}_ContentFriendlyName_{1}";

@@ -58,6 +58,7 @@ namespace Identity.API.Extensions
             services.AddScoped<ISendMailPublisher, SendMailPublisher>();
             services.AddScoped<IServiceLogPublisher, ServiceLogPublisher>();
             services.AddScoped<ISyncUserPortalPublisher, SyncUserPortalPublisher>();
+            services.AddScoped<ISyncRolesPortalPublisher, SyncRolesPortalPublisher>();
 
             // configure DI for application services
             services.AddScoped<IJwtService, JwtService>();

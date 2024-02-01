@@ -24,19 +24,22 @@ namespace Identity.Infrastructure.Implements.Business.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IApiService _apiService;
         private readonly ISyncUserPortalPublisher _syncUserPortalPublisher;
+        private readonly ISyncRolesPortalPublisher _syncRolesPortalPublisher;
 
         public UserService(
             AppIdentityDbContext context,
             UserManager<User> userManager,
             RoleManager<IdentityRole> roleManager,
             IApiService apiService,
-            ISyncUserPortalPublisher syncUserPortalPublisher)
+            ISyncUserPortalPublisher syncUserPortalPublisher,
+            ISyncRolesPortalPublisher syncRolesPortalPublisher)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
             _apiService = apiService;
             _syncUserPortalPublisher = syncUserPortalPublisher;
+            _syncRolesPortalPublisher = syncRolesPortalPublisher;
         }
 
         public async Task<List<User>> GetAllAsync()
@@ -164,6 +167,13 @@ namespace Identity.Infrastructure.Implements.Business.Services
                     FullName = user.FullName
                 });
             }
+
+            // Sync roles for user portal
+            await _syncRolesPortalPublisher.SyncRolesPortalAsync(new SyncRolesPortalMessage
+            {
+                IdentityUserId = user.Id,
+                Roles = userModel.Roles
+            });
 
             return new UserRegisterResponseModel
             {

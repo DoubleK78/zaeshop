@@ -5,6 +5,7 @@ using Common.Interfaces;
 using Common.Interfaces.Messaging;
 using Common.Models;
 using Common.Shared.Models.Users;
+using Common.ValueObjects;
 using Identity.Domain.AggregatesModel.UserAggregate;
 using Identity.Domain.Business.Interfaces.Services;
 using Identity.Domain.Interfaces.Infrastructure;
@@ -32,6 +33,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
         private readonly IApiService _apiService;
         private readonly DbSet<UserToken> _userTokensDbSet;
         private readonly ISyncUserPortalPublisher _syncUserPortalPublisher;
+        private readonly ISyncRolesPortalPublisher _syncRolesPortalPublisher;
 
         public AccountService(
             AppIdentityDbContext context,
@@ -41,7 +43,8 @@ namespace Identity.Infrastructure.Implements.Business.Services
             IOptions<AppSettings> appSettings,
             ISendMailPublisher sendMailPublisher,
             IApiService apiService,
-            ISyncUserPortalPublisher syncUserPortalPublisher)
+            ISyncUserPortalPublisher syncUserPortalPublisher,
+            ISyncRolesPortalPublisher syncRolesPortalPublisher)
         {
             _context = context;
             _jwtService = jwtService;
@@ -52,6 +55,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
             _apiService = apiService;
             _userTokensDbSet = context.Set<UserToken>();
             _syncUserPortalPublisher = syncUserPortalPublisher;
+            _syncRolesPortalPublisher = syncRolesPortalPublisher;
         }
 
         #region Token
@@ -468,6 +472,16 @@ namespace Identity.Infrastructure.Implements.Business.Services
                     await _userManager.DeleteAsync(user);
                     return new ServiceResponse<AuthenticateWithRolesResponse>(resultApi.Message ?? string.Empty);
                 }
+
+                // Add role User as default
+                await _userManager.AddToRolesAsync(user, [Const.RoleName.User]);
+
+                // Sync roles for user portal
+                await _syncRolesPortalPublisher.SyncRolesPortalAsync(new SyncRolesPortalMessage
+                {
+                    IdentityUserId = user.Id,
+                    Roles = [Const.RoleName.User]
+                });
             }
             else if (string.IsNullOrEmpty(user.ProviderAccountId))
             {
