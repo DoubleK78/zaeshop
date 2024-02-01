@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Identity.API.Extensions;
 using Identity.Domain.Business.Interfaces.Services;
 using IdentityGrpc;
 
@@ -19,6 +20,11 @@ public class UserGrpcController : UserGrpcService.UserGrpcServiceBase
 
     public override async Task<UsersReply> GetUsers(UserRequest request, ServerCallContext context)
     {
+        if (!context.IsAllowedHost())
+        {
+            return new UsersReply();
+        }
+
         var users = await _userService.GetAllAsync();
         var usersReply = new UsersReply();
 

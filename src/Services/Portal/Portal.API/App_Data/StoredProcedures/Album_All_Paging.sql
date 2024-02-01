@@ -9,7 +9,8 @@ CREATE OR ALTER PROCEDURE Album_All_Paging
 	@country VARCHAR(100) = null,
 	@genre VARCHAR(100) = null,
 	@status BIT = 0,
-	@year VARCHAR(100) = null
+	@year VARCHAR(100) = null,
+	@topType VARCHAR(100) = null
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -24,7 +25,68 @@ BEGIN
 
     DECLARE @offset INT = (@pageNumber - 1) * @pageSize;
 
-    WITH FilteredData
+	/* Top type filter */
+	DECLARE @startDate DATETIME = DATEADD(d, -1, GETUTCDATE());
+	DECLARE @endDate DATETIME = GETUTCDATE();
+
+	DECLARE @startDateOfWeek DATETIME = DATEADD(wk, DATEDIFF(wk, 0, GETUTCDATE()), 0);
+	DECLARE @startDateOfMonth DATETIME = DATEADD(mm, DATEDIFF(mm, 0, GETUTCDATE()), 0);
+	DECLARE @startDateOfYear DATETIME = DATEADD(yy, DATEDIFF(yy, 0, GETUTCDATE()), 0);
+
+	CREATE TABLE #topAlbums (AlbumId INT, ViewByTopType INT)
+	IF @topType IS NOT NULL
+	BEGIN
+		IF @topType = 'day'
+		BEGIN
+            INSERT INTO #topAlbums
+			select
+				a.Id as [AlbumId],
+				ISNULL(SUM(cv.[View]), 0) as [ViewByTopType]
+			from dbo.Album a
+				join dbo.Collection c on c.AlbumId = a.Id
+				left join dbo.CollectionView cv on cv.CollectionId = c.Id
+			where cv.Id is null or (cv.Date >= @startDate and cv.Date < @endDate)
+			group by a.Id
+		END
+		ELSE IF @topType = 'week'
+		BEGIN
+            INSERT INTO #topAlbums
+			select
+				a.Id as [AlbumId],
+				ISNULL(SUM(cv.[View]), 0) as [ViewByTopType]
+			from dbo.Album a
+				join dbo.Collection c on c.AlbumId = a.Id
+				left join dbo.CollectionView cv on cv.CollectionId = c.Id
+			where cv.Id is null or (cv.Date >= @startDateOfWeek and cv.Date < @endDate)
+			group by a.Id
+		END
+		ELSE IF @topType = 'month'
+		BEGIN
+            INSERT INTO #topAlbums
+			select
+				a.Id as [AlbumId],
+				ISNULL(SUM(cv.[View]), 0) as [ViewByTopType]
+			from dbo.Album a
+				join dbo.Collection c on c.AlbumId = a.Id
+				left join dbo.CollectionView cv on cv.CollectionId = c.Id
+			where cv.Id is null or (cv.Date >= @startDateOfMonth and cv.Date < @endDate)
+			group by a.Id
+		END
+		ELSE IF @topType = 'year'
+		BEGIN
+            INSERT INTO #topAlbums
+			select
+				a.Id as [AlbumId],
+				ISNULL(SUM(cv.[View]), 0) as [ViewByTopType]
+			from dbo.Album a
+				join dbo.Collection c on c.AlbumId = a.Id
+				left join dbo.CollectionView cv on cv.CollectionId = c.Id
+			where cv.Id is null or (cv.Date >= @startDateOfYear and cv.Date < @endDate)
+			group by a.Id
+		END
+	END
+
+    ;WITH FilteredData
     AS (
 		SELECT ROW_NUMBER() OVER (ORDER BY
 			CASE WHEN ISNULL(@sortColumn, '') = '' THEN a.Id END,
@@ -37,7 +99,11 @@ BEGIN
 			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN a.CreatedOnUtc END,
 			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN a.CreatedOnUtc END DESC,
 			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN a.UpdatedOnUtc END,
-			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN a.UpdatedOnUtc END DESC
+			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN a.UpdatedOnUtc END DESC,
+			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'ASC' THEN a.Views END,
+			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'DESC' THEN a.Views END DESC,
+			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'Views' AND @sortDirection = 'ASC' THEN ta.ViewByTopType END,
+			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'Views' AND @sortDirection = 'END' THEN ta.ViewByTopType END
 		) AS RowNum,
                a.Id,
 			   a.Title,
@@ -56,6 +122,7 @@ BEGIN
 			   a.Views,
 			   c.Title AS LastCollectionTitle
         FROM dbo.Album a
+			LEFT JOIN #topAlbums ta ON ta.AlbumId = a.Id
 			LEFT JOIN dbo.AlbumAlertMessage aam ON aam.Id = a.AlbumAlertMessageId
 			LEFT JOIN dbo.AlbumContentType act ON act.AlbumId = a.Id
 			LEFT JOIN dbo.ContentType ct ON ct.Id = act.ContentTypeId
@@ -75,6 +142,7 @@ BEGIN
 				 WHERE CHARINDEX(CAST(g.value AS VARCHAR(10)), ct.Id) > 0) = (SELECT COUNT(*) FROM STRING_SPLIT(@genre, ',')))
 			AND (ISNULL(@year, '') = '' OR (a.ReleaseYear LIKE @year + '%'))
 			AND (a.AlbumStatus = @status)
+			AND (ISNULL(@topType, '') = '' OR ta.ViewByTopType IS NOT NULL)
         GROUP BY a.Id,
 			   a.Title,
 			   a.Description,
@@ -88,7 +156,8 @@ BEGIN
 			   a.CdnOriginalUrl,
 			   a.FriendlyName,
 			   a.Views,
-			   c.Title
+			   c.Title,
+			   ta.ViewByTopType
 	)
     SELECT COUNT_BIG(1) AS RowNum,
 		 0 Id,
@@ -115,4 +184,6 @@ BEGIN
     FROM FilteredData
 	WHERE FilteredData.RowNum
 		BETWEEN @offset + 1 AND @offset + @pageSize
+
+    DROP TABLE #topAlbums
 END
