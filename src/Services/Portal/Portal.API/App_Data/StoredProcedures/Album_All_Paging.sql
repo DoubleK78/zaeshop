@@ -30,8 +30,8 @@ BEGIN
 	DECLARE @endDate DATETIME = GETUTCDATE();
 
 	DECLARE @startDateOfWeek DATETIME = DATEADD(wk, DATEDIFF(wk, 0, GETUTCDATE()), 0);
-	DECLARE @startDateOfMonth DATETIME = DATEADD(mm, DATEDIFF(mm, 0, GETUTCDATE()), 0);
-	DECLARE @startDateOfYear DATETIME = DATEADD(yy, DATEDIFF(yy, 0, GETUTCDATE()), 0);
+	DECLARE @startDateOfMonth DATETIME = DATEADD(mm, DATEDIFF(mm, 0, @startDateOfWeek), 0);
+	DECLARE @startDateOfYear DATETIME = DATEADD(yy, DATEDIFF(yy, 0, @startDateOfMonth), 0);
 
 	CREATE TABLE #topAlbums (AlbumId INT, ViewByTopType INT)
 	IF @topType IS NOT NULL
@@ -41,11 +41,10 @@ BEGIN
             INSERT INTO #topAlbums
 			select
 				a.Id as [AlbumId],
-				ISNULL(SUM(cv.[View]), 0) as [ViewByTopType]
+				SUM(IIF(cv.Date >= @startDate and cv.Date < @endDate, cv.[View], 0)) as [ViewByTopType]
 			from dbo.Album a
 				join dbo.Collection c on c.AlbumId = a.Id
 				left join dbo.CollectionView cv on cv.CollectionId = c.Id
-			where cv.Id is null or (cv.Date >= @startDate and cv.Date < @endDate)
 			group by a.Id
 		END
 		ELSE IF @topType = 'week'
@@ -53,11 +52,10 @@ BEGIN
             INSERT INTO #topAlbums
 			select
 				a.Id as [AlbumId],
-				ISNULL(SUM(cv.[View]), 0) as [ViewByTopType]
+				SUM(IIF(cv.Date >= @startDateOfWeek and cv.Date < @endDate, cv.[View], 0)) as [ViewByTopType]
 			from dbo.Album a
 				join dbo.Collection c on c.AlbumId = a.Id
 				left join dbo.CollectionView cv on cv.CollectionId = c.Id
-			where cv.Id is null or (cv.Date >= @startDateOfWeek and cv.Date < @endDate)
 			group by a.Id
 		END
 		ELSE IF @topType = 'month'
@@ -65,11 +63,10 @@ BEGIN
             INSERT INTO #topAlbums
 			select
 				a.Id as [AlbumId],
-				ISNULL(SUM(cv.[View]), 0) as [ViewByTopType]
+				SUM(IIF(cv.Date >= @startDateOfMonth and cv.Date < @endDate, cv.[View], 0)) as [ViewByTopType]
 			from dbo.Album a
 				join dbo.Collection c on c.AlbumId = a.Id
 				left join dbo.CollectionView cv on cv.CollectionId = c.Id
-			where cv.Id is null or (cv.Date >= @startDateOfMonth and cv.Date < @endDate)
 			group by a.Id
 		END
 		ELSE IF @topType = 'year'
@@ -77,11 +74,10 @@ BEGIN
             INSERT INTO #topAlbums
 			select
 				a.Id as [AlbumId],
-				ISNULL(SUM(cv.[View]), 0) as [ViewByTopType]
+				SUM(IIF(cv.Date >= @startDateOfMonth and cv.Date < @endDate, cv.[View], 0)) as [ViewByTopType]
 			from dbo.Album a
 				join dbo.Collection c on c.AlbumId = a.Id
 				left join dbo.CollectionView cv on cv.CollectionId = c.Id
-			where cv.Id is null or (cv.Date >= @startDateOfYear and cv.Date < @endDate)
 			group by a.Id
 		END
 	END
@@ -103,7 +99,7 @@ BEGIN
 			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'ASC' THEN a.Views END,
 			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'DESC' THEN a.Views END DESC,
 			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'Views' AND @sortDirection = 'ASC' THEN ta.ViewByTopType END,
-			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'Views' AND @sortDirection = 'END' THEN ta.ViewByTopType END
+			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'Views' AND @sortDirection = 'DESC' THEN ta.ViewByTopType END DESC
 		) AS RowNum,
                a.Id,
 			   a.Title,
