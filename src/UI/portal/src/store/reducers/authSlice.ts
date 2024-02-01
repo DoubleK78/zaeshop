@@ -46,6 +46,7 @@ const authSlice = createSlice({
             localStorage.removeItem('token');
             localStorage.removeItem("user");
             localStorage.removeItem("roles");
+            localStorage.removeItem("roles");
             state.loading = false;
             state.error = action.payload;
             state.isAuthenticate = false;
@@ -55,6 +56,7 @@ const authSlice = createSlice({
         logout(state) {
             localStorage.removeItem('token');
             localStorage.removeItem("user");
+            localStorage.removeItem("roles");
             localStorage.removeItem("roles");
             state.token = '';
             state.error = null;
