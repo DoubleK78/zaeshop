@@ -10,3 +10,9 @@ export interface ContentItemBulkUploadItemModel {
     isPublic: boolean;
     orderBy: number;
 }
+
+export interface ContentItemUploadLocalServer {
+    id?: number;
+    fileName?: string;
+    isPublic: boolean;
+}

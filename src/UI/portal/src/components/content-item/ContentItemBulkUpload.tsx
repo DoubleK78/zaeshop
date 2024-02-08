@@ -4,21 +4,22 @@ import ContentItemModel from "../../models/content-item/ContentItemModel";
 import { v4 as uuidv4 } from 'uuid';
 import ContentItemBulkUploadItem from "./ContentItemBulkUploadItem";
 import { ActualFileObject, FilePondFile } from "filepond";
-import { ContentItemBulkUploadItemModel } from "../../models/content-item/ContentItemBulkUploadModel";
+import { ContentItemBulkUploadItemModel, ContentItemUploadLocalServer } from "../../models/content-item/ContentItemBulkUploadModel";
 import { FilePond } from "react-filepond";
 import convertFileToBase64 from "../../utils/covert-base64";
 import { toast } from "react-toastify";
-import { bulkUpdateContentItems } from "../../services/content-item/cotentItemService";
+import { bulkUpdateByLocalServer, bulkUpdateContentItems } from "../../services/content-item/cotentItemService";
 import { useAppDispatch } from "../../store";
 import { getContentItemsAsyncThunk } from "../../store/reducers/ContentItemSlice";
 import { RegexHelper } from "../../utils/regex";
 
 type ContentItemBulkUploadProps = {
     id: string | undefined;
-    contentItems: ContentItemModel[]
+    contentItems: ContentItemModel[];
+    isCloudServer: boolean;
 }
 
-const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, contentItems }: ContentItemBulkUploadProps) => {
+const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, contentItems, isCloudServer }: ContentItemBulkUploadProps) => {
     const [t] = useTranslation();
     const dispatch = useAppDispatch();
 
@@ -33,7 +34,7 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
 
     useEffect(() => {
         if (!contentItems) return;
-        const exsitsItems = [...contentItems].sort((a, b) =>  RegexHelper.getNumberByText(a.name) - RegexHelper.getNumberByText(b.name)).map(item => {
+        const exsitsItems = [...contentItems].sort((a, b) => RegexHelper.getNumberByText(a.name) - RegexHelper.getNumberByText(b.name)).map(item => {
             return {
                 id: item.id,
                 fileName: item.name,
@@ -70,49 +71,86 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
     }
 
     const onSaveChanges = async () => {
-        // Build exist items
-        const existsItems: ContentItemBulkUploadItemModel[] = contentItemBulkUploadItems.map(item => {
-            return {
-                id: item.id,
-                fileName: item.fileName,
-                base64File: item.base64File?.split(',')[1],
-                isPublic: false,
-                orderBy: RegexHelper.getNumberByText(item.fileName)
-            };
-        });
-
-        // Build new items
-        const items: ContentItemBulkUploadItemModel[] = await Promise.all(files.map(async (item) => {
-            const base64File = await convertFileToBase64(item);
-
-            const newItem: ContentItemBulkUploadItemModel = {
-                fileName: item.name,
-                base64File: base64File?.split(',')[1],
-                isPublic: false,
-                orderBy: RegexHelper.getNumberByText(item.name)
-            };
-            return newItem;
-        }));
-
-        const toastId = toast.loading(t("toast.please_wait"), {
-            hideProgressBar: true
-        });
-
-        if (id && Number(id)) {
-            await bulkUpdateContentItems(Number(id), {
-                items,
-                existsItems
+        if (isCloudServer) {
+            // Build exist items
+            const existsItems: ContentItemBulkUploadItemModel[] = contentItemBulkUploadItems.map(item => {
+                return {
+                    id: item.id,
+                    fileName: item.fileName,
+                    base64File: item.base64File?.split(',')[1],
+                    isPublic: item.isPublic,
+                    orderBy: RegexHelper.getNumberByText(item.fileName)
+                };
             });
 
-            toast.update(toastId, {
-                render: t("toast.create_inprogress_sucessfully"), type: toast.TYPE.SUCCESS, isLoading: false,
-                autoClose: 2000
+            // Build new items
+            const items: ContentItemBulkUploadItemModel[] = await Promise.all(files.map(async (item) => {
+                const base64File = await convertFileToBase64(item);
+
+                const newItem: ContentItemBulkUploadItemModel = {
+                    fileName: item.name,
+                    base64File: base64File?.split(',')[1],
+                    isPublic: false,
+                    orderBy: RegexHelper.getNumberByText(item.name)
+                };
+                return newItem;
+            }));
+
+            const toastId = toast.loading(t("toast.please_wait"), {
+                hideProgressBar: true
             });
 
-            return;
+            if (id && Number(id)) {
+                await bulkUpdateContentItems(Number(id), {
+                    items,
+                    existsItems
+                });
+
+                toast.update(toastId, {
+                    render: t("toast.create_inprogress_sucessfully"), type: toast.TYPE.SUCCESS, isLoading: false,
+                    autoClose: 2000
+                });
+
+                return;
+            }
+
+            toast.done(toastId);
         }
+        else {
+            const newItems = files.map(file => {
+                const item: ContentItemUploadLocalServer = {
+                    fileName: file.name,
+                    isPublic: false
+                };
+                return item;
+            });
 
-        toast.done(toastId);
+            const existsItem = contentItemBulkUploadItems.map(file => {
+                const item: ContentItemUploadLocalServer = {
+                    id: file.id,
+                    fileName: file.fileName,
+                    isPublic: file.isPublic
+                };
+                return item;
+            })
+
+            const toastId = toast.loading(t("toast.please_wait"), {
+                hideProgressBar: true
+            });
+
+            if (id && Number(id)) {
+                await bulkUpdateByLocalServer(Number(id), [...newItems, ...existsItem]);
+
+                toast.update(toastId, {
+                    render: t("toast.create_inprogress_sucessfully"), type: toast.TYPE.SUCCESS, isLoading: false,
+                    autoClose: 2000
+                });
+
+                return;
+            }
+
+            toast.done(toastId);
+        }
     }
 
     const onReset = () => {
@@ -154,106 +192,75 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
     }
 
     return (
-        <div className="page-wrapper">
-            {/* Page Content*/}
-            <div className="page-content-tab">
-                <div className="container-fluid">
-                    {/* Page-Title */}
-                    <div className="row">
-                        <div className="col-sm-12">
-                            <div className="page-title-box">
-                                <div className="float-end">
-                                    <ol className="breadcrumb">
-                                        <li className="breadcrumb-item">
-                                            <a href="crm-contacts.html#">Dashboard</a>
-                                        </li>
-                                        {/*end nav-item*/}
-                                        <li className="breadcrumb-item">
-                                            <a href="crm-contacts.html#">CMS</a>
-                                        </li>
-                                        {/*end nav-item*/}
-                                        <li className="breadcrumb-item active">Album Detail</li>
-                                    </ol>
-                                </div>
-                                <h4 className="page-title">{t("album.title")}</h4>
-                            </div>
-                            {/*end page-title-box*/}
-                        </div>
-                        {/*end col*/}
+        <div className="row">
+            <div className="card">
+                <div className="card-header">
+                    <div className="form-group mb-3">
+                        <h3 className="card-title">{t('content_item.bulk_upload_title')}</h3>
+                        <p className="text-muted mb-0">
+                            {t('content_item.bulk_upload_description')}
+                        </p>
                     </div>
-                    {/* end page title end breadcrumb */}
-                    <div className="row">
-                        <div className="card">
-                            <div className="card-header">
-                                <div className="form-group mb-3">
-                                    <h3 className="card-title">{t('content_item.bulk_upload_title')}</h3>
-                                    <p className="text-muted mb-0">
-                                        {t('content_item.bulk_upload_description')}
-                                    </p>
-                                </div>
-                                <div className="form-group mb-1">
-                                    <button
-                                        type="button"
-                                        className="btn btn-light"
-                                        onClick={onReset}
-                                    >
-                                        {t('content_item.reset')}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        onClick={onSaveChanges}
-                                    >
-                                        {t('content_item.bulk_upload_button')}
-                                    </button>
+                    <div className="form-group mb-1">
+                        <button
+                            type="button"
+                            className="btn btn-light"
+                            onClick={onReset}
+                        >
+                            {t('content_item.reset')}
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={onSaveChanges}
+                        >
+                            {t('content_item.bulk_upload_button')}
+                        </button>
 
-                                    <button className="btn float-end"
-                                        onClick={onDeleteAll}>
-                                        <i className="fa-solid fa-trash text-danger font-16"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            {/*end card-header*/}
-                            <div className="card-body">
-                                <div className="d-grid">
-                                    <FilePond
-                                        files={files}
-                                        onupdatefiles={onUpdateFiles}
-                                        allowMultiple={true}
-                                        maxFiles={250}
-                                        name="files"
-                                        labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
-                                        beforeAddFile={(file) => {
-                                            return new Promise((resolve) => {
-                                                if (!file.fileType.includes('image/')) {
-                                                    resolve(false);
-                                                }
-                                                resolve(true);
-                                            })
-                                        }}                                     
-                                    />
-                                </div>
-                                <div className="row">
-                                    <ul className="list-group">
-                                        {contentItemBulkUploadItems.map((item) => (
-                                            <ContentItemBulkUploadItem
-                                                key={uuidv4()}
-                                                contentItemBulkUploadItemModel={item}
-                                                contentItem={contentItems.find(contentItem => contentItem.id === item.id)!}
-                                                updateExistItem={updateExistItem}
-                                                deleteExistItem={deleteExistItem}
-                                            />
-                                        ))}
-                                    </ul>
-                                    {/*end col*/}
-                                </div>
-                                {/*end row*/}
-                                {/* container */}
-                            </div>
-                            {/* end page content */}
-                        </div>
+                        <button className="btn float-end"
+                            onClick={onDeleteAll}>
+                            <i className="fa-solid fa-trash text-danger font-16"></i>
+                        </button>
                     </div>
                 </div>
+                {/*end card-header*/}
+                <div className="card-body">
+                    <div className="d-grid">
+                        <FilePond
+                            files={files}
+                            onupdatefiles={onUpdateFiles}
+                            allowMultiple={true}
+                            maxFiles={250}
+                            name="files"
+                            labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
+                            beforeAddFile={(file) => {
+                                return new Promise((resolve) => {
+                                    if (!file.fileType.includes('image/')) {
+                                        resolve(false);
+                                    }
+                                    resolve(true);
+                                })
+                            }}
+                        />
+                    </div>
+                    <div className="row">
+                        <ul className="list-group">
+                            {contentItemBulkUploadItems.map((item) => (
+                                <ContentItemBulkUploadItem
+                                    key={uuidv4()}
+                                    contentItemBulkUploadItemModel={item}
+                                    contentItem={contentItems.find(contentItem => contentItem.id === item.id)!}
+                                    updateExistItem={updateExistItem}
+                                    deleteExistItem={deleteExistItem}
+                                />
+                            ))}
+                        </ul>
+                        {/*end col*/}
+                    </div>
+                    {/*end row*/}
+                    {/* container */}
+                </div>
+                {/* end page content */}
             </div>
         </div>
     );

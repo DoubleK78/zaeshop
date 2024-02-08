@@ -158,6 +158,8 @@
         "order_by": "Order by",
         "is_public":"Is Public",
         "bulk_upload_title": "Bulk Upload",
-        "bulk_upload_description": "Save time by batch uploading all your product images in one go with our easy bulk uploader tool supporting up to 100 photos per upload."
+        "bulk_upload_description": "Save time by batch uploading all your product images in one go with our easy bulk uploader tool supporting up to 100 photos per upload.",
+        "upload_local_server": "Upload local server",
+        "upload_cloud_server": "Upload cloud server"
     }
 }

@@ -158,6 +158,8 @@
         "order_by": "Sắp xếp theo",
         "is_public":"Có công khai",
         "bulk_upload_title": "Tải lên hàng loạt",
-        "bulk_upload_description": "Tiết kiệm thời gian bằng cách tải lên hàng loạt tất cả các hình ảnh sản phẩm của bạn trong một lần với công cụ tải lên hàng loạt dễ sử dụng của chúng tôi hỗ trợ lên đến 100 ảnh mỗi lần tải lên."
+        "bulk_upload_description": "Tiết kiệm thời gian bằng cách tải lên hàng loạt tất cả các hình ảnh sản phẩm của bạn trong một lần với công cụ tải lên hàng loạt dễ sử dụng của chúng tôi hỗ trợ lên đến 100 ảnh mỗi lần tải lên.",
+        "upload_local_server": "Tải lên máy chủ cục bộ",
+        "upload_cloud_server": "Tải lên máy chủ đám mây"
     }
 }
