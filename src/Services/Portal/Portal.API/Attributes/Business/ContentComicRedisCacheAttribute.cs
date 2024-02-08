@@ -79,6 +79,18 @@ namespace Portal.API.Attributes.Business
                         SessionId = context.HttpContext.Session.Id
                     }));
                 }
+                else if (DateTime.UtcNow.Subtract(value.CreatedOnUtc).Hours < 4 && !string.IsNullOrEmpty(identityUserId))
+                {
+                    backgroundJobClient.Enqueue<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
+                    {
+                        IdentityUserId = identityUserId,
+                        CollectionId = value.Id,
+                        CreatedOnUtc = DateTime.UtcNow,
+                        IpAddress = IpAddress(context),
+                        SessionId = context.HttpContext.Session.Id,
+                        IsViewedNewChapter = true
+                    }));
+                }
 
                 context.Result = new ContentResult
                 {

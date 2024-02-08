@@ -15,6 +15,8 @@ namespace Portal.Domain.Models.LevelModels
 
         public string? IpAddress { get; set; }
         public string? SessionId { get; set; }
+
+        public bool IsViewedNewChapter { get; set; }
     }
 
     public class LevelBuildRedisRequestModel
@@ -30,6 +32,8 @@ namespace Portal.Domain.Models.LevelModels
 
         public string? IpAddress { get; set; }
         public string? SessionId { get; set; }
+
+        public bool IsViewedNewChapter { get; set; }
     }
 
     public class LevelAdditionalInformation
@@ -44,5 +48,7 @@ namespace Portal.Domain.Models.LevelModels
 
         public string? IpAddress { get; set; }
         public string? SessionId { get; set; }
+
+        public bool IsViewedNewChapter { get; set; }
     }
 }

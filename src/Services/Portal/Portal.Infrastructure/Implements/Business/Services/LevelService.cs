@@ -177,7 +177,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                 CollectionId = collection.Id,
                                 CreatedOnUtc = DateTime.UtcNow,
                                 IpAddress = model.IpAddress,
-                                SessionId = model.SessionId
+                                SessionId = model.SessionId,
+                                IsViewedNewChapter = model.IsViewedNewChapter
                             }
                         };
 
@@ -214,7 +215,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                 CollectionId = collection.Id,
                                 CreatedOnUtc = DateTime.UtcNow,
                                 IpAddress = model.IpAddress,
-                                SessionId = model.SessionId
+                                SessionId = model.SessionId,
+                                IsViewedNewChapter = model.IsViewedNewChapter
                             });
 
                             // Stored cache to 50 minutes
@@ -392,7 +394,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                 CommentId = item.CommentId,
                                 IpAddress = item.IpAddress,
                                 SessionId = item.SessionId,
-                                CreatedOnUtc = DateTime.UtcNow
+                                CreatedOnUtc = DateTime.UtcNow,
+                                IsViewedNewChapter = item.IsViewedNewChapter
                             }
                         };
 
@@ -428,7 +431,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                         CommentId = item.CommentId,
                                         IpAddress = item.IpAddress,
                                         SessionId = item.SessionId,
-                                        CreatedOnUtc = DateTime.UtcNow
+                                        CreatedOnUtc = DateTime.UtcNow,
+                                        IsViewedNewChapter = item.IsViewedNewChapter
                                     }
                                 };
                                 userLevel.AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations);
@@ -449,7 +453,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                             CommentId = item.CommentId,
                                             IpAddress = item.IpAddress,
                                             SessionId = item.SessionId,
-                                            CreatedOnUtc = DateTime.UtcNow
+                                            CreatedOnUtc = DateTime.UtcNow,
+                                            IsViewedNewChapter = item.IsViewedNewChapter
                                         });
                                         userLevel.AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations);
                                     }
@@ -467,7 +472,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                            CommentId = item.CommentId,
                                            IpAddress = item.IpAddress,
                                            SessionId = item.SessionId,
-                                           CreatedOnUtc = DateTime.UtcNow
+                                           CreatedOnUtc = DateTime.UtcNow,
+                                           IsViewedNewChapter = item.IsViewedNewChapter
                                        }
                                     };
                                     userLevel.AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations);

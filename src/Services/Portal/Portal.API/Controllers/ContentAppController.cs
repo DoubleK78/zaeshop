@@ -77,6 +77,18 @@ namespace Portal.API.Controllers
                     SessionId = HttpContext.Session.Id
                 }));
             }
+            else if (DateTime.UtcNow.Subtract(collection.CreatedOnUtc).Hours < 4 && !string.IsNullOrEmpty(identityUserId))
+            {
+                _backgroundJobClient.Enqueue<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
+                {
+                    IdentityUserId = identityUserId,
+                    CollectionId = collection.Id,
+                    CreatedOnUtc = DateTime.UtcNow,
+                    IpAddress = IpAddress(),
+                    SessionId = HttpContext.Session.Id,
+                    IsViewedNewChapter = true
+                }));
+            }
             #endregion
 
             return Ok(result);

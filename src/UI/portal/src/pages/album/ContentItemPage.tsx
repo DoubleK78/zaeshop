@@ -67,7 +67,7 @@ const CotentItemPage: React.FC = () => {
                                         className={classNames("btn", {
                                             "btn-primary": isCloudServer,
                                             "btn-outline-primary": !isCloudServer
-                                        })}><i className="fa-solid fa-cloud"></i>{t('content_item.upload_local_server')}</button>
+                                        })}><i className="fa-solid fa-cloud"></i> {t('content_item.upload_cloud_server')}</button>
                                 </div>
                             </div>
                         </div>
