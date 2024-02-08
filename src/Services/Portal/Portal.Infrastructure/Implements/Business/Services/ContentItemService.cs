@@ -40,6 +40,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             return boundary;
         }
 
+        #region Bulk Upload / Update to Server
         public async Task<ServiceResponse<bool>> CreateContentItemsAsync(int collectionId, Stream stream, string contentType)
         {
             // Retrieve the existing collection entity by ID
@@ -204,5 +205,129 @@ namespace Portal.Infrastructure.Implements.Business.Services
             await _unitOfWork.SaveChangesAsync();
             return new ServiceResponse<bool>(true);
         }
+        #endregion
+
+        #region Bulk Upload / Update by Local Server
+        public async Task<ServiceResponse<bool>> BulkUploadByLocalServer(int collectionId, List<ContentItemUploadLocalServer> items)
+        {
+            // Retrieve the existing collection entity by ID
+            var existingCollection = await _collectionRepository.GetByIdAsync(collectionId);
+            if (existingCollection == null)
+            {
+                return new ServiceResponse<bool>("error_collection_not_found");
+            }
+
+            // Check if Collection has any content item, that should be update instead create
+            var isExistingContentItems = existingCollection.ContentItems.Count > 0;
+            if (isExistingContentItems)
+            {
+                return new ServiceResponse<bool>("error_content_type_not_empty");
+            }
+
+            // Prefix relative to stored folder places
+            string prefixRelative = $"{existingCollection.Album.FriendlyName}/{existingCollection.FriendlyName}";
+            var addItems = items.Select(x => new ContentItem
+            {
+                CollectionId = collectionId,
+                Name = x.FileName,
+                OriginalUrl = $"https://s1.codegota.me/{prefixRelative}/{x.FileName}",
+                DisplayUrl = $"https://s1.codegota.me/{prefixRelative}/{x.FileName}",
+                RelativeUrl = prefixRelative + "/" + x.FileName,
+                OrderBy = RegexHelper.GetNumberByText(x.FileName)
+            }).OrderBy(x => x.OrderBy).ToList();
+
+            _contentItemRepository.AddRange(addItems);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ServiceResponse<bool>(true);
+        }
+
+        public async Task<ServiceResponse<bool>> BulkUpdateByLocalServer(int collectionId, List<ContentItemUploadLocalServer> items)
+        {
+            var createContentItems = new List<ContentItem>();
+            var updateContentItems = new List<ContentItem>();
+            var deleteContentItems = new List<ContentItem>();
+
+            // Retrieve the existing collection entity by ID
+            var existingCollection = await _collectionRepository.GetByIdAsync(collectionId);
+            if (existingCollection == null)
+            {
+                return new ServiceResponse<bool>("error_collection_not_found");
+            }
+
+            // Check when new collection - before create then update
+            var contentItems = await _contentItemRepository.GetQueryable().Where(x => x.CollectionId == collectionId).ToListAsync();
+            if (contentItems == null || contentItems.Count == 0)
+            {
+                return new ServiceResponse<bool>("error_content_type_empty");
+            }
+
+            // Prefix relative to stored folder places
+            string prefixRelative = $"{existingCollection.Album.FriendlyName}/{existingCollection.FriendlyName}";
+
+            // Update exists content item by id
+            var existsItems = items.Where(o => o.Id.HasValue).ToList();
+            if (existsItems.Count > 0)
+            {
+                foreach (var item in existsItems)
+                {
+                    var contentItem = contentItems.Find(x => x.Id == item.Id);
+                    if (contentItem != null)
+                    {
+                        if (contentItem.Name != item.FileName)
+                        {
+                            contentItem.Name = item.FileName;
+                            contentItem.OriginalUrl = $"https://s1.codegota.me/{prefixRelative}/{item.FileName}";
+                            contentItem.DisplayUrl = $"https://s1.codegota.me/{prefixRelative}/{item.FileName}";
+                            contentItem.RelativeUrl = prefixRelative + "/" + item.FileName;
+                        }
+
+                        contentItem.OrderBy = RegexHelper.GetNumberByText(contentItem.Name);
+                        updateContentItems.Add(contentItem);
+                    }
+                }
+
+                // Content are not longer use, we will remove them
+                var existingContentItemIds = updateContentItems.ConvertAll(x => x.Id);
+                deleteContentItems.AddRange(contentItems.Where(x => !existingContentItemIds.Contains(x.Id)));
+            }
+            else
+            {
+                deleteContentItems.AddRange(contentItems);
+            }
+
+            // Build and Upload to image services
+            var newItems = items.Where(o => !o.Id.HasValue).ToList();
+            if (newItems.Count > 0)
+            {
+                var addItems = items.Select(x => new ContentItem
+                {
+                    CollectionId = collectionId,
+                    Name = x.FileName,
+                    OriginalUrl = $"https://s1.codegota.me/{prefixRelative}/{x.FileName}",
+                    DisplayUrl = $"https://s1.codegota.me/{prefixRelative}/{x.FileName}",
+                    RelativeUrl = prefixRelative + "/" + x.FileName,
+                    OrderBy = RegexHelper.GetNumberByText(x.FileName)
+                }).OrderBy(x => x.OrderBy).ToList();
+
+                createContentItems.AddRange(addItems);
+            }
+
+            _contentItemRepository.DeleteRange(deleteContentItems);
+
+            if (updateContentItems.Count > 0)
+            {
+                _contentItemRepository.UpdateRange(updateContentItems);
+            }
+
+            if (createContentItems.Count > 0)
+            {
+                _contentItemRepository.AddRange(createContentItems);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new ServiceResponse<bool>(true);
+        }
+        #endregion
     }
 }

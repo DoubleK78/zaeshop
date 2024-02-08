@@ -122,5 +122,21 @@ namespace Portal.API.Controllers
 
             return Ok(response);
         }
+
+        [HttpPost]
+        [Route("{id}/content-items/local")]
+        public IActionResult BulkUploadByLocalServer([FromRoute] int id, [FromBody] List<ContentItemUploadLocalServer> items)
+        {
+            _backgroundJobClient.Enqueue<IContentItemService>(x => x.BulkUploadByLocalServer(id, items));
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("{id}/content-items/local")]
+        public IActionResult BulkUpdateByLocalServer([FromRoute] int id, [FromBody] List<ContentItemUploadLocalServer> items)
+        {
+            _backgroundJobClient.Enqueue<IContentItemService>(x => x.BulkUpdateByLocalServer(id, items));
+            return Ok();
+        }
     }
 }
