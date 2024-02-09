@@ -25,7 +25,7 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
     const dispatch = useAppDispatch();
 
     const [files, setFiles] = useState<(ActualFileObject)[]>([]);
-    const [isLazyLoading, setIsLazyLoading] = useState(parseJsonFromString(localStorage.getItem("content_item_lazy_loading")) ?? true);
+    const [isLazyLoading, setIsLazyLoading] = useState(parseJsonFromString(localStorage.getItem("content_item_lazy_loading")) ?? false);
 
     const onChangeLazyLoading = () => {
         setIsLazyLoading(!isLazyLoading);

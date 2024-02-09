@@ -9,7 +9,6 @@ import classNames from "classnames";
 import { FilePond } from "react-filepond";
 import { ContentItemBulkUploadItemModel } from "../../models/content-item/ContentItemBulkUploadModel";
 import { RegexHelper } from "../../utils/regex";
-import 'react-lazy-load-image-component/src/effects/blur.css';
 
 type ContentItemBulkUploadItemProps = {
     contentItem: ContentItemModel;
@@ -178,6 +177,7 @@ const ContentItemBlankUploadItem: React.FC<ContentItemBulkUploadItemProps> = ({ 
                     }}
                     src={contentItemBulkUploadItemModel.base64File ?? contentItem.displayUrl}
                     alt={contentItem.name}
+                    threshold={75}
                     className="rounded d-block mx-auto"
                 />}
                 {!isLazyLoading && <img

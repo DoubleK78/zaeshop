@@ -21,26 +21,26 @@ namespace Portal.API.Controllers
         private readonly IBackgroundJobClient _backgroundJobClient;
         private readonly IApiService _apiService;
         private readonly IAmazonS3Service _amazonS3Service;
-        private readonly IHelloWorldPublisher _helloWorldSender;
         private readonly ISendMailPublisher _sendMailPublisher;
         private readonly IServiceLogPublisher _serviceLogPublisher;
+        private readonly IRedisService _redisService;
 
         public TestController(
             IUnitOfWork unitOfWork,
             IBackgroundJobClient backgroundJobClient,
             IApiService apiService,
             IAmazonS3Service amazonS3Service,
-            IHelloWorldPublisher helloWorldSender,
             ISendMailPublisher sendMailPublisher,
-            IServiceLogPublisher serviceLogPublisher)
+            IServiceLogPublisher serviceLogPublisher,
+            IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _backgroundJobClient = backgroundJobClient;
             _apiService = apiService;
             _amazonS3Service = amazonS3Service;
-            _helloWorldSender = helloWorldSender;
             _sendMailPublisher = sendMailPublisher;
             _serviceLogPublisher = serviceLogPublisher;
+            _redisService = redisService;
         }
 
         [HttpGet]
@@ -107,14 +107,6 @@ namespace Portal.API.Controllers
             return ms.ToArray();
         }
 
-        // API send message from helloworldsender
-        [HttpPost("send-message")]
-        public async Task<IActionResult> SendMessageAsync(string message)
-        {
-            await _helloWorldSender.SendAsync(message);
-            return Ok();
-        }
-
         [HttpPost("send-email")]
         public async Task<IActionResult> SendMailAsync(
             string subject,
@@ -145,6 +137,14 @@ namespace Portal.API.Controllers
                 Environment = "Test",
                 Description = description
             });
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("clear-cache-key")]
+        public IActionResult ClearCacheByKey(string key)
+        {
+            _redisService.Remove(key);
             return Ok();
         }
     }
