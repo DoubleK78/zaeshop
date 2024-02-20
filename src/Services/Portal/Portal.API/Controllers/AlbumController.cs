@@ -1,8 +1,11 @@
+using Common.Enums;
 using Common.Models;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Portal.API.Attributes;
 using Portal.Domain.Interfaces.Business.Services;
 using Portal.Domain.Models.AlbumModels;
+using Portal.Domain.Models.CollectionModels;
 
 namespace Portal.API.Controllers
 {
@@ -11,10 +14,12 @@ namespace Portal.API.Controllers
     public class AlbumController : ControllerBase
     {
         private readonly IAlbumService _albumService;
+        private readonly IBackgroundJobClient _backgroundJobClient;
 
-        public AlbumController(IAlbumService albumService)
+        public AlbumController(IAlbumService albumService, IBackgroundJobClient backgroundJobClient)
         {
             _albumService = albumService;
+            _backgroundJobClient = backgroundJobClient;
         }
 
         [Authorize]
@@ -67,7 +72,7 @@ namespace Portal.API.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetPagingAsync([FromQuery] PagingCommonRequest request, [FromQuery] FilterAdvanced filter)
-        {   
+        {
             var response = await _albumService.GetPagingAsync(request, filter);
 
             if (!response.IsSuccess)
@@ -108,6 +113,15 @@ namespace Portal.API.Controllers
                 return BadRequest(response);
 
             return Ok(response);
+        }
+
+        [Authorize(ERoles.Administrator)]
+        [HttpPost]
+        [Route("{id}/collections/bulk-create")]
+        public IActionResult BulkCreateCollections(int id, [FromBody] List<BulkCreateCollectionRequest> collections)
+        {
+            _backgroundJobClient.Enqueue<ICollectionService>(x => x.BulkCreateAsync(id, collections));
+            return Ok();
         }
     }
 }

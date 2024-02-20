@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Navbar from "../components/layout/Navbar";
 import UserPage from "../pages/user/UserPage";
@@ -13,6 +13,9 @@ import RolePage from "../pages/user/RolePage";
 import AlbumPage from "../pages/album/AlbumPage";
 import AlbumDetailCollectionPage from "../pages/album/AlbumDetailCollectionPage";
 import ContentItemPage from "../pages/album/ContentItemPage";
+
+// Lazy load import for large components
+const BulkCreateCollectionPage = lazy(() => import('../pages/album/BulkCreateCollectionPage'));
 
 const AppRoute: React.FC = () => (
     <BrowserRouter basename={process.env.PUBLIC_URL}>
@@ -31,15 +34,18 @@ const MainComponent: React.FC = () => {
             <Navbar />
             <LeftSideBar />
             <RightSideBar />
-            <Routes>
-                <Route path="/" Component={UserPage} />;
-                <Route path="/users" Component={UserPage} />;
-                <Route path="/roles" Component={RolePage} />;
-                <Route path="/albums" Component={AlbumPage} />;
-                <Route path="/albums/:albumId" Component={AlbumDetailCollectionPage} />;
-                <Route path="/collections/:collectionId" Component={ContentItemPage} />;
-                <Route path="*" Component={NotFoundPage} />;
-            </Routes>
+            <Suspense fallback={<></>}>
+                <Routes>
+                    <Route path="/" Component={UserPage} />;
+                    <Route path="/users" Component={UserPage} />;
+                    <Route path="/roles" Component={RolePage} />;
+                    <Route path="/albums" Component={AlbumPage} />;
+                    <Route path="/albums/:albumId" Component={AlbumDetailCollectionPage} />;
+                    <Route path="/albums/:albumId/bulk-create" Component={BulkCreateCollectionPage} />
+                    <Route path="/collections/:collectionId" Component={ContentItemPage} />;
+                    <Route path="*" Component={NotFoundPage} />;
+                </Routes>
+            </Suspense>
             <Footer />
         </>
     );

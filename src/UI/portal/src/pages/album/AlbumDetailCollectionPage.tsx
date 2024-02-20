@@ -210,6 +210,10 @@ const AlbumDetailCollectionPage: React.FC = () => {
                                                     onClick={() => openModal(ActionTypeGrid.CREATE)}>
                                                     + {t('user.add_new')}
                                                 </button>
+                                                <Link className="btn btn-primary btn-sm px-4"
+                                                    to={`/albums/${albumId}/bulk-create`}>
+                                                    + {t('album_detail.bulk_create')}
+                                                </Link>
                                             </div>
                                             <div className="col">
                                                 <select className="form-select"

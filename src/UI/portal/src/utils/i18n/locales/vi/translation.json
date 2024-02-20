@@ -181,7 +181,11 @@
         "sort_direction_label": "Hướng Sắp Xếp: ",
         "sort_direction_asc": "Tăng Dần",
         "sort_direction_desc": "Giảm Dần",
-        "clear_cache": "Xóa Bộ Nhớ Cache"
+        "clear_cache": "Xóa Bộ Nhớ Cache",
+        "bulk_create": "Tạo Hàng Loạt",
+        "bulk_create_sub_title": "Tạo hàng loạt chỉ với một cú nhấp chuột",
+        "bulk_create_sub_description": "Tạo nhiều chương và tải lên hàng loạt hình ảnh cho mỗi chương",
+        "bulk_create_Preview": "Xem Trước"
     },
     "content_item": {
         "title": "Tải lên hình ảnh",

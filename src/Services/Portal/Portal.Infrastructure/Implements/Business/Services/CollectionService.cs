@@ -502,5 +502,58 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
             return new ServiceResponse<CollectionResponseModel>(response);
         }
+
+        public async Task<ServiceResponse<string>> BulkCreateAsync(int albumId, List<BulkCreateCollectionRequest> collections)
+        {
+            var album = await _albumRepository.GetByIdAsync(albumId);
+            if (album == null)
+            {
+                return new ServiceResponse<string>("error_album_not_found");
+            }
+
+            var existsCollections = await _repository.GetQueryable().Where(o => o.AlbumId == albumId).ToListAsync();
+
+            var addCollections = new List<Collection>();
+            foreach (var item in collections)
+            {
+                bool isExists = existsCollections.Any(x => x.FriendlyName == item.Name);
+                if (!isExists)
+                {
+                    // convert friendly name to title
+                    string[] words = item.Name.Split('-');
+                    string title = string.Join(" ", words.Select(w => char.ToUpper(w[0]) + w[1..]));
+                    var contentItems = item.ContentItems.ConvertAll(x =>
+                    {
+                        // Prefix relative to stored folder places
+                        string prefixRelative = $"{album.FriendlyName}/{item.Name}";
+                        return new ContentItem
+                        {
+                            Name = x.Name,
+                            OriginalUrl = $"https://s1.codegota.me/{prefixRelative}/{x.Name}",
+                            DisplayUrl = $"https://s1.codegota.me/{prefixRelative}/{x.Name}",
+                            RelativeUrl = prefixRelative + "/" + x.Name,
+                            OrderBy = RegexHelper.GetNumberByText(x.Name)
+                        };
+                    }).OrderBy(x => x.OrderBy).ToList();
+
+                    var newCollection = new Collection
+                    {
+                        AlbumId = albumId,
+                        Title = title,
+                        FriendlyName = item.Name,
+                        ContentItems = contentItems
+                    };
+                    addCollections.Add(newCollection);
+                }
+            }
+
+            if (addCollections.Count > 0)
+            {
+                _repository.AddRange(addCollections);
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            return new ServiceResponse<string>("success");
+        }
     }
 }
