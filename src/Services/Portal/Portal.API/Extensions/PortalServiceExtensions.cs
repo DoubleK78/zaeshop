@@ -37,6 +37,7 @@ public static class PortalServiceExtensions
 
         services.AddScoped<IRedisService>(x => new RedisService(x.GetRequiredService<IDistributedCache>(), new RedisOptions
         {
+            ConnectionString = config.GetConnectionString("RedisConnection") ?? string.Empty,
             Host = config.GetSection("RedisSettings").GetValue<string>("Host") ?? string.Empty,
             Port = config.GetSection("RedisSettings").GetValue<string>("Port") ?? string.Empty,
             InstanceName = "Portal"

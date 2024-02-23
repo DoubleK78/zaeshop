@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Portal.API.Attributes;
 using Portal.Domain.AggregatesModel.AlbumAggregate;
 using Portal.Domain.AggregatesModel.CollectionAggregate;
+using Portal.Domain.Interfaces.Business.Services;
 using Portal.Domain.Models.AlbumModels;
 using Portal.Domain.Models.CollectionModels;
 
@@ -17,55 +18,29 @@ namespace Portal.API.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<Album> _albumRepository;
         private readonly IGenericRepository<Collection> _collectionRepository;
+        private readonly IAlbumService _albumService;
 
-        public ComicAppController(IUnitOfWork unitOfWork)
+        public ComicAppController(IUnitOfWork unitOfWork, IAlbumService albumService)
         {
             _unitOfWork = unitOfWork;
             _albumRepository = unitOfWork.Repository<Album>();
             _collectionRepository = unitOfWork.Repository<Collection>();
+            _albumService = albumService;
         }
 
-        [HttpGet]
+        [HttpGet("paging")]
         [RedisCache(30)]
-        public async Task<IActionResult> GetAsync()
+        public async Task<IActionResult> GetAsync([FromQuery] PagingCommonRequest request, [FromQuery] FilterAdvanced filter)
         {
-            var comics = await _albumRepository.GetAllAsync();
-            var result = new ServiceResponse<List<ComicAppModel>>(comics.ConvertAll(x => new ComicAppModel
-            {
-                Id = x.Id,
-                Title = x.Title,
-                FriendlyName = x.FriendlyName,
-                Description = x.Description,
-                AlbumAlertMessageName = x.AlbumAlertMessage?.Name,
-                ContentTypeNames = x.AlbumContentTypes?.Where(y => !string.IsNullOrEmpty(y.ContentType?.Name)).Select(y => y.ContentType.Name).OrderBy(o => o).JoinSeparator(),
-                IsPublic = x.IsPublic,
-                CreatedOnUtc = x.CreatedOnUtc,
-                UpdatedOnUtc = x.UpdatedOnUtc,
-                CdnThumbnailUrl = x.CdnThumbnailUrl,
-                Views = x.Views,
-                Contents = x.Collections.OrderByDescending(y => y.Title).Take(5).Select(z => new ContentAppModel
-                {
-                    Id = z.Id,
-                    Title = z.Title,
-                    FriendlyName = z.FriendlyName,
-                    CreatedOnUtc = z.CreatedOnUtc,
-                    UpdatedOnUtc = z.UpdatedOnUtc,
-                    IsPublic = z.IsPublic,
-                    AlbumId = z.AlbumId,
-                    AlbumTitle = x.Title,
-                    AlbumFriendlyName = x.FriendlyName,
-                    Description = z.Description,
-                    ExtendName = z.ExtendName,
-                    Volume = z.Volume,
-                    Views = z.Views,
-                }).ToList()
-            }));
+            var response = await _albumService.GetPagingAsync(request, filter);
+            if (!response.IsSuccess)
+                return BadRequest(response);
 
-            return Ok(result);
+            return Ok(response);
         }
 
         [HttpGet("{friendlyName}")]
-        [RedisCache(15)]
+        [RedisCache(30)]
         public async Task<IActionResult> GetByIdAsync(string friendlyName)
         {
             var parameters = new Dictionary<string, object?>
