@@ -50,11 +50,11 @@ namespace Portal.Infrastructure.Implements.Business.Services
             int bonousExp = 0;
             if (roleType == ERoleType.UserPremium)
             {
-                bonousExp = 10;
+                bonousExp = 5;
             }
             else if (roleType == ERoleType.UserSuperPremium)
             {
-                bonousExp = 20;
+                bonousExp = 10;
             }
 
             // Case: User views a chapter then get 10 exp
