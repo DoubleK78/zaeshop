@@ -82,6 +82,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _repository.Add(entity);
             await _unitOfWork.SaveChangesAsync();
 
+            // Remove cache Comic Paging
+            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+
             // Map the entity to the response model
             var responseModel = new CollectionResponseModel
             {
@@ -136,6 +139,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _repository.Update(existingEntity);
             await _unitOfWork.SaveChangesAsync();
 
+            // Remove cache Comic Paging
+            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+
             // Map the updated entity to the response model
             var responseModel = new CollectionResponseModel
             {
@@ -186,6 +192,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
             // Delete the entity from the repository and save changes
             _repository.Delete(existingEntity);
             await _unitOfWork.SaveChangesAsync();
+
+            // Remove cache Comic Paging
+            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
 
             return new ServiceResponse<bool>(true);
         }
@@ -435,8 +444,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         });
                     }
                     // Case 2: No records today, created record before so we update record that ready to save database
-                    else if (collectionView == null && newCollectionView != null) {
-                         newCollectionView.View++;
+                    else if (collectionView == null && newCollectionView != null)
+                    {
+                        newCollectionView.View++;
 
                         if (item.UserId != null && newCollectionView.UserId == null)
                         {
@@ -621,6 +631,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
             {
                 _repository.AddRange(addCollections);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Remove cache Comic Paging
+                _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
             }
 
             return new ServiceResponse<string>("success");
@@ -690,6 +703,10 @@ namespace Portal.Infrastructure.Implements.Business.Services
             }
 
             await _unitOfWork.SaveChangesAsync();
+
+            // Remove cache Comic Paging
+            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+
             return new ServiceResponse<bool>(true);
         }
     }
