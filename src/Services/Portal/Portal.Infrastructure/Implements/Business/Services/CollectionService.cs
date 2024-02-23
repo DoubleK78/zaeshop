@@ -551,6 +551,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 };
                 await _unitOfWork.ExecuteAsync("Collection_Album_RecalculateViews", parameters);
 
+                // Reset cache when calculated successfully
+                _redisService.Remove(key);
+
                 // Log to service log to stored
                 await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
                 {

@@ -200,12 +200,12 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                         if (lastNextChapterEvent == null ||
                         (levelBuildRedisModel == null &&
-                            model.CreatedOnUtc.Subtract(lastNextChapterEvent.Value).TotalSeconds > 15))
+                            model.CreatedOnUtc.Subtract(lastNextChapterEvent.Value).TotalSeconds > 30))
                         {
                             isValidNextChapter = true;
                         }
 
-                        // Condition: User go next each chapter for 15s
+                        // Condition: User go next each chapter for 30s
                         if (isValidNextChapter)
                         {
                             value.Add(new LevelBuildRedisModel
@@ -273,7 +273,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                         if (lastNextChapterEvent == null ||
                         (levelBuildRedisModel == null &&
-                            model.CreatedOnUtc.Subtract(lastNextChapterEvent.Value).TotalSeconds > 15))
+                            model.CreatedOnUtc.Subtract(lastNextChapterEvent.Value).TotalSeconds > 30))
                         {
                             isValidEarnFromComment = true;
                         }
@@ -598,6 +598,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     { "userIds",  string.Join(',', userIds)}
                 };
                 await _unitOfWork.ExecuteAsync("User_RecalculateExperience", parameters);
+
+                // Reset cache when calculated successfully
+                _redisService.Remove(key);
 
                 // Log to service log to stored
                 await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
