@@ -9,4 +9,5 @@ export default interface CollectionPagingResponse {
     createdOnUtc: Date;
     updatedOnUtc?: Date;
     views: number;
+    levelPublic: number;
 }

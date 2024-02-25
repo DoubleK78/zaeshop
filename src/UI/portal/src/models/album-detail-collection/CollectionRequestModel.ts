@@ -4,4 +4,5 @@ export default interface CollectionRequestModel {
     volume?: number;
     extendName?: string;
     description?: string;
+    isPriority: boolean;
 }

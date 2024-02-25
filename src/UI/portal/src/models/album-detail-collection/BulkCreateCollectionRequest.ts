@@ -1,5 +1,6 @@
 export interface BulkCreateCollectionRequest {
     name: string;
+    isPriority: boolean;
     contentItems: BulkCreateCollectionItemRequest[];
 }
 

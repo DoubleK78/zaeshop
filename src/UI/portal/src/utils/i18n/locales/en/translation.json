@@ -186,7 +186,9 @@
         "bulk_create": "Bulk Create",
         "bulk_create_sub_title": "Bulk create with one click",
         "bulk_create_sub_description": "Create multiple chapters and Bulk upload images by each chapter",
-        "bulk_create_Preview": "Preview"
+        "bulk_create_Preview": "Preview",
+        "spre_priority": "S-Premium Priority",
+        "level_public": "Level Public"
     },
     "content_item": {
         "title": "Upload images",

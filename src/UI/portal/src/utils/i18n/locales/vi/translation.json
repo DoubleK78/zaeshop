@@ -186,7 +186,9 @@
         "bulk_create": "Tạo Hàng Loạt",
         "bulk_create_sub_title": "Tạo hàng loạt chỉ với một cú nhấp chuột",
         "bulk_create_sub_description": "Tạo nhiều chương và tải lên hàng loạt hình ảnh cho mỗi chương",
-        "bulk_create_Preview": "Xem Trước"
+        "bulk_create_Preview": "Xem Trước",
+        "spre_priority": "Ưu tiên S-Premium",
+        "level_public": "Level Public"
     },
     "content_item": {
         "title": "Tải lên hình ảnh",

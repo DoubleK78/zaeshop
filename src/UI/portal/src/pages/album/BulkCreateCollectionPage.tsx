@@ -33,6 +33,7 @@ const BulkCreateCollectionPage = () => {
     const { albumDetail } = useSelector((state: StoreState) => state.albumDetailCollection);
     const [files, setFiles] = useState<File[]>([]);
     const [albumFolderName, setAlbumFolderName] = useState<string | null>(null);
+    const [isPriority, setIsPriority] = useState<boolean>(false);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         setFiles([...files, ...acceptedFiles])
@@ -71,6 +72,7 @@ const BulkCreateCollectionPage = () => {
                     else {
                         folderGroups.push({
                             name: folderName,
+                            isPriority,
                             contentItems: [{
                                 name: file.name,
                                 size: file.size
@@ -99,6 +101,7 @@ const BulkCreateCollectionPage = () => {
                     else {
                         folderGroups.push({
                             name: folderName,
+                            isPriority,
                             contentItems: [{
                                 name: file.name,
                                 size: file.size
@@ -229,6 +232,18 @@ const BulkCreateCollectionPage = () => {
                                                         <p>Drag 'n' drop some files here, or click to select files</p>
                                                     </div>
                                                     <aside>
+                                                        <div className="form-check form-switch form-switch-success my-3">
+                                                            <label className="form-check-label" htmlFor="customSwitchPrimary">
+                                                                {t('album_detail.spre_priority')}
+                                                            </label>
+                                                            <input
+                                                                className="form-check-input"
+                                                                type="checkbox"
+                                                                id="customSwitchPrimary"
+                                                                checked={isPriority}
+                                                                onChange={() => setIsPriority(!isPriority)}
+                                                            />
+                                                        </div>
                                                         <h4>{t('album_detail.bulk_create_Preview')}</h4>
                                                         {albumFolderName && <h4 className="text-primary">{albumFolderName}</h4>}
                                                         <ul>{listFiles}</ul>

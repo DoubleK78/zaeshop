@@ -75,8 +75,12 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 Volume = requestModel.Volume,
                 ExtendName = requestModel.ExtendName,
                 Description = requestModel.Description,
-                FriendlyName = CommonHelper.GenerateFriendlyName(requestModel.Title)
+                FriendlyName = CommonHelper.GenerateFriendlyName(requestModel.Title),
+                LevelPublic = requestModel.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser
             };
+
+            // Update Comic Recently uploaded
+            existingAlbum.UpdatedOnUtc = DateTime.UtcNow;
 
             // Add the entity to the repository and save changes
             _repository.Add(entity);
@@ -137,6 +141,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             existingEntity.ExtendName = requestModel.ExtendName;
             existingEntity.Description = requestModel.Description;
             existingEntity.FriendlyName = CommonHelper.GenerateFriendlyName(requestModel.Title);
+            existingEntity.LevelPublic = requestModel.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser;
 
             // Update the entity in the repository and save changes
             _repository.Update(existingEntity);
@@ -645,7 +650,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         AlbumId = albumId,
                         Title = title,
                         FriendlyName = item.Name,
-                        ContentItems = contentItems
+                        ContentItems = contentItems,
+                        LevelPublic = item.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser
                     };
                     addCollections.Add(newCollection);
                 }
@@ -653,6 +659,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
             if (addCollections.Count > 0)
             {
+                // Update Comic Recently uploaded
+                album.UpdatedOnUtc = DateTime.UtcNow;
+
                 _repository.AddRange(addCollections);
                 await _unitOfWork.SaveChangesAsync();
 
