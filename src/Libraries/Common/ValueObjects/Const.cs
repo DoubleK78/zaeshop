@@ -14,6 +14,7 @@ namespace Common.ValueObjects
             public const string LevelCount = "LevelCount_{0}";
             public const string ComicDetail = "/api/client/comicapp/{0}";
             public const string ComicPagingPattern = "*/api/client/comicapp/paging*";
+            public const string UserRankingPagingPattern = "*/api/user/ranking*";
         }
 
         public static class ServiceLogEventName

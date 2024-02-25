@@ -125,6 +125,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 });
             }
 
+            result.Remove(record);
             return new ServiceResponse<PagingCommonResponse<UserPagingResponse>>(new PagingCommonResponse<UserPagingResponse>
             {
                 RowNum = record.RowNum,

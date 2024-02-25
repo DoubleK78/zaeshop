@@ -27,7 +27,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly IGenericRepository<Comment> _commentRepository;
         private readonly IRedisService _redisService;
 
-
         public LevelService(
             IUnitOfWork unitOfWork,
             IServiceLogPublisher serviceLogPublisher,
@@ -601,6 +600,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 // Reset cache when calculated successfully
                 _redisService.Remove(key);
+
+                // Reset User Ranking Paging
+                _redisService.RemoveByPattern(Const.RedisCacheKey.UserRankingPagingPattern);
 
                 // Log to service log to stored
                 await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage

@@ -7,7 +7,7 @@ CREATE OR ALTER PROCEDURE User_Ranking_All_Paging
     @region INT
 AS
 BEGIN
-    SET NOCOUNT ON;
+    SET NOCOUNT ON; 
 
     -- Validate parameters
     IF @pageNumber <= 0
@@ -35,31 +35,25 @@ BEGIN
                Region
         FROM [dbo].[User]
         WHERE Region = @region
-          AND Email <> 'ngodangdongkhoi@gmail.com'
+          AND Email NOT IN ('ngodangdongkhoi@gmail.com', 'kiet.dev1@gmail.com')
           AND LevelId IS NOT NULL
-          AND LevelId <> 0
     )
-    SELECT COUNT(*) OVER () AS TotalRecords,
-           Id,
-           UserName,
-           Avatar,
-           RoleType,
-           LevelId,
-           CurrentExp,
-           NextLevelExp,
-           Region,
-           1 AS IsTotalRecord
+     SELECT COUNT_BIG(1) AS RowNum,
+        0 AS Id,
+        NULL AS UserName,
+        NULL AS Avatar,
+        0 AS RoleType,
+        0 AS LevelId,
+        0 AS CurrentExp,
+        0 AS NextLevelExp,
+        0 AS Region,
+		1 AS IsTotalRecord
     FROM FilteredData
-    WHERE RowNum BETWEEN @offset + 1 AND @offset + @pageSize
-
-    SELECT 0 AS TotalRecords,
-           0 AS Id,
-           NULL AS UserName,
-           NULL AS Avatar,
-           0 AS RoleType,
-           0 AS LevelId,
-           0 AS CurrentExp,
-           0 AS NextLevelExp,
-           0 AS Region,
-           0 AS IsTotalRecord
+    WHERE FilteredData.RowNum <= 100
+    UNION
+    SELECT *,
+        0 AS IsTotalRecord
+    FROM FilteredData
+	WHERE FilteredData.RowNum <= 100 AND (FilteredData.RowNum
+		BETWEEN @offset + 1 AND @offset + @pageSize)
 END;

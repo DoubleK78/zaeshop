@@ -121,17 +121,9 @@ namespace Portal.API.Controllers
         }
 
         [HttpGet("ranking")]
-        public async Task<IActionResult> GetPagingAsync([FromQuery] ERegion region)
+        [RedisCache(30)]
+        public async Task<IActionResult> GetPagingAsync([FromQuery] PagingCommonRequest request, [FromQuery] ERegion region)
         {
-            var request = new PagingCommonRequest()
-            {
-                PageNumber = 1,
-                PageSize = 10,
-                SearchTerm = "",
-                SortColumn = "",
-                SortDirection = ""
-            };
-
             var response = await _userService.GetPagingAsync(request, region);
 
             if (!response.IsSuccess)
