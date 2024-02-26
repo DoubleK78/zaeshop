@@ -108,7 +108,8 @@ namespace Portal.API.Controllers
                     ContentFriendlyName = o.FriendlyName,
                     ComicTitle = o.Album.Title,
                     ComicFriendlyName = o.Album.FriendlyName,
-                    ComicImageUrl = o.Album.CdnThumbnailUrl
+                    ComicImageUrl = o.Album.CdnThumbnailUrl,
+                    Region = o.Album.Region
                 })
                 .FirstOrDefaultAsync(x => x.ComicFriendlyName == comicFriendlyName && x.ContentFriendlyName == contentFriendlyName);
 
@@ -121,7 +122,8 @@ namespace Portal.API.Controllers
             {
                 ComicTitle = collectionMetadata.ComicTitle,
                 ContentTitle = collectionMetadata.ContentTitle,
-                ComicImageUrl = collectionMetadata.ComicImageUrl
+                ComicImageUrl = collectionMetadata.ComicImageUrl,
+                Region = collectionMetadata.Region
             });
         }
     }

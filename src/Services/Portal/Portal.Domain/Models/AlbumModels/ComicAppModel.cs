@@ -47,6 +47,7 @@ namespace Portal.Domain.Models.AlbumModels
         public string? FriendlyName { get; set; }
         public string? LastestChapter { get; set; }
         public string? ComicImageUrl { get; set; }
+        public ERegion Region { get; set; }
     }
 
     public class ComicMetadata
@@ -54,6 +55,7 @@ namespace Portal.Domain.Models.AlbumModels
         public string Title { get; set; } = null!;
         public string? LastestChapter { get; set; }
         public string? ComicImageUrl { get; set; }
+        public ERegion Region { get; set; }
     }
 
     public class ComicSitemap
