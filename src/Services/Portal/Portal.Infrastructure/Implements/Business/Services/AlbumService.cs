@@ -22,6 +22,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly IGenericRepository<Album> _repository;
         private readonly IGenericRepository<AlbumAlertMessage> _albumAlertMessageRepository;
         private readonly IGenericRepository<ContentType> _contentTypeRepository;
+        private readonly IGenericRepository<ScheduleAlbum> _scheduleRepository;
         private readonly IServiceLogPublisher _serviceLogPublisher;
         private readonly IHostEnvironment _hostingEnvironment;
         private readonly IRedisService _redisService;
@@ -36,6 +37,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _repository = unitOfWork.Repository<Album>();
             _albumAlertMessageRepository = unitOfWork.Repository<AlbumAlertMessage>();
             _contentTypeRepository = unitOfWork.Repository<ContentType>();
+            _scheduleRepository = unitOfWork.Repository<ScheduleAlbum>();
             _serviceLogPublisher = serviceLogPublisher;
             _hostingEnvironment = hostingEnvironment;
             _redisService = redisService;
@@ -513,6 +515,54 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
             }
+
+            return new ServiceResponse<bool>(true);
+        }
+
+        public async Task<ServiceResponse<List<AlbumScheduleResponseModel>>> GetScheduleAsync(AlbumScheduleRequestModel requestModel)
+        {
+            var albumsSchedule = await _scheduleRepository.GetQueryable()
+                .Where(x => x.Region == requestModel.Region && x.DateRelease == requestModel.DateRelease)
+                .OrderBy(x => x.TimeRelease)
+                .ToListAsync();
+
+            var albumsScheduleResponse = albumsSchedule.Select(x => new AlbumScheduleResponseModel
+            {
+               Id = x.Id,
+               Title = x.Title,
+               TimeRelease = x.TimeRelease,
+               Type = x.Type,
+               BackgroundUrl = x.BackgroundUrl,
+               Url = x.Url,
+               DateRelease = x.DateRelease,
+               Region = x.Region,
+               Status = x.Status
+            }).ToList();
+
+            return new ServiceResponse<List<AlbumScheduleResponseModel>>(albumsScheduleResponse);
+        }
+
+        public async Task<ServiceResponse<bool>> CreateScheduleAsync(AlbumScheduleModel requestModel)
+        {
+            var existAlbumSchedule = await _scheduleRepository.GetQueryable().AnyAsync(x => x.Title == requestModel.Title);
+
+            if (existAlbumSchedule || requestModel == null)
+                return new ServiceResponse<bool>("error_schedule_existed");
+
+            var newSchedule = new ScheduleAlbum()
+            {
+                Title = requestModel.Title,
+                TimeRelease = requestModel.TimeRelease,
+                Type = requestModel.Type,
+                BackgroundUrl = requestModel.BackgroundUrl,
+                Url = requestModel.Url,
+                DateRelease = requestModel.DateRelease,
+                Region = requestModel.Region,
+                Status = requestModel.Status
+            };
+
+            _scheduleRepository.Add(newSchedule);
+            await _unitOfWork.SaveChangesAsync();
 
             return new ServiceResponse<bool>(true);
         }
