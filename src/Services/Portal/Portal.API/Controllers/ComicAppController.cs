@@ -95,7 +95,8 @@ namespace Portal.API.Controllers
             {
                 Title = albumMetadata.Title,
                 LastestChapter = albumMetadata.LastestChapter,
-                ComicImageUrl = albumMetadata.ComicImageUrl
+                ComicImageUrl = albumMetadata.ComicImageUrl,
+                Region = albumMetadata.Region
             };
 
             return Ok(response);
