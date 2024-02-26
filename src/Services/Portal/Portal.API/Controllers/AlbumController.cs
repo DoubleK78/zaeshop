@@ -123,5 +123,30 @@ namespace Portal.API.Controllers
             _backgroundJobClient.Enqueue<ICollectionService>(x => x.BulkCreateAsync(id, collections));
             return Ok();
         }
+
+        //[Authorize(ERoles.Administrator)]
+        [HttpPost]
+        [Route("create-schedule")]
+        public async Task<IActionResult> CreateSchedule([FromBody] AlbumScheduleModel requestModel)
+        {
+            var response = await _albumService.CreateScheduleAsync(requestModel);
+
+            if (!response.IsSuccess)
+                return BadRequest(response);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("schedule")]
+        public async Task<IActionResult> GetSchedule([FromQuery] AlbumScheduleRequestModel requestModel)
+        {
+            var response = await _albumService.GetScheduleAsync(requestModel);
+
+            if (!response.IsSuccess)
+                return BadRequest(response);
+
+            return Ok(response);
+        }
     }
 }
