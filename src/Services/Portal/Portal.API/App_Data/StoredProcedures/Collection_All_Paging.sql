@@ -49,7 +49,8 @@ BEGIN
 			   c.CreatedOnUtc,
 			   c.UpdatedOnUtc,
 			   c.Views,
-			   c.LevelPublic
+			   c.LevelPublic,
+			   c.StorageType
         FROM dbo.Collection c
 			JOIN dbo.Album a ON a.Id = c.AlbumId
 		WHERE a.Id = @albumId AND 
@@ -72,6 +73,7 @@ BEGIN
 		 NULL UpdatedOnUtc,
 		 0 Views,
 		 0 LevelPublic,
+		 0 StorageType,
 		1 AS IsTotalRecord
     FROM FilteredData
     UNION

@@ -41,7 +41,7 @@ namespace Portal.API.Controllers
         }
 
         [HttpGet("{friendlyName}")]
-        // [RedisCache(30)]
+        [RedisCache(30)]
         public async Task<IActionResult> GetByIdAsync(string friendlyName)
         {
             var parameters = new Dictionary<string, object?>
@@ -69,9 +69,8 @@ namespace Portal.API.Controllers
                 Views = z.Views,
                 LevelPublic = z.LevelPublic,
                 AlbumLevelPublic = comic.LevelPublic,
-                Region = comic.Region,
-                // TODO
-                StorageType = EStorageType.S1
+                Region = comic.Region,           
+                StorageType = z.StorageType
             }).OrderByDescending(x => RegexHelper.GetNumberByText(x.Title)).ToList();
 
             var result = new ServiceResponse<ComicAppModel>(comic);

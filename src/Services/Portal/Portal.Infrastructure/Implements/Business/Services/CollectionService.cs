@@ -76,7 +76,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 ExtendName = requestModel.ExtendName,
                 Description = requestModel.Description,
                 FriendlyName = CommonHelper.GenerateFriendlyName(requestModel.Title),
-                LevelPublic = requestModel.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser
+                LevelPublic = requestModel.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
+                StorageType = requestModel.StorageType
             };
 
             // Update Comic Recently uploaded
@@ -142,6 +143,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             existingEntity.Description = requestModel.Description;
             existingEntity.FriendlyName = CommonHelper.GenerateFriendlyName(requestModel.Title);
             existingEntity.LevelPublic = requestModel.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser;
+            existingEntity.StorageType = requestModel.StorageType;
 
             // Update the entity in the repository and save changes
             _repository.Update(existingEntity);
@@ -648,7 +650,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         FriendlyName = item.Name,
                         ContentItems = contentItems,
                         LevelPublic = item.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
-                        // TODO
+                        StorageType = item.StorageType
                     };
                     addCollections.Add(newCollection);
                 }

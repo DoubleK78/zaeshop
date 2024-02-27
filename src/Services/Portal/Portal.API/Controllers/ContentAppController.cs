@@ -32,7 +32,7 @@ namespace Portal.API.Controllers
         }
 
         [HttpGet("comics/{comicFriendlyName}/contents/{contentFriendlyName}")]
-        // [ContentComicRedisCache]
+        [ContentComicRedisCache]
         public async Task<IActionResult> GetByIdAsync([FromRoute] string comicFriendlyName, [FromRoute] string contentFriendlyName, [FromQuery] int? previousCollectionId = null, [FromQuery] bool isBot = false)
         {
             var identityUserId = GetIdentityUserIdByToken();
@@ -53,7 +53,7 @@ namespace Portal.API.Controllers
             collection.ContentItems = contentItems;
 
             var result = new ServiceResponse<ContentAppModel>(collection);
-            // await _redisService.SetAsync(string.Format(Const.RedisCacheKey.ComicContent, comicFriendlyName, contentFriendlyName), result.Data, 60);
+            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.ComicContent, comicFriendlyName, contentFriendlyName), result.Data, 60);
 
             if (!isBot)
             {
