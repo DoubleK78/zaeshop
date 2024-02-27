@@ -1,4 +1,5 @@
 using Common;
+using Common.Enums;
 using Common.Models;
 using Microsoft.AspNetCore.Mvc;
 using Portal.API.Attributes;
@@ -68,7 +69,8 @@ namespace Portal.API.Controllers
                 Views = z.Views,
                 LevelPublic = z.LevelPublic,
                 AlbumLevelPublic = comic.LevelPublic,
-                Region = comic.Region
+                Region = comic.Region,           
+                StorageType = z.StorageType
             }).OrderByDescending(x => RegexHelper.GetNumberByText(x.Title)).ToList();
 
             var result = new ServiceResponse<ComicAppModel>(comic);

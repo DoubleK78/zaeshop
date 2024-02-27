@@ -49,7 +49,7 @@ namespace Portal.API.Controllers
 
             var contentItems = await _contentItemRepository.GetQueryable()
                             .Where(o => o.CollectionId == collection.Id).OrderBy(o => o.OrderBy)
-                            .Select(x => x.DisplayUrl).ToListAsync();
+                            .Select(x => x.RelativeUrl).ToListAsync();
             collection.ContentItems = contentItems;
 
             var result = new ServiceResponse<ContentAppModel>(collection);

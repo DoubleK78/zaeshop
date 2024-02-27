@@ -1,3 +1,4 @@
+using Common.Enums;
 using Portal.Domain.Enums;
 
 namespace Portal.Domain.Models.CollectionModels
@@ -25,6 +26,7 @@ namespace Portal.Domain.Models.CollectionModels
         public ELevelPublic LevelPublic { get; set; }
         public ELevelPublic AlbumLevelPublic { get; set; }
         public ERegion Region { get; set; }
+        public EStorageType StorageType { get; set; }
 
         public List<string?>? ContentItems { get; set; }
     }

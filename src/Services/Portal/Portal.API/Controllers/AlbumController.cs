@@ -139,6 +139,7 @@ namespace Portal.API.Controllers
 
         [HttpGet]
         [Route("schedule")]
+        [RedisCache(60 * 24)]
         public async Task<IActionResult> GetSchedule([FromQuery] AlbumScheduleRequestModel requestModel)
         {
             var response = await _albumService.GetScheduleAsync(requestModel);

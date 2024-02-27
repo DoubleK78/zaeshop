@@ -87,8 +87,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
             {
                 CollectionId = collectionId,
                 Name = x.FileName,
-                OriginalUrl = x.AbsoluteUrl,
-                DisplayUrl = $"https://s3.codegota.me/{x.RelativeUrl}",
                 RelativeUrl = x.RelativeUrl,
                 OrderBy = RegexHelper.GetNumberByText(x.FileName)
             }).OrderBy(x => x.OrderBy).ToList();
@@ -139,8 +137,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     if (contentItem != null)
                     {
                         contentItem.Name = item.FileName;
-                        contentItem.OriginalUrl = item.AbsoluteUrl;
-                        contentItem.DisplayUrl = $"https://s3.codegota.me/{item.RelativeUrl}";
                         contentItem.RelativeUrl = item.RelativeUrl;
                     }
                 }
@@ -182,8 +178,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     {
                         CollectionId = collectionId,
                         Name = newItem.FileName,
-                        OriginalUrl = newItem.AbsoluteUrl,
-                        DisplayUrl = $"https://s3.codegota.me/{newItem.RelativeUrl}",
                         RelativeUrl = newItem.RelativeUrl,
                         OrderBy = RegexHelper.GetNumberByText(newItem.FileName)
                     });
@@ -230,8 +224,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
             {
                 CollectionId = collectionId,
                 Name = x.FileName,
-                OriginalUrl = $"https://s1.codegota.me/{prefixRelative}/{x.FileName}",
-                DisplayUrl = $"https://s1.codegota.me/{prefixRelative}/{x.FileName}",
                 RelativeUrl = prefixRelative + "/" + x.FileName,
                 OrderBy = RegexHelper.GetNumberByText(x.FileName)
             }).OrderBy(x => x.OrderBy).ToList();
@@ -277,8 +269,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         if (contentItem.Name != item.FileName)
                         {
                             contentItem.Name = item.FileName;
-                            contentItem.OriginalUrl = $"https://s1.codegota.me/{prefixRelative}/{item.FileName}";
-                            contentItem.DisplayUrl = $"https://s1.codegota.me/{prefixRelative}/{item.FileName}";
                             contentItem.RelativeUrl = prefixRelative + "/" + item.FileName;
                         }
 
@@ -304,8 +294,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 {
                     CollectionId = collectionId,
                     Name = x.FileName,
-                    OriginalUrl = $"https://s1.codegota.me/{prefixRelative}/{x.FileName}",
-                    DisplayUrl = $"https://s1.codegota.me/{prefixRelative}/{x.FileName}",
                     RelativeUrl = prefixRelative + "/" + x.FileName,
                     OrderBy = RegexHelper.GetNumberByText(x.FileName)
                 }).OrderBy(x => x.OrderBy).ToList();

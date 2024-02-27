@@ -1,9 +1,12 @@
+using Common.Enums;
+
 namespace Portal.Domain.Models.CollectionModels
 {
     public class BulkCreateCollectionRequest
     {
         public string Name { get; set; } = null!;
         public bool IsPriority { get; set; }
+        public EStorageType StorageType { get; set; }
         public List<BulkCreateCollectionItemRequest> ContentItems { get; set; } = null!;
     }
 

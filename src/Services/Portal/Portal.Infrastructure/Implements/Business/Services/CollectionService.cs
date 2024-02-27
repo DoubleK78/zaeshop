@@ -76,7 +76,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 ExtendName = requestModel.ExtendName,
                 Description = requestModel.Description,
                 FriendlyName = CommonHelper.GenerateFriendlyName(requestModel.Title),
-                LevelPublic = requestModel.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser
+                LevelPublic = requestModel.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
+                StorageType = requestModel.StorageType
             };
 
             // Update Comic Recently uploaded
@@ -142,6 +143,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             existingEntity.Description = requestModel.Description;
             existingEntity.FriendlyName = CommonHelper.GenerateFriendlyName(requestModel.Title);
             existingEntity.LevelPublic = requestModel.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser;
+            existingEntity.StorageType = requestModel.StorageType;
 
             // Update the entity in the repository and save changes
             _repository.Update(existingEntity);
@@ -185,7 +187,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 ExtendName = x.ExtendName,
                 Description = x.Description,
                 // Add other properties as needed
-                ContentItems = x.ContentItems?.Select(y => y.DisplayUrl).ToList()
+                ContentItems = x.ContentItems?.Select(y => y.RelativeUrl).ToList()
             }).ToList();
 
             return new ServiceResponse<List<CollectionResponseModel>>(response);
@@ -219,8 +221,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                         Name = x.Name,
                                         OrderBy = x.OrderBy,
                                         RelativeUrl = x.RelativeUrl,
-                                        DisplayUrl = x.DisplayUrl,
-                                        OriginalUrl = x.OriginalUrl,
                                         CreatedOnUtc = x.CreatedOnUtc,
                                         Type = x.Type
                                     }).ToListAsync();
@@ -638,8 +638,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         return new ContentItem
                         {
                             Name = x.Name,
-                            OriginalUrl = $"https://s1.codegota.me/{prefixRelative}/{x.Name}",
-                            DisplayUrl = $"https://s1.codegota.me/{prefixRelative}/{x.Name}",
                             RelativeUrl = prefixRelative + "/" + x.Name,
                             OrderBy = RegexHelper.GetNumberByText(x.Name)
                         };
@@ -651,7 +649,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         Title = title,
                         FriendlyName = item.Name,
                         ContentItems = contentItems,
-                        LevelPublic = item.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser
+                        LevelPublic = item.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
+                        StorageType = item.StorageType
                     };
                     addCollections.Add(newCollection);
                 }
