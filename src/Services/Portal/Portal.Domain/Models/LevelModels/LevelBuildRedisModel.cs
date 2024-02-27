@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Common.Enums;
 
 namespace Portal.Domain.Models.LevelModels
@@ -40,13 +41,21 @@ namespace Portal.Domain.Models.LevelModels
     {
         public ERoleType RoleType { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? AlbumId { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? CollectionId { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? CommentId { get; set; }
 
         public DateTime CreatedOnUtc { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? IpAddress { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? SessionId { get; set; }
 
         public bool IsViewedNewChapter { get; set; }

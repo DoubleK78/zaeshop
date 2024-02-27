@@ -12,8 +12,8 @@ namespace Portal.Infrastructure.EntityConfigurations.CollectionAggregate
 
             builder.HasOne(x => x.Collection).WithMany(y => y.ContentItems).HasForeignKey(z => z.CollectionId);
 
-            // Index column CollectionId includes DisplayUrl help index seek instead of index scan
-            builder.HasIndex(x => x.CollectionId).IncludeProperties(p => new { p.DisplayUrl });
+            // Index column CollectionId includes RelativeUrl help index seek instead of index scan
+            builder.HasIndex(x => x.CollectionId).IncludeProperties(p => new { p.RelativeUrl });
         }
     }
 }
