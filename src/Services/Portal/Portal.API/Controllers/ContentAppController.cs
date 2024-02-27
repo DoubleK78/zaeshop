@@ -32,7 +32,7 @@ namespace Portal.API.Controllers
         }
 
         [HttpGet("comics/{comicFriendlyName}/contents/{contentFriendlyName}")]
-        [ContentComicRedisCache]
+        // [ContentComicRedisCache]
         public async Task<IActionResult> GetByIdAsync([FromRoute] string comicFriendlyName, [FromRoute] string contentFriendlyName, [FromQuery] int? previousCollectionId = null, [FromQuery] bool isBot = false)
         {
             var identityUserId = GetIdentityUserIdByToken();
@@ -49,11 +49,11 @@ namespace Portal.API.Controllers
 
             var contentItems = await _contentItemRepository.GetQueryable()
                             .Where(o => o.CollectionId == collection.Id).OrderBy(o => o.OrderBy)
-                            .Select(x => x.DisplayUrl).ToListAsync();
+                            .Select(x => x.RelativeUrl).ToListAsync();
             collection.ContentItems = contentItems;
 
             var result = new ServiceResponse<ContentAppModel>(collection);
-            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.ComicContent, comicFriendlyName, contentFriendlyName), result.Data, 60);
+            // await _redisService.SetAsync(string.Format(Const.RedisCacheKey.ComicContent, comicFriendlyName, contentFriendlyName), result.Data, 60);
 
             if (!isBot)
             {

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using Common.Enums;
 using Portal.Domain.AggregatesModel.AlbumAggregate;
 using Portal.Domain.Enums;
 using Portal.Domain.SeedWork;
@@ -22,6 +23,8 @@ namespace Portal.Domain.AggregatesModel.CollectionAggregate
 
         public ulong Views { get; set; }
         public ELevelPublic LevelPublic { get; set; }
+
+        public EStorageType StorageType { get; set; }
 
         [JsonIgnore]
         public virtual Album Album { get; set; } = null!;

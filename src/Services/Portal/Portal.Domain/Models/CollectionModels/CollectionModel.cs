@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Common.Enums;
 using Common.Models;
 using Portal.Domain.Enums;
 
@@ -23,6 +24,7 @@ namespace Portal.Domain.Models.CollectionModels
         /// Priority for Premium User
         /// </summary>
         public bool IsPriority { get; set; }
+        public EStorageType StorageType { get; set; }
     }
 
     public class ContentItemRequestModel
