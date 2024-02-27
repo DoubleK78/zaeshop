@@ -9,10 +9,12 @@ import { FilePond } from "react-filepond";
 import convertFileToBase64 from "../../utils/covert-base64";
 import { toast } from "react-toastify";
 import { bulkUpdateByLocalServer, bulkUpdateContentItems } from "../../services/content-item/cotentItemService";
-import { useAppDispatch } from "../../store";
+import { StoreState, useAppDispatch } from "../../store";
 import { getContentItemsAsyncThunk } from "../../store/reducers/ContentItemSlice";
 import { RegexHelper } from "../../utils/regex";
 import parseJsonFromString from "../../utils/json/parseJsonFromString";
+import { useSelector } from "react-redux";
+import { EStorageType, EStorageTypeMap } from "../../models/enums/EStorageType";
 
 type ContentItemBulkUploadProps = {
     id: string | undefined;
@@ -23,6 +25,7 @@ type ContentItemBulkUploadProps = {
 const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, contentItems, isCloudServer }: ContentItemBulkUploadProps) => {
     const [t] = useTranslation();
     const dispatch = useAppDispatch();
+    const { collection } = useSelector((state: StoreState) => state.contentItem);
 
     const [files, setFiles] = useState<(ActualFileObject)[]>([]);
     const [isLazyLoading, setIsLazyLoading] = useState(parseJsonFromString(localStorage.getItem("content_item_lazy_loading")) ?? false);
@@ -198,6 +201,14 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
         }
     }
 
+    const generateImageUrlByStorageType = (storageType: EStorageType, relativeUrl: string | null) => {
+        switch (storageType) {
+            case EStorageType.S1:
+            default:
+                return `${EStorageTypeMap[EStorageType.S1]}/${relativeUrl}`;
+        }
+    }
+
     return (
         <div className="row">
             <div className="card">
@@ -264,16 +275,20 @@ const ContentItemBulkUpload: React.FC<ContentItemBulkUploadProps> = ({ id, conte
                     </div>
                     <div className="row">
                         <ul className="list-group">
-                            {contentItemBulkUploadItems.map((item) => (
-                                <ContentItemBulkUploadItem
+                            {contentItemBulkUploadItems.map((item) => {
+                                const contentItem = contentItems.find(contentItem => contentItem.id === item.id);
+                                return <ContentItemBulkUploadItem
                                     key={uuidv4()}
                                     contentItemBulkUploadItemModel={item}
-                                    contentItem={contentItems.find(contentItem => contentItem.id === item.id)!}
+                                    contentItem={{
+                                        ...contentItem!,
+                                        displayUrl: generateImageUrlByStorageType(collection?.storageType ?? EStorageType.S1, contentItem?.relativeUrl ?? '')
+                                    }}
                                     updateExistItem={updateExistItem}
                                     deleteExistItem={deleteExistItem}
                                     isLazyLoading={isLazyLoading}
-                                />
-                            ))}
+                                />;
+                            })}
                         </ul>
                         {/*end col*/}
                     </div>

@@ -1,3 +1,5 @@
+import { EStorageType } from "../enums/EStorageType";
+
 export default interface CollectionDetail {
     id: number;
     title: string;
@@ -10,4 +12,5 @@ export default interface CollectionDetail {
     description?: string;
     createdOnUtc: Date;
     updatedOnUtc?: Date;
+    storageType: EStorageType;
 }
