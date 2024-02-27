@@ -199,12 +199,12 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                         if (lastNextChapterEvent == null ||
                         (levelBuildRedisModel == null &&
-                            model.CreatedOnUtc.Subtract(lastNextChapterEvent.Value).TotalSeconds > 30))
+                            model.CreatedOnUtc.Subtract(lastNextChapterEvent.Value).TotalSeconds > 20))
                         {
                             isValidNextChapter = true;
                         }
 
-                        // Condition: User go next each chapter for 30s
+                        // Condition: User go next each chapter for 20s
                         if (isValidNextChapter)
                         {
                             value.Add(new LevelBuildRedisModel
@@ -272,12 +272,12 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                         if (lastNextChapterEvent == null ||
                         (levelBuildRedisModel == null &&
-                            model.CreatedOnUtc.Subtract(lastNextChapterEvent.Value).TotalSeconds > 30))
+                            model.CreatedOnUtc.Subtract(lastNextChapterEvent.Value).TotalSeconds > 20))
                         {
                             isValidEarnFromComment = true;
                         }
 
-                        // Condition: User go next each chapter for 15s
+                        // Condition: User go next each chapter for 20s
                         if (isValidEarnFromComment)
                         {
                             value.Add(new LevelBuildRedisModel
