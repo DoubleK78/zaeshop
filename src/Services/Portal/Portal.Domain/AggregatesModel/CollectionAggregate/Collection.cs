@@ -23,6 +23,7 @@ namespace Portal.Domain.AggregatesModel.CollectionAggregate
 
         public ulong Views { get; set; }
         public ELevelPublic LevelPublic { get; set; }
+        public EStorageType StorageType { get; set; }
 
         [JsonIgnore]
         public virtual Album Album { get; set; } = null!;
