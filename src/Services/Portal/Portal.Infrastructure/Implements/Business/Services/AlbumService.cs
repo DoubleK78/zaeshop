@@ -105,16 +105,16 @@ namespace Portal.Infrastructure.Implements.Business.Services
             if (!string.IsNullOrEmpty(requestModel.FileNameThumbnail))
             {
                 var relativePath = $"{entity.FriendlyName}/thumbnail";
-                entity.ThumbnailUrl = $"https://s1.codegota.me/{relativePath}/{requestModel.FileNameThumbnail}";
-                entity.CdnThumbnailUrl = $"https://s1.codegota.me/{relativePath}/{requestModel.FileNameThumbnail}";
+                entity.ThumbnailUrl = $"https://s1.fastscans.net/{relativePath}/{requestModel.FileNameThumbnail}";
+                entity.CdnThumbnailUrl = $"https://s1.fastscans.net/{relativePath}/{requestModel.FileNameThumbnail}";
             }
 
             // We can upload background
             if (!string.IsNullOrEmpty(requestModel.FileNameBackground))
             {
                 var relativePath = $"{entity.FriendlyName}/background";
-                entity.OriginalUrl = $"https://s1.codegota.me/{relativePath}/{requestModel.FileNameBackground}";
-                entity.CdnOriginalUrl = $"https://s1.codegota.me/{relativePath}/{requestModel.FileNameBackground}";
+                entity.OriginalUrl = $"https://s1.fastscans.net/{relativePath}/{requestModel.FileNameBackground}";
+                entity.CdnOriginalUrl = $"https://s1.fastscans.net/{relativePath}/{requestModel.FileNameBackground}";
             }
 
             _repository.Add(entity);
@@ -224,8 +224,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
             if (requestModel.IsUpdateThumbnail && !string.IsNullOrEmpty(requestModel.FileNameThumbnail))
             {
                 var relativePath = $"{existingAlbum.FriendlyName}/thumbnail";
-                existingAlbum.ThumbnailUrl = $"https://s1.codegota.me/{relativePath}/{requestModel.FileNameThumbnail}";
-                existingAlbum.CdnThumbnailUrl = $"https://s1.codegota.me/{relativePath}/{requestModel.FileNameThumbnail}";
+                existingAlbum.ThumbnailUrl = $"https://s1.fastscans.net/{relativePath}/{requestModel.FileNameThumbnail}";
+                existingAlbum.CdnThumbnailUrl = $"https://s1.fastscans.net/{relativePath}/{requestModel.FileNameThumbnail}";
             }
             else if (requestModel.IsUpdateThumbnail)
             {
@@ -239,8 +239,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
             if (requestModel.IsUpdateBackground && !string.IsNullOrEmpty(requestModel.FileNameBackground))
             {
                 var relativePath = $"{existingAlbum.FriendlyName}/background";
-                existingAlbum.OriginalUrl = $"https://s1.codegota.me/{relativePath}/{requestModel.FileNameBackground}";
-                existingAlbum.CdnOriginalUrl = $"https://s1.codegota.me/{relativePath}/{requestModel.FileNameBackground}";
+                existingAlbum.OriginalUrl = $"https://s1.fastscans.net/{relativePath}/{requestModel.FileNameBackground}";
+                existingAlbum.CdnOriginalUrl = $"https://s1.fastscans.net/{relativePath}/{requestModel.FileNameBackground}";
             }
             else if (requestModel.IsUpdateBackground)
             {
