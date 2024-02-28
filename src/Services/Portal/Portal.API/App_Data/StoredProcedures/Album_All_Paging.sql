@@ -44,8 +44,8 @@ BEGIN
 				a.Id as [AlbumId],
 				SUM(IIF(cv.Date >= @startDate and cv.Date < @endDate, cv.[View], 0)) as [ViewByTopType]
 			from dbo.Album a
-				join dbo.Collection c on c.AlbumId = a.Id
-				left join dbo.CollectionView cv on cv.CollectionId = c.Id
+				LEFT JOIN dbo.Collection c on c.AlbumId = a.Id
+				LEFT JOIN dbo.CollectionView cv on cv.CollectionId = c.Id
 			group by a.Id
 		END
 		ELSE IF @topType = 'week'
@@ -55,8 +55,8 @@ BEGIN
 				a.Id as [AlbumId],
 				SUM(IIF(cv.Date >= @startDateOfWeek and cv.Date < @endDate, cv.[View], 0)) as [ViewByTopType]
 			from dbo.Album a
-				join dbo.Collection c on c.AlbumId = a.Id
-				left join dbo.CollectionView cv on cv.CollectionId = c.Id
+				LEFT JOIN dbo.Collection c on c.AlbumId = a.Id
+				LEFT JOIN dbo.CollectionView cv on cv.CollectionId = c.Id
 			group by a.Id
 		END
 		ELSE IF @topType = 'month'
@@ -66,8 +66,8 @@ BEGIN
 				a.Id as [AlbumId],
 				SUM(IIF(cv.Date >= @startDateOfMonth and cv.Date < @endDate, cv.[View], 0)) as [ViewByTopType]
 			from dbo.Album a
-				join dbo.Collection c on c.AlbumId = a.Id
-				left join dbo.CollectionView cv on cv.CollectionId = c.Id
+				LEFT JOIN dbo.Collection c on c.AlbumId = a.Id
+				LEFT JOIN dbo.CollectionView cv on cv.CollectionId = c.Id
 			group by a.Id
 		END
 		ELSE IF @topType = 'year'
@@ -77,8 +77,8 @@ BEGIN
 				a.Id as [AlbumId],
 				SUM(IIF(cv.Date >= @startDateOfYear and cv.Date < @endDate, cv.[View], 0)) as [ViewByTopType]
 			from dbo.Album a
-				join dbo.Collection c on c.AlbumId = a.Id
-				left join dbo.CollectionView cv on cv.CollectionId = c.Id
+				LEFT JOIN dbo.Collection c on c.AlbumId = a.Id
+				LEFT JOIN dbo.CollectionView cv on cv.CollectionId = c.Id
 			group by a.Id
 		END
 	END
@@ -112,20 +112,20 @@ BEGIN
     AS (
 		SELECT ROW_NUMBER() OVER (ORDER BY
 			CASE WHEN ISNULL(@sortColumn, '') = '' THEN a.Id END,
+			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'ASC' THEN a.Views END,
+			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'DESC' THEN a.Views END DESC,
+			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN a.CreatedOnUtc END,
+			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN a.CreatedOnUtc END DESC,
+			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN a.UpdatedOnUtc END,
+			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN a.UpdatedOnUtc END DESC,
+			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'ViewByTopType' AND @sortDirection = 'ASC' THEN ta.ViewByTopType END,
+			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'ViewByTopType' AND @sortDirection = 'DESC' THEN ta.ViewByTopType END DESC,
 			CASE WHEN @sortColumn = 'Title' AND @sortDirection = 'ASC' THEN a.Title END,
 			CASE WHEN @sortColumn = 'Title' AND @sortDirection = 'DESC' THEN a.Title END DESC,
 			CASE WHEN @sortColumn = 'Description' AND @sortDirection = 'ASC' THEN a.Description END,
 			CASE WHEN @sortColumn = 'Description' AND @sortDirection = 'DESC' THEN a.Description END DESC,
 			CASE WHEN @sortColumn = 'IsPublic' AND @sortDirection = 'ASC' THEN a.IsPublic END,
-			CASE WHEN @sortColumn = 'IsPublic' AND @sortDirection = 'DESC' THEN a.IsPublic END DESC,
-			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN a.CreatedOnUtc END,
-			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN a.CreatedOnUtc END DESC,
-			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN a.UpdatedOnUtc END,
-			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN a.UpdatedOnUtc END DESC,
-			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'ASC' THEN a.Views END,
-			CASE WHEN @sortColumn = 'Views' AND @sortDirection = 'DESC' THEN a.Views END DESC,
-			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'ViewByTopType' AND @sortDirection = 'ASC' THEN ta.ViewByTopType END,
-			CASE WHEN @topType IS NOT NULL AND @sortColumn = 'ViewByTopType' AND @sortDirection = 'DESC' THEN ta.ViewByTopType END DESC
+			CASE WHEN @sortColumn = 'IsPublic' AND @sortDirection = 'DESC' THEN a.IsPublic END DESC
 		) AS RowNum,
                a.Id,
 			   a.Title,
