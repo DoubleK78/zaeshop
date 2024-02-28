@@ -574,6 +574,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     }
                 }
 
+                // Reset Top Rank Comics
+                _redisService.RemoveByPattern(Const.RedisCacheKey.ComicRankingPagingPattern);
+
                 // Log to service log to stored
                 await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
                 {

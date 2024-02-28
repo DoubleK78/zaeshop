@@ -15,6 +15,7 @@ namespace Common.ValueObjects
             public const string ComicDetail = "/api/client/comicapp/{0}";
             public const string ComicPagingPattern = "*/api/client/comicapp/paging*";
             public const string UserRankingPagingPattern = "*/api/user/ranking*";
+            public const string ComicRankingPagingPattern = "*/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-*|pagesize-*|rating-|region-vi|searchterm-|sortcolumn-viewbytoptype|sortdirection-desc|toptype-*|year-*";
         }
 
         public static class ServiceLogEventName
