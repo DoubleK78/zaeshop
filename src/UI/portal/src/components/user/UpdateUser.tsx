@@ -38,7 +38,7 @@ const UpdateUser: React.FC<UpdateUserProps> = ({ user, closeModal }) => {
     }, [dispatch]);
 
     useEffect(() => {
-        setSelectedOptions(rolesDropDown.filter(r => user.roles?.replaceAll(' ', '').split(',').includes(r.value)));
+        setSelectedOptions(rolesDropDown.filter(r => user.roles?.split(',').includes(r.value)));
     }, [user.roles, rolesDropDown])
 
     const {

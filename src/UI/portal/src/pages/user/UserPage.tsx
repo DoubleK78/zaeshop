@@ -144,6 +144,7 @@ const UserPage: React.FC = () => {
                                                             <option value={'email'}>{t('user.sort_column_email')}</option>
                                                             <option value={'createdOnUtc'}>{t('user.sort_column_created_on')}</option>
                                                             <option value={'updatedOnUtc'}>{t('user.sort_column_updated_on')}</option>
+                                                            <option value={'isBanned'}>{t('user.sort_column_banned')}</option>
                                                         </select>
                                                     </div>
                                                     <div className="col">
@@ -170,7 +171,7 @@ const UserPage: React.FC = () => {
                                                         <th>{t('user.full_name')}</th>
                                                         <th>{t('user.username')}</th>
                                                         <th>{t('user.email')}</th>
-                                                        <th>{t('user.email_confirmed')}</th>
+                                                        <th>{t('user.sort_column_banned')}</th>
                                                         <th>{t('user.created_on')}</th>
                                                         <th>{t('user.roles')}</th>
                                                         <th>{t('user.action')}</th>
@@ -187,7 +188,7 @@ const UserPage: React.FC = () => {
                                                             <td>{user.fullName}</td>
                                                             <td>{user.userName}</td>
                                                             <td>{user.email}</td>
-                                                            <td>{user.emailConfirmed ? "Yes" : "No"}</td>
+                                                            <td>{user.isBanned ? "Yes" : "No"}</td>
                                                             <td>{dayjs(user.createdOnUtc).format('DD-MM-YYYY HH:mm')}</td>
                                                             <td>
                                                                 {user?.roles?.split(',').map(role => (

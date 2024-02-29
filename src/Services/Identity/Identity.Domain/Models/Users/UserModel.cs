@@ -11,6 +11,7 @@ public class UserModel
     public string UserName { get; set; } = null!;
 
     public string? Roles { get; set; }
+    public bool IsBanned { get; set; }
 
     public DateTime CreatedOnUtc { get; set; }
     public DateTime? UpdatedOnUtc { get; set; }
