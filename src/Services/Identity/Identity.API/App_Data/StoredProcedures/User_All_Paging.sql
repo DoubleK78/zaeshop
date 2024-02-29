@@ -31,7 +31,9 @@ BEGIN
 			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN u.CreatedOnUtc END,
 			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN u.CreatedOnUtc END DESC,
 			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN u.UpdatedOnUtc END,
-			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN u.UpdatedOnUtc END DESC
+			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN u.UpdatedOnUtc END DESC,
+			CASE WHEN @sortColumn = 'IsBanned' AND @sortDirection = 'ASC' THEN u.IsBanned END,
+			CASE WHEN @sortColumn = 'IsBanned' AND @sortDirection = 'DESC' THEN u.IsBanned END DESC
 		) AS RowNum,
 			u.Id,
 			u.FullName,
@@ -40,7 +42,8 @@ BEGIN
 			u.EmailConfirmed,
 			u.CreatedOnUtc,
 			u.UpdatedOnUtc,
-			STRING_AGG(r.Name, ', ') WITHIN GROUP (ORDER BY r.Name) AS [Roles]
+			STRING_AGG(r.Name, ', ') WITHIN GROUP (ORDER BY r.Name) AS [Roles],
+			u.IsBanned
 		FROM dbo.[User] u
 		LEFT JOIN dbo.AspNetUserRoles ur ON u.Id = ur.UserId
 		LEFT JOIN dbo.AspNetRoles r ON ur.RoleId = r.Id
@@ -55,7 +58,8 @@ BEGIN
 				 u.Email,
 				 u.EmailConfirmed,
 				 u.CreatedOnUtc,
-				 u.UpdatedOnUtc
+				 u.UpdatedOnUtc,
+				 u.IsBanned
 	)
 	SELECT
 		COUNT_BIG(1) AS RowNum,
@@ -67,6 +71,7 @@ BEGIN
 		NULL AS CreatedOnUtc,
 		NULL AS UpdatedOnUtc,
 		NULL AS [Roles],
+		0 AS [IsBanned],
 		1 as IsTotalRecord
 	FROM FilteredData
 	UNION

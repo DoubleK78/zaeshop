@@ -10,5 +10,6 @@ namespace Identity.Domain.Models.Users
         public string? Password { get; set; }
 
         public List<string>? Roles { get; set; }
+        public bool IsBanned { get; set; }
     }
 }

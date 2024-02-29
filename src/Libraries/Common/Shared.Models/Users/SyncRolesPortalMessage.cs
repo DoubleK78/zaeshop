@@ -7,6 +7,7 @@ namespace Common.Shared.Models.Users
         public string IdentityUserId { get; set; } = null!;
         public int? Days { get; set; }
         public List<string>? Roles { get; set; }
+        public bool IsBanned { get; set; }
 
         #region For Update Expried Role Date
         public bool IsUpdateSubscription { get; set; }

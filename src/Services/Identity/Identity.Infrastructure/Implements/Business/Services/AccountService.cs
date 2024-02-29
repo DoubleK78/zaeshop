@@ -483,7 +483,8 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 await _syncRolesPortalPublisher.SyncRolesPortalAsync(new SyncRolesPortalMessage
                 {
                     IdentityUserId = user.Id,
-                    Roles = [Const.RoleName.User]
+                    Roles = [Const.RoleName.User],
+                    IsBanned = user.IsBanned
                 });
             }
             else if (string.IsNullOrEmpty(user.ProviderAccountId))

@@ -116,6 +116,9 @@ namespace Identity.Infrastructure.Implements.Business.Services
             bool isSyncUserPortal = user.FullName != userModel.FullName;
             user.FullName = userModel.FullName;
 
+            user.IsBanned = userModel.IsBanned;
+            user.LockoutEnd = userModel.IsBanned ? DateTime.UtcNow : null;
+
             if (!string.IsNullOrEmpty(userModel.Password))
             {
                 user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, userModel.Password);

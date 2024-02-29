@@ -12,4 +12,5 @@ export default interface User {
     createdOnUtc: Date;
     updatedOnUtc?: Date;
     roles?: string;
+    isBanned?: boolean;
 }

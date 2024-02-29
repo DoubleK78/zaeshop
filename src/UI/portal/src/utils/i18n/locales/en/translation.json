@@ -75,7 +75,9 @@
         "sort_column_username": "User Name",
         "sort_column_email": "Email",
         "sort_column_created_on": "Created On",
-        "sort_column_updated_on": "Updated On"
+        "sort_column_updated_on": "Updated On",
+        "banned_title": "Banned Account",
+        "sort_column_banned": "Banned"
     },
     "role": {
         "title": "Role Management",

@@ -22,6 +22,7 @@ const UpdateUser: React.FC<UpdateUserProps> = ({ user, closeModal }) => {
     const dispatch = useDispatch();
     const [t] = useTranslation();
     const [selectedOptions, setSelectedOptions] = useState<DropDownOption<string>[]>([]);
+    const [isBanned, setIsBanned] = useState<boolean>(user.isBanned ?? false);
 
     const roles = useSelector((state: StoreState) => state.role.roles);
     const rolesDropDown = useMemo((): DropDownOption<string>[] => {
@@ -37,7 +38,7 @@ const UpdateUser: React.FC<UpdateUserProps> = ({ user, closeModal }) => {
     }, [dispatch]);
 
     useEffect(() => {
-        setSelectedOptions(rolesDropDown.filter(r => user.roles?.replaceAll(' ', '').split(',').includes(r.value)));
+        setSelectedOptions(rolesDropDown.filter(r => user.roles?.split(',').includes(r.value)));
     }, [user.roles, rolesDropDown])
 
     const {
@@ -57,7 +58,8 @@ const UpdateUser: React.FC<UpdateUserProps> = ({ user, closeModal }) => {
         });
         await updateUser(user.id, {
             ...userUpdateRequestModel,
-            roles: selectedOptions?.map(option => option.value)
+            roles: selectedOptions?.map(option => option.value),
+            isBanned
         })(dispatch);
 
         toast.update(toastId, {
@@ -99,6 +101,18 @@ const UpdateUser: React.FC<UpdateUserProps> = ({ user, closeModal }) => {
                             {/*end modal-header*/}
                             <div className="modal-body">
                                 <div className="card-body">
+                                    <div className="form-check form-switch form-switch-danger mb-4">
+                                        <label className="form-check-label" htmlFor="customSwitchPrimary">
+                                            {t('user.banned_title')}
+                                        </label>
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            id="customSwitchPrimary"
+                                            checked={isBanned}
+                                            onChange={() => setIsBanned(!isBanned)}
+                                        />
+                                    </div>
                                     <div className="mb-3 row">
                                         <label
                                             htmlFor="example-text-input"
