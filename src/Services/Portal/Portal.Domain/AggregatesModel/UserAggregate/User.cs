@@ -22,6 +22,7 @@ public class User : Entity, IAggregateRoot
     public int NextLevelExp { get; set; }
     public DateTime? ExpriedRoleDate { get; set; }
     public ERegion Region { get; set; }
+    public bool IsBanned { get; set; }
 
     [JsonIgnore]
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();

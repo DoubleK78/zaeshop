@@ -73,7 +73,7 @@ dotnet ef migrations add InitialCreate -p Portal.Infrastructure.csproj -c Applic
 dotnet ef database update -p Portal.Infrastructure.csproj  -s ../Portal.API/Portal.API.csproj  --verbose
 
 --dotnet ef migrations remove -p Portal.Infrastructure.csproj -c ApplicationDbContext -s ../Portal.API/Portal.API.csproj  --verbose
---dotnet ef database update 0 -p Portal.Infrastructure.csproj  -s ../Portal.API/Portal.API.csproj  --verbose
+--dotnet ef database update --0 -- -p Portal.Infrastructure.csproj  -s ../Portal.API/Portal.API.csproj  --verbose
 
 Envoy
 openssl req -config https.config -new -out csr.pem
