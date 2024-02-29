@@ -27,6 +27,7 @@ namespace Identity.Domain.AggregatesModel.UserAggregate
         /// </summary>
         [Column(TypeName = "varchar(15)")]
         public string? Region { get; set; }
+        public bool IsBanned { get; set; }
 
         public DateTime CreatedOnUtc { get; set; }
         public DateTime? UpdatedOnUtc { get; set; }
