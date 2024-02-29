@@ -152,7 +152,11 @@ namespace Identity.API.Controllers
                 }
 
                 var roles = await _userManager.GetRolesAsync(user);
-                return Ok(CommonHelper.GetRoleType(roles.ToList()));
+                return Ok(new
+                {
+                    IsBanned = user.IsBanned,
+                    RoleType = CommonHelper.GetRoleType(roles.ToList())
+                });
             }
 
             return Ok(ERoleType.User);

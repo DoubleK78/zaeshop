@@ -89,6 +89,9 @@ namespace HangFireServer.Messaging.Comsumers
             }
             #endregion
 
+            if (user.IsBanned != syncRolesMessage.IsBanned)
+                user.IsBanned = syncRolesMessage.IsBanned;
+
             _userRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
         }

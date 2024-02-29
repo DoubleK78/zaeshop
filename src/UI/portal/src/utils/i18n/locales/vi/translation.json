@@ -75,7 +75,8 @@
         "sort_column_username": "Tên người dùng",
         "sort_column_email": "Email",
         "sort_column_created_on": "Được tạo lúc",
-        "sort_column_updated_on": "Được cập nhật lúc"
+        "sort_column_updated_on": "Được cập nhật lúc",
+        "banned_title": "Khóa Tài Khoản"
     },
     "role": {
         "title": "Quản lý Vai trò",
