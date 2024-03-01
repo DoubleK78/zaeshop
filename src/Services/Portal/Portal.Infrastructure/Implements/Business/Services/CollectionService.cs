@@ -327,7 +327,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 else
                 {
                     var collectionViewByUser = value.Find(o => o.CollectionId == model.CollectionId && (
-                        o.UserId == user?.Id || o.IpAddress == model.IpAddress || o.SessionId == model.SessionId
+                        (o.UserId.HasValue && o.UserId == user?.Id) || o.IpAddress == model.IpAddress || o.SessionId == model.SessionId
                     ));
 
                     if (collectionViewByUser == null)
