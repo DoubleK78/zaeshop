@@ -44,4 +44,7 @@ public class User : Entity, IAggregateRoot
 
     [JsonIgnore]
     public virtual ICollection<UserLevel> UserLevels { get; set; } = new List<UserLevel>();
+
+    [JsonIgnore]
+    public virtual ICollection<ReplyComment>? ReplyComments { get; set; } = new List<ReplyComment>();
 }
