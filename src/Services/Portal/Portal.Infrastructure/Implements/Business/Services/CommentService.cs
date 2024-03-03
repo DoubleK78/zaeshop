@@ -16,6 +16,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly IGenericRepository<Album> _albumRepository;
         private readonly IGenericRepository<User> _userRepository;
         private readonly IGenericRepository<Collection> _collectionRepository;
+        private readonly IGenericRepository<ReplyComment> _replyCommentRepository;
 
         public CommentService(IUnitOfWork unitOfWork)
         {
@@ -24,6 +25,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _albumRepository = _unitOfWork.Repository<Album>();
             _userRepository = _unitOfWork.Repository<User>();
             _collectionRepository = _unitOfWork.Repository<Collection>();
+            _replyCommentRepository = _unitOfWork.Repository<ReplyComment>();
         }
 
         public async Task<ServiceResponse<CommentModel>> CreateAsync(CommentRequestModel request, string identityUserId)
@@ -50,51 +52,78 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 }
             }
 
-            var comment = new Comment
+            if (request.ParentCommentId.HasValue)
             {
-                Text = request.Text,
-                CollectionId = request.CollectionId,
-                UserId = user.Id,
-                AlbumId = request.AlbumId
-            };
+                var parentComment = await _commentRepository.GetByIdAsync(request.ParentCommentId.Value);
+                if (parentComment == null)
+                {
+                    return new ServiceResponse<CommentModel>("error_parent_comment_not_found");
+                }
+            }
 
-            _commentRepository.Add(comment);
-            await _unitOfWork.SaveChangesAsync();
-
-            // Response
-            var response = new CommentModel
+            CommentModel? response;
+            // Comment will not have parent
+            if (!request.ParentCommentId.HasValue)
             {
-                Id = comment.Id,
-                Text = comment.Text,
-                UserId = comment.UserId,
-                AlbumId = comment.AlbumId,
-                CollectionId = comment.CollectionId,
-                CreatedOnUtc = comment.CreatedOnUtc,
-                UpdatedOnUtc = comment.UpdatedOnUtc,
-                FullName = user.FullName,
-                UserName = user.UserName
-            };
+                var comment = new Comment
+                {
+                    Text = request.Text,
+                    CollectionId = request.CollectionId,
+                    UserId = user.Id,
+                    AlbumId = request.AlbumId
+                };
+
+                _commentRepository.Add(comment);
+                await _unitOfWork.SaveChangesAsync();
+
+                // Response
+                response = new CommentModel
+                {
+                    Id = comment.Id,
+                    Text = comment.Text,
+                    UserId = comment.UserId,
+                    AlbumId = comment.AlbumId,
+                    CollectionId = comment.CollectionId,
+                    CreatedOnUtc = comment.CreatedOnUtc,
+                    UpdatedOnUtc = comment.UpdatedOnUtc,
+                    FullName = user.FullName,
+                    UserName = user.UserName
+                };
+            }
+            else
+            {
+                var replyComment = new ReplyComment
+                {
+                    Text = request.Text,
+                    UserId = user.Id,
+                    CommentId = request.ParentCommentId.Value
+                };
+
+                _replyCommentRepository.Add(replyComment);
+                await _unitOfWork.SaveChangesAsync();
+
+                // Response
+                response = new CommentModel
+                {
+                    Id = replyComment.Id,
+                    Text = replyComment.Text,
+                    UserId = replyComment.UserId,
+                    CreatedOnUtc = replyComment.CreatedOnUtc,
+                    UpdatedOnUtc = replyComment.UpdatedOnUtc,
+                    FullName = user.FullName,
+                    UserName = user.UserName
+                };
+            }
 
             return new ServiceResponse<CommentModel>(response);
         }
 
         public async Task<ServiceResponse<CommentModel>> UpdateAsync(int id, CommentRequestModel request, string identityUserId)
         {
-            var comment = await _commentRepository.GetByIdAsync(id);
-            if (comment == null || comment.IsDeleted)
-            {
-                return new ServiceResponse<CommentModel>("error_comment_not_found");
-            }
-
             var user = await _userRepository.GetByIdentityUserIdAsync(identityUserId);
             if (user == null)
             {
                 return new ServiceResponse<CommentModel>("error_user_not_found");
-            }
-
-            if (comment.UserId != user.Id)
-            {
-                return new ServiceResponse<CommentModel>("error_comment_not_belog_current_user");
             }
 
             var album = await _albumRepository.GetByIdAsync(request.AlbumId);
@@ -103,43 +132,105 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 return new ServiceResponse<CommentModel>("error_album_not_found");
             }
 
-            if (comment.AlbumId != request.AlbumId)
-            {
-                return new ServiceResponse<CommentModel>("error_comment_not_belong_current_album");
-            }
 
-            Collection? collection;
-            if (request.CollectionId.HasValue)
+            CommentModel? response = new CommentModel();
+            if (!request.ParentCommentId.HasValue)
             {
-                collection = await _collectionRepository.GetByIdAsync(request.CollectionId.Value);
-                if (collection == null)
+                var comment = await _commentRepository.GetByIdAsync(id);
+                if (comment == null || comment.IsDeleted)
                 {
-                    return new ServiceResponse<CommentModel>("error_collection_not_found");
+                    return new ServiceResponse<CommentModel>("error_comment_not_found");
                 }
 
-                if (comment.CollectionId != request.CollectionId)
+                if (comment.AlbumId != request.AlbumId)
                 {
-                    return new ServiceResponse<CommentModel>("error_comment_not_belong_current_collection");
+                    return new ServiceResponse<CommentModel>("error_comment_not_belong_current_album");
+                }
+
+                if (comment.UserId != user.Id)
+                {
+                    return new ServiceResponse<CommentModel>("error_comment_not_belog_current_user");
+                }
+
+                Collection? collection;
+                if (request.CollectionId.HasValue)
+                {
+                    collection = await _collectionRepository.GetByIdAsync(request.CollectionId.Value);
+                    if (collection == null)
+                    {
+                        return new ServiceResponse<CommentModel>("error_collection_not_found");
+                    }
+
+                    if (comment.CollectionId != request.CollectionId)
+                    {
+                        return new ServiceResponse<CommentModel>("error_comment_not_belong_current_collection");
+                    }
+                }
+
+                if (request.CanUpdate)
+                {
+                    comment.Text = request.Text;
+                    _commentRepository.Update(comment);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    // Response
+                    response = new CommentModel
+                    {
+                        Id = comment.Id,
+                        Text = comment.Text,
+                        UserId = comment.UserId,
+                        AlbumId = comment.AlbumId,
+                        CollectionId = comment.CollectionId,
+                        CreatedOnUtc = comment.CreatedOnUtc,
+                        UpdatedOnUtc = comment.UpdatedOnUtc,
+                        FullName = user.FullName,
+                        UserName = user.UserName
+                    };
                 }
             }
-
-            comment.Text = request.Text;
-            _commentRepository.Update(comment);
-            await _unitOfWork.SaveChangesAsync();
-
-            // Response
-            var response = new CommentModel
+            else
             {
-                Id = comment.Id,
-                Text = comment.Text,
-                UserId = comment.UserId,
-                AlbumId = comment.AlbumId,
-                CollectionId = comment.CollectionId,
-                CreatedOnUtc = comment.CreatedOnUtc,
-                UpdatedOnUtc = comment.UpdatedOnUtc,
-                FullName = user.FullName,
-                UserName = user.UserName
-            };
+                var comment = await _replyCommentRepository.GetByIdAsync(id);
+                if (comment == null || comment.IsDeleted)
+                {
+                    return new ServiceResponse<CommentModel>("error_comment_not_found");
+                }
+
+                if (comment.UserId != user.Id)
+                {
+                    return new ServiceResponse<CommentModel>("error_comment_not_belog_current_user");
+                }
+
+                if (comment.CommentId != request.ParentCommentId)
+                {
+                    return new ServiceResponse<CommentModel>("error_comment_not_belong_current_comment");
+                }
+
+                var parentComment = await _commentRepository.GetByIdAsync(comment.CommentId);
+                if (parentComment == null || parentComment.IsDeleted)
+                {
+                    return new ServiceResponse<CommentModel>("error_parent_comment_not_found");
+                }
+
+                if (request.CanUpdate)
+                {
+                    comment.Text = request.Text;
+                    _replyCommentRepository.Update(comment);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    // Response
+                    response = new CommentModel
+                    {
+                        Id = comment.Id,
+                        Text = comment.Text,
+                        UserId = comment.UserId,
+                        CreatedOnUtc = comment.CreatedOnUtc,
+                        UpdatedOnUtc = comment.UpdatedOnUtc,
+                        FullName = user.FullName,
+                        UserName = user.UserName
+                    };
+                }
+            }
 
             return new ServiceResponse<CommentModel>(response);
         }
@@ -170,22 +261,65 @@ namespace Portal.Infrastructure.Implements.Business.Services
             return new ServiceResponse<bool>(true);
         }
 
+        public async Task<ServiceResponse<bool>> DeleteReplyAsync(int id, string identityUserId)
+        {
+            var replyComment = await _replyCommentRepository.GetByIdAsync(id);
+            if (replyComment == null || replyComment.IsDeleted)
+            {
+                return new ServiceResponse<bool>("error_comment_not_found");
+            }
+
+            var user = await _userRepository.GetByIdentityUserIdAsync(identityUserId);
+            if (user == null)
+            {
+                return new ServiceResponse<bool>("error_user_not_found");
+            }
+
+            if (replyComment.UserId != user.Id)
+            {
+                return new ServiceResponse<bool>("error_comment_not_belog_current_user");
+            }
+
+            replyComment.IsDeleted = true;
+            _replyCommentRepository.Update(replyComment);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ServiceResponse<bool>(true);
+        }
+
         public async Task<ServiceResponse<PagingCommonResponse<CommentPagingResposneModel>>> GetPagingAsync(CommentPagingRequestModel request)
         {
-            var parameters = new Dictionary<string, object?>
+            List<CommentPagingResposneModel>? result;
+
+            if (request.IsReply.HasValue && request.IsReply.Value)
             {
-                { "pageNumber", request.PageNumber },
-                { "pageSize", request.PageSize },
-                { "searchTerm", request.SearchTerm },
-                { "sortColumn", request.SortColumn },
-                { "sortDirection", request.SortDirection },
-                { "albumId", request.AlbumId },
-                { "collectionId", request.CollectionId },
-                { "userId", request.UserId },
-                { "isReply", request.IsReply },
-                { "parentCommentId", request.ParentCommentId }
-            };
-            var result = await _unitOfWork.QueryAsync<CommentPagingResposneModel>("Comment_All_Paging", parameters);
+                var parameters = new Dictionary<string, object?>
+                {
+                    { "pageNumber", request.PageNumber },
+                    { "pageSize", request.PageSize },
+                    { "searchTerm", request.SearchTerm },
+                    { "sortColumn", request.SortColumn },
+                    { "sortDirection", request.SortDirection },
+                    { "userId", request.UserId },
+                    { "commentId", request.ParentCommentId }
+                };
+                result = await _unitOfWork.QueryAsync<CommentPagingResposneModel>("ReplyComment_All_Paging", parameters);
+            }
+            else
+            {
+                var parameters = new Dictionary<string, object?>
+                {
+                    { "pageNumber", request.PageNumber },
+                    { "pageSize", request.PageSize },
+                    { "searchTerm", request.SearchTerm },
+                    { "sortColumn", request.SortColumn },
+                    { "sortDirection", request.SortDirection },
+                    { "albumId", request.AlbumId },
+                    { "collectionId", request.CollectionId },
+                    { "userId", request.UserId },
+                };
+                result = await _unitOfWork.QueryAsync<CommentPagingResposneModel>("Comment_All_Paging", parameters);
+            }
 
             var record = result.Find(o => o.IsTotalRecord);
             if (record == null)

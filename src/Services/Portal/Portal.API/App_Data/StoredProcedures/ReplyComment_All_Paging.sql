@@ -1,12 +1,11 @@
-CREATE OR ALTER PROCEDURE Comment_All_Paging
+CREATE OR ALTER PROCEDURE ReplyComment_All_Paging
     @pageNumber INT,
     @pageSize INT,
     @searchTerm NVARCHAR(MAX) = null,
     @sortColumn VARCHAR(100) = null,
     @sortDirection varchar(4) = 'ASC',
     @userId INT,
-    @albumId INT,
-    @collectionId INT
+    @commentId INT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -22,21 +21,21 @@ BEGIN
         AS
         (
             SELECT ROW_NUMBER() OVER (ORDER BY
-			CASE WHEN ISNULL(@sortColumn, '') = '' THEN c.Id END DESC,
-			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN c.CreatedOnUtc END,
-			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN c.CreatedOnUtc END DESC,
-			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN c.UpdatedOnUtc END,
-			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN c.UpdatedOnUtc END DESC
+			CASE WHEN ISNULL(@sortColumn, '') = '' THEN rc.Id END DESC,
+			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN rc.CreatedOnUtc END,
+			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN rc.CreatedOnUtc END DESC,
+			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN rc.UpdatedOnUtc END,
+			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN rc.UpdatedOnUtc END DESC
 		) AS RowNum,
-                c.Id,
-                c.Text,
+                rc.Id,
+                rc.Text,
                 c.AlbumId,
                 c.CollectionId,
-                c.UserId,
+                rc.UserId,
                 u.FullName,
                 u.UserName,
-                c.CreatedOnUtc,
-                c.UpdatedOnUtc,
+                rc.CreatedOnUtc,
+                rc.UpdatedOnUtc,
                 u.Avatar,
                 c2.Title,
                 a.FriendlyName as AlbumFriendlyName,
@@ -44,27 +43,24 @@ BEGIN
                 u.LevelId,
                 u.CurrentExp,
                 u.NextLevelExp,
-                u.RoleType,
-				COUNT(rc.Id) AS ReplyCount
-            FROM dbo.Comment c
-                JOIN dbo.[User] u ON u.Id = c.UserId
+                u.RoleType
+            FROM dbo.ReplyComment rc
+                JOIN dbo.[User] u ON u.Id = rc.UserId
+                JOIN Comment c ON rc.CommentId = c.Id
                 LEFT JOIN dbo.Album a ON a.Id = c.AlbumId
                 LEFT JOIN dbo.Collection c2 ON c2.Id = c.CollectionId
-				LEFT JOIN dbo.ReplyComment rc ON c.Id = rc.CommentId
             WHERE c.IsDeleted = 0 AND
-                (ISNULL(@userId, '') = '' OR c.UserId = @userId) AND
-                (ISNULL(@albumId, '') = '' OR a.Id = @albumId) AND
-                (ISNULL(@collectionId, '') = '' OR c2.Id = @collectionId)
+                (ISNULL(@userId, '') = '' OR c.UserId = @userId) AND rc.CommentId = @commentId
             GROUP BY
-				c.Id,
-                c.Text,
+				        rc.Id,
+                rc.Text,
                 c.AlbumId,
                 c.CollectionId,
-                c.UserId,
+                rc.UserId,
                 u.FullName,
                 u.UserName,
-                c.CreatedOnUtc,
-                c.UpdatedOnUtc,
+                rc.CreatedOnUtc,
+                rc.UpdatedOnUtc,
                 u.Avatar,
                 c2.Title,
                 a.FriendlyName,
@@ -92,7 +88,6 @@ BEGIN
             0 CurrentExp,
             0 NextLevelExp,
             0 RoleType,
-			0 ReplyCount,
             1 AS IsTotalRecord
         FROM FilteredData
     UNION
