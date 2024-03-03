@@ -398,21 +398,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     // Case 1: No records today, Create new record
                     if (userLevel == null && newUserLevel == null)
                     {
-                        var additionalInformations = new List<LevelAdditionalInformation>
-                        {
-                            new LevelAdditionalInformation
-                            {
-                                RoleType = user.RoleType,
-                                AlbumId = item.AlbumId,
-                                CollectionId = item.CollectionId,
-                                CommentId = item.CommentId,
-                                IpAddress = item.IpAddress,
-                                SessionId = item.SessionId,
-                                CreatedOnUtc = DateTime.UtcNow,
-                                IsViewedNewChapter = item.IsViewedNewChapter
-                            }
-                        };
-
                         addUserLevels.Add(new UserLevel
                         {
                             LevelId = user.LevelId ?? baseLevel.Id,
@@ -421,8 +406,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                             Exp = CalculateEarnExpFromViewOrComment(item.CollectionId, item.AlbumId, item.CommentId, user.RoleType),
                             IpAddress = item.IpAddress,
                             SessionId = item.SessionId,
-                            Date = item.CreatedOnUtc.Date,
-                            AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations)
+                            Date = item.CreatedOnUtc.Date
                         });
                     }
                     // Case 2: No records today, created record before so we update record that ready to save database
@@ -433,68 +417,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         #region Update lastest IP and stored Previous IPs
                         if (!string.IsNullOrEmpty(item.IpAddress))
                         {
-                            // Case 1 (Optional): When Additional Information empty, then create new records.
-                            if (string.IsNullOrEmpty(newUserLevel.AdditionalInformation))
-                            {
-                                var additionalInformations = new List<LevelAdditionalInformation>
-                                {
-                                    new LevelAdditionalInformation
-                                    {
-                                        RoleType = user.RoleType,
-                                        AlbumId = item.AlbumId,
-                                        CollectionId = item.CollectionId,
-                                        CommentId = item.CommentId,
-                                        IpAddress = item.IpAddress,
-                                        SessionId = item.SessionId,
-                                        CreatedOnUtc = DateTime.UtcNow,
-                                        IsViewedNewChapter = item.IsViewedNewChapter
-                                    }
-                                };
-                                newUserLevel.AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations);
-                            }
-                            else
-                            {
-                                // Case 2: Push a new record in exist Additional Information
-                                try
-                                {
-                                    var additionalInformations = JsonSerializationHelper.Deserialize<List<LevelAdditionalInformation>>(newUserLevel.AdditionalInformation);
-                                    if (additionalInformations != null)
-                                    {
-                                        additionalInformations.Add(new LevelAdditionalInformation
-                                        {
-                                            RoleType = user.RoleType,
-                                            AlbumId = item.AlbumId,
-                                            CollectionId = item.CollectionId,
-                                            CommentId = item.CommentId,
-                                            IpAddress = item.IpAddress,
-                                            SessionId = item.SessionId,
-                                            CreatedOnUtc = DateTime.UtcNow,
-                                            IsViewedNewChapter = item.IsViewedNewChapter
-                                        });
-                                        newUserLevel.AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations);
-                                    }
-                                }
-                                // Case (Bad Data): Then we use from case 1
-                                catch
-                                {
-                                    var additionalInformations = new List<LevelAdditionalInformation>
-                                    {
-                                       new LevelAdditionalInformation
-                                       {
-                                           RoleType = user.RoleType,
-                                           AlbumId = item.AlbumId,
-                                           CollectionId = item.CollectionId,
-                                           CommentId = item.CommentId,
-                                           IpAddress = item.IpAddress,
-                                           SessionId = item.SessionId,
-                                           CreatedOnUtc = DateTime.UtcNow,
-                                           IsViewedNewChapter = item.IsViewedNewChapter
-                                       }
-                                    };
-                                    newUserLevel.AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations);
-                                }
-                            }
-
                             newUserLevel.IpAddress = item.IpAddress;
                             newUserLevel.SessionId = item.SessionId;
                         }
@@ -508,68 +430,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         #region Update lastest IP and stored Previous IPs
                         if (!string.IsNullOrEmpty(item.IpAddress))
                         {
-                            // Case 1 (Optional): When Additional Information empty, then create new records.
-                            if (string.IsNullOrEmpty(userLevel.AdditionalInformation))
-                            {
-                                var additionalInformations = new List<LevelAdditionalInformation>
-                                {
-                                    new LevelAdditionalInformation
-                                    {
-                                        RoleType = user.RoleType,
-                                        AlbumId = item.AlbumId,
-                                        CollectionId = item.CollectionId,
-                                        CommentId = item.CommentId,
-                                        IpAddress = item.IpAddress,
-                                        SessionId = item.SessionId,
-                                        CreatedOnUtc = DateTime.UtcNow,
-                                        IsViewedNewChapter = item.IsViewedNewChapter
-                                    }
-                                };
-                                userLevel.AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations);
-                            }
-                            else
-                            {
-                                // Case 2: Push a new record in exist Additional Information
-                                try
-                                {
-                                    var additionalInformations = JsonSerializationHelper.Deserialize<List<LevelAdditionalInformation>>(userLevel.AdditionalInformation);
-                                    if (additionalInformations != null)
-                                    {
-                                        additionalInformations.Add(new LevelAdditionalInformation
-                                        {
-                                            RoleType = user.RoleType,
-                                            AlbumId = item.AlbumId,
-                                            CollectionId = item.CollectionId,
-                                            CommentId = item.CommentId,
-                                            IpAddress = item.IpAddress,
-                                            SessionId = item.SessionId,
-                                            CreatedOnUtc = DateTime.UtcNow,
-                                            IsViewedNewChapter = item.IsViewedNewChapter
-                                        });
-                                        userLevel.AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations);
-                                    }
-                                }
-                                // Case (Bad Data): Then we use from case 1
-                                catch
-                                {
-                                    var additionalInformations = new List<LevelAdditionalInformation>
-                                    {
-                                       new LevelAdditionalInformation
-                                       {
-                                           RoleType = user.RoleType,
-                                           AlbumId = item.AlbumId,
-                                           CollectionId = item.CollectionId,
-                                           CommentId = item.CommentId,
-                                           IpAddress = item.IpAddress,
-                                           SessionId = item.SessionId,
-                                           CreatedOnUtc = DateTime.UtcNow,
-                                           IsViewedNewChapter = item.IsViewedNewChapter
-                                       }
-                                    };
-                                    userLevel.AdditionalInformation = JsonSerializationHelper.Serialize(additionalInformations);
-                                }
-                            }
-
                             userLevel.IpAddress = item.IpAddress;
                             userLevel.SessionId = item.SessionId;
                         }
