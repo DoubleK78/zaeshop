@@ -13,7 +13,7 @@ namespace Portal.Domain.AggregatesModel.CollectionAggregate
         public bool IsDeleted { get; set; }
 
         [JsonIgnore]
-        public virtual Comment? Comment { get; set; } = null!;
+        public virtual Comment Comment { get; set; } = null!;
 
         [JsonIgnore]
         public virtual User User { get; set; } = null!;

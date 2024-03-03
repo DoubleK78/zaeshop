@@ -56,5 +56,7 @@ namespace Portal.Domain.Models.CommentModels
         public int AlbumId { get; set; }
         public int? CollectionId { get; set; }
         public int? ParentCommentId { get; set; }
+
+        public bool CanUpdate { get; set; }
     }
 }

@@ -9,5 +9,6 @@ namespace Portal.Domain.Interfaces.Business.Services
         Task<ServiceResponse<CommentModel>> UpdateAsync(int id, CommentRequestModel request, string identityUserId);
         Task<ServiceResponse<bool>> DeleteAsync(int id, string identityUserId);
         Task<ServiceResponse<PagingCommonResponse<CommentPagingResposneModel>>> GetPagingAsync(CommentPagingRequestModel request);
+        Task<ServiceResponse<bool>> DeleteReplyAsync(int id, string identityUserId);
     }
 }
