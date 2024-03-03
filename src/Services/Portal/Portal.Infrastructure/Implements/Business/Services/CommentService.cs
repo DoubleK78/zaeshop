@@ -55,8 +55,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 Text = request.Text,
                 CollectionId = request.CollectionId,
                 UserId = user.Id,
-                AlbumId = request.AlbumId,
-                ParentCommentId = request.ParentCommentId
+                AlbumId = request.AlbumId
             };
 
             _commentRepository.Add(comment);
@@ -73,8 +72,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 CreatedOnUtc = comment.CreatedOnUtc,
                 UpdatedOnUtc = comment.UpdatedOnUtc,
                 FullName = user.FullName,
-                UserName = user.UserName,
-                ParentCommentId = comment.ParentCommentId
+                UserName = user.UserName
             };
 
             return new ServiceResponse<CommentModel>(response);

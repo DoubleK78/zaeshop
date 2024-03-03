@@ -11,7 +11,7 @@ namespace Portal.Infrastructure.EntityConfigurations.CollectionAggregate
             builder.HasKey(x => x.Id);
 
             builder.HasOne(x => x.Comment).WithMany(y => y.ReplyComments).HasForeignKey(z => z.CommentId);
-            builder.HasOne(x => x.User).WithMany(y => y.ReplyComments).HasForeignKey(z => z.UserId);
+            builder.HasOne(x => x.User).WithMany(y => y.ReplyComments).HasForeignKey(z => z.UserId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
