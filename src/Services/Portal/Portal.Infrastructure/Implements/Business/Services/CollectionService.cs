@@ -447,7 +447,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         {
                             CollectionId = item.CollectionId,
                             UserId = item.UserId,
-                            AnonymousInformation = item.AnonymousInformation,
                             View = 1,
                             IpAddress = item.IpAddress,
                             SessionId = item.SessionId,
@@ -467,29 +466,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         #region Update lastest IP and stored Previous IPs
                         if (!string.IsNullOrEmpty(item.IpAddress) && item.IpAddress != newCollectionView.IpAddress)
                         {
-                            if (string.IsNullOrEmpty(newCollectionView.AnonymousInformation))
-                            {
-                                var ipAddresses = new List<string> { item.IpAddress };
-                                newCollectionView.AnonymousInformation = JsonSerializationHelper.Serialize(ipAddresses);
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    var ipAddresses = JsonSerializationHelper.Deserialize<List<string>>(newCollectionView.AnonymousInformation);
-                                    if (ipAddresses != null)
-                                    {
-                                        ipAddresses.Add(item.IpAddress);
-                                        newCollectionView.AnonymousInformation = JsonSerializationHelper.Serialize(ipAddresses);
-                                    }
-                                }
-                                catch
-                                {
-                                    var ipAddresses = new List<string> { item.IpAddress };
-                                    newCollectionView.AnonymousInformation = JsonSerializationHelper.Serialize(ipAddresses);
-                                }
-                            }
-
                             newCollectionView.IpAddress = item.IpAddress;
                         }
                         #endregion
@@ -507,29 +483,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         #region Update lastest IP and stored Previous IPs
                         if (!string.IsNullOrEmpty(item.IpAddress) && item.IpAddress != collectionView.IpAddress)
                         {
-                            if (string.IsNullOrEmpty(collectionView.AnonymousInformation))
-                            {
-                                var ipAddresses = new List<string> { item.IpAddress };
-                                collectionView.AnonymousInformation = JsonSerializationHelper.Serialize(ipAddresses);
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    var ipAddresses = JsonSerializationHelper.Deserialize<List<string>>(collectionView.AnonymousInformation);
-                                    if (ipAddresses != null)
-                                    {
-                                        ipAddresses.Add(item.IpAddress);
-                                        collectionView.AnonymousInformation = JsonSerializationHelper.Serialize(ipAddresses);
-                                    }
-                                }
-                                catch
-                                {
-                                    var ipAddresses = new List<string> { item.IpAddress };
-                                    collectionView.AnonymousInformation = JsonSerializationHelper.Serialize(ipAddresses);
-                                }
-                            }
-
                             collectionView.IpAddress = item.IpAddress;
                             updateCollectionViews.Add(collectionView);
                         }
