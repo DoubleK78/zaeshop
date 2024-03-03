@@ -10,8 +10,6 @@ namespace Portal.Infrastructure.EntityConfigurations.CollectionAggregate
             builder.ToTable(nameof(Comment));
             builder.HasKey(x => x.Id);
 
-            builder.HasOne(x => x.ParentComment).WithMany(x => x.Replies).HasForeignKey(z => z.ParentCommentId);
-
             builder.HasOne(x => x.Album).WithMany(y => y.Comments).HasForeignKey(z => z.AlbumId);
             builder.HasOne(x => x.Collection).WithMany(y => y.Comments).HasForeignKey(z => z.CollectionId);
             builder.HasOne(x => x.User).WithMany(y => y.Comments).HasForeignKey(z => z.UserId);
