@@ -60,26 +60,26 @@ jobs:
           file: ./src/Services/Portal/Portal.API/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/zaeshop-portal-dev:latest
-  deploy:
-    name: Deploy to EC2
-    needs: build
-    runs-on: ubuntu-latest
+  # deploy:
+  #   name: Deploy to EC2
+  #   needs: build
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build & Deploy
-        env:
-          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{ secrets.SSH_HOST }}
-          USER_NAME: ${{ secrets.USER_NAME }}
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-            # Now we have got the access of EC2 and we will start the deploy.
-            #sudo docker-compose down &&
-            #sudo docker system prune --all --volumes --force &&
-            #sudo docker-compose -f "docker-compose.development.yml" up -d
-            sudo docker compose down &&
-            sudo docker system prune --all --volumes --force &&
-            sudo docker compose -f "docker-compose.yml" up -d
-          '
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Build & Deploy
+  #       env:
+  #         PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  #         HOSTNAME: ${{ secrets.SSH_HOST }}
+  #         USER_NAME: ${{ secrets.USER_NAME }}
+  #       run: |
+  #         echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+  #         ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+  #           # Now we have got the access of EC2 and we will start the deploy.
+  #           #sudo docker-compose down &&
+  #           #sudo docker system prune --all --volumes --force &&
+  #           #sudo docker-compose -f "docker-compose.development.yml" up -d
+  #           sudo docker compose down &&
+  #           sudo docker system prune --all --volumes --force &&
+  #           sudo docker compose -f "docker-compose.yml" up -d
+  #         '

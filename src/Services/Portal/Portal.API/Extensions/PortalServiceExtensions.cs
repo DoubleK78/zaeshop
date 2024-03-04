@@ -23,7 +23,7 @@ public static class PortalServiceExtensions
 {
     public static IServiceCollection AddPortalServices(this IServiceCollection services, IConfiguration config)
     {
-        services.AddDbContextPool<ApplicationDbContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(config.GetConnectionString("PortalConnection")));
+        services.AddDbContext<ApplicationDbContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(config.GetConnectionString("PortalConnection")));
         services.Configure<AppSettings>(config.GetSection("AppSettings"));
 
         services.AddScoped<IAmazonS3>(x => new AmazonS3Client(config["AWS:AccessKey"], config["AWS:SecretKey"], RegionEndpoint.USEast1));
