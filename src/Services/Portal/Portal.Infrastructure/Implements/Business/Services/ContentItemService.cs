@@ -229,7 +229,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             }).OrderBy(x => x.OrderBy).ToList();
 
             _contentItemRepository.AddRange(addItems);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.BulkSaveChangesAsync();
 
             return new ServiceResponse<bool>(true);
         }
@@ -313,7 +313,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 _contentItemRepository.AddRange(createContentItems);
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.BulkSaveChangesAsync();
             return new ServiceResponse<bool>(true);
         }
         #endregion

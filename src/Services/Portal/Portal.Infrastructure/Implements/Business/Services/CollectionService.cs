@@ -500,7 +500,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     _collectionViewRepository.UpdateRange(updateCollectionViews);
                 }
 
-                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.BulkSaveChangesAsync();
 
                 // Re-calculate views to collection and album
                 var parameters = new Dictionary<string, object?>
@@ -618,7 +618,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 album.UpdatedOnUtc = DateTime.UtcNow;
 
                 _repository.AddRange(addCollections);
-                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.BulkSaveChangesAsync();
 
                 // Remove cache Comic Detail
                 _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, album.FriendlyName));
@@ -711,7 +711,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 }
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.BulkSaveChangesAsync();
 
             // Remove cache comic details
             if (albumFriendlyNames.Count > 0)

@@ -446,7 +446,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     _unitOfWork.Repository<UserLevel>().UpdateRange(updateUserLevels);
                 }
 
-                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.BulkSaveChangesAsync();
 
                 // Re-calculate Exps from users
                 var parameters = new Dictionary<string, object?>
