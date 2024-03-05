@@ -679,10 +679,11 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                     .Where(x => x.LevelPublic != ELevelPublic.AllUser)
                                     .ToListAsync();
 
-            if (collections == null)
+            if (collections == null || collections.Count == 0)
                 return new ServiceResponse<bool>("error_reset_level_public");
 
             var albumFriendlyNames = new List<string?>();
+            var updateCollections = new List<Collection>();
 
             foreach (var collection in collections)
             {
@@ -692,18 +693,21 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 {
                     collection.LevelPublic = ELevelPublic.SPremiumUser;
                     albumFriendlyNames.Add(collection.Album.FriendlyName);
+                    updateCollections.Add(collection);
                 }
 
                 if (collection.LevelPublic == ELevelPublic.SPremiumUser && difference.TotalHours >= 4 && difference.TotalHours < 12)
                 {
                     collection.LevelPublic = ELevelPublic.PremiumUser;
                     albumFriendlyNames.Add(collection.Album.FriendlyName);
+                    updateCollections.Add(collection);
                 }
 
                 if (collection.LevelPublic == ELevelPublic.PremiumUser && difference.TotalHours >= 12)
                 {
                     collection.LevelPublic = ELevelPublic.AllUser;
                     albumFriendlyNames.Add(collection.Album.FriendlyName);
+                    updateCollections.Add(collection);
                 }
             }
 
@@ -715,6 +719,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 foreach (var friendlyName in albumFriendlyNames)
                 {
                     _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName));
+                }
+            }
+
+            if (updateCollections.Count > 0)
+            {
+                foreach (var collection in updateCollections)
+                {
+                    _redisService.Remove(string.Format(Const.RedisCacheKey.ComicContent, collection.Album.FriendlyName, collection.FriendlyName));
                 }
             }
 

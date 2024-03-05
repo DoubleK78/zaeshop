@@ -476,7 +476,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
         {
             var albums = await _repository.GetQueryable().Where(x => x.LevelPublic != ELevelPublic.AllUser).ToListAsync();
 
-            if (albums == null)
+            if (albums == null || albums.Count == 0)
                 return new ServiceResponse<bool>("error_reset_level_public");
 
             var albumFriendlyNames = new List<string?>();
