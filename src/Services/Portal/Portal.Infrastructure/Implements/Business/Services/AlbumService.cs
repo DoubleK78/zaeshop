@@ -503,7 +503,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 }
             }
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.BulkSaveChangesAsync();
 
             // Remove cache Comic Paging
             if (albumFriendlyNames.Count > 0)
