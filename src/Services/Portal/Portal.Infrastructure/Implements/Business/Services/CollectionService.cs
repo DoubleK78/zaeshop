@@ -716,7 +716,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             // Remove cache comic details
             if (albumFriendlyNames.Count > 0)
             {
-                foreach (var friendlyName in albumFriendlyNames)
+                foreach (var friendlyName in albumFriendlyNames.Distinct())
                 {
                     _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName));
                 }
