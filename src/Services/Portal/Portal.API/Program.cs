@@ -5,7 +5,6 @@ using Portal.API.Controllers;
 using Portal.API.Extensions;
 using Portal.API.Middlewares;
 using Portal.Infrastructure;
-using Portal.Infrastructure.Implements.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -45,7 +44,6 @@ builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(10);
 });
-builder.Services.AddSignalR();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -91,8 +89,5 @@ app.MapControllers();
 // gRPC
 app.MapGrpcService<UserGrpcController>();
 app.MapGrpcReflectionService();
-
-// Hub
-app.MapHub<PortalHub>("/hub");
 
 app.Run();
