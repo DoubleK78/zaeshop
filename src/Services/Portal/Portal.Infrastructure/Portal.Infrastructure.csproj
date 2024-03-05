@@ -22,6 +22,7 @@
     <PackageReference Include="AWSSDK.S3" Version="3.7.305.11" />
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.300" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+    <PackageReference Include="N.EntityFrameworkCore.Extensions" Version="8.0.0.4" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Helpers/" />

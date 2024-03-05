@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Dapper;
 using Microsoft.EntityFrameworkCore.Storage;
+using N.EntityFrameworkCore.Extensions;
 using Portal.Domain.SeedWork;
 
 namespace Portal.Infrastructure.SeedWork;
@@ -65,6 +66,11 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         return await context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<int> BulkSaveChangesAsync()
+    {
+        return await context.BulkSaveChangesAsync();
     }
 
     #region Dapper
@@ -133,6 +139,23 @@ public class UnitOfWork : IUnitOfWork, IDisposable
                 _currentTransaction = null;
             }
         }
+    }
+    #endregion
+
+    #region Bulk Operations
+    public async Task<int> BulkInsertAsync<T>(List<T> entities) where T : Entity
+    {
+        return await context.BulkInsertAsync(entities);
+    }
+
+    public async Task<int> BulkUpdateAsync<T>(List<T> entities) where T : Entity
+    {
+        return await context.BulkUpdateAsync(entities);
+    }
+
+    public async Task<int> BulkDeleteAsync<T>(List<T> entities) where T : Entity
+    {
+        return await context.BulkDeleteAsync(entities);
     }
     #endregion
 }
