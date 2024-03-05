@@ -288,8 +288,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     }
                 }
 
-                var collection = await _repository.GetByIdAsync(model.CollectionId);
-                if (collection == null)
+                var collectionExists = await _repository.GetQueryable().AnyAsync(x => x.Id == model.CollectionId);
+                if (!collectionExists)
                 {
                     // Log Error when model have collection id not exists database
                     await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage

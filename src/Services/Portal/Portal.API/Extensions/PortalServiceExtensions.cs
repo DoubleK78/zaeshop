@@ -69,7 +69,6 @@ public static class PortalServiceExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAmazonS3Service, AmazonS3Service>();
-        services.AddScoped<IPortalHubService, PortalHubService>();
         return services;
     }
 }

@@ -95,11 +95,10 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     return;
                 }
 
-                Collection? collection = null;
                 if (model.CollectionId.HasValue)
                 {
-                    collection = await _collectionRepository.GetByIdAsync(model.CollectionId.Value);
-                    if (collection == null)
+                    var collectionHasExists = await _collectionRepository.GetQueryable().AnyAsync(x => x.Id == model.CollectionId.Value);
+                    if (!collectionHasExists)
                     {
                         // Log Error when model have collection id not exists database
                         await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
@@ -116,11 +115,10 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     }
                 }
 
-                Album? album = null;
                 if (model.AlbumId.HasValue)
                 {
-                    album = await _unitOfWork.Repository<Album>().GetByIdAsync(model.AlbumId.Value);
-                    if (album == null)
+                    var albumHasExists = await _unitOfWork.Repository<Album>().GetQueryable().AnyAsync(x => x.Id == model.AlbumId.Value);
+                    if (!albumHasExists)
                     {
                         // Log Error when model have album id not exists database
                         await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
@@ -137,11 +135,10 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     }
                 }
 
-                Comment? comment = null;
                 if (model.CommentId.HasValue)
                 {
-                    comment = await _commentRepository.GetByIdAsync(model.CommentId.Value);
-                    if (comment == null)
+                    var commentHasExists = await _commentRepository.GetQueryable().AnyAsync(x => x.Id == model.CommentId.Value);
+                    if (!commentHasExists)
                     {
                         // Log Error when model have comment id not exists database
                         await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
@@ -160,7 +157,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 #endregion
 
                 #region Collection (User go next chapter)
-                if (model.CollectionId.HasValue && collection != null)
+                if (model.CollectionId.HasValue)
                 {
                     // We use key LevelCount_00 & LevelCount_30
                     var key = string.Format(Const.RedisCacheKey.LevelCount, DateTime.UtcNow.Minute - (DateTime.UtcNow.Minute % 30));
@@ -172,7 +169,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                             new LevelBuildRedisModel
                             {
                                 UserId = user.Id,
-                                CollectionId = collection.Id,
+                                CollectionId = model.CollectionId.Value,
                                 CreatedOnUtc = DateTime.UtcNow,
                                 IpAddress = model.IpAddress,
                                 SessionId = model.SessionId,
@@ -210,7 +207,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                             value.Add(new LevelBuildRedisModel
                             {
                                 UserId = user.Id,
-                                CollectionId = collection.Id,
+                                CollectionId = model.CollectionId.Value,
                                 CreatedOnUtc = DateTime.UtcNow,
                                 IpAddress = model.IpAddress,
                                 SessionId = model.SessionId,
@@ -225,7 +222,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 #endregion
 
                 #region Comment (User comment on comic or collection)
-                if (model.CommentId.HasValue && comment != null && (model.AlbumId.HasValue || model.CollectionId.HasValue))
+                if (model.CommentId.HasValue && (model.AlbumId.HasValue || model.CollectionId.HasValue))
                 {
                     // Same logic #region Collection (User go next chapter)
                     // We use key LevelCount_00 & LevelCount_30
@@ -238,9 +235,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
                             new LevelBuildRedisModel
                             {
                                 UserId = user.Id,
-                                AlbumId = album?.Id,
-                                CollectionId = collection?.Id,
-                                CommentId = comment.Id,
+                                AlbumId = model.AlbumId,
+                                CollectionId = model.CollectionId,
+                                CommentId = model.CommentId.Value,
                                 CreatedOnUtc = DateTime.UtcNow,
                                 IpAddress = model.IpAddress,
                                 SessionId = model.SessionId
@@ -260,12 +257,12 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         bool isValidEarnFromComment = false;
 
                         var levelBuildRedisModel = value.Find(o => o.CommentId == model.CommentId && (
-                            o.AlbumId == album?.Id || o.CollectionId == collection?.Id
+                            o.AlbumId == model.AlbumId || o.CollectionId == model.CollectionId
                         ) && o.UserId == user?.Id);
 
                         var lastNextChapterEvent = value
                             .Where(o => o.CommentId.HasValue && (
-                                o.AlbumId == album?.Id || o.CollectionId == collection?.Id
+                                o.AlbumId == model.AlbumId || o.CollectionId == model.CollectionId
                             ) && o.UserId == user?.Id)
                             .OrderByDescending(o => o.CreatedOnUtc)
                             .FirstOrDefault()?.CreatedOnUtc;
@@ -283,9 +280,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
                             value.Add(new LevelBuildRedisModel
                             {
                                 UserId = user.Id,
-                                AlbumId = album?.Id,
-                                CollectionId = collection?.Id,
-                                CommentId = comment.Id,
+                                AlbumId = model.AlbumId,
+                                CollectionId = model.CollectionId,
+                                CommentId = model.CommentId.Value,
                                 CreatedOnUtc = DateTime.UtcNow,
                                 IpAddress = model.IpAddress,
                                 SessionId = model.SessionId
