@@ -1,6 +1,8 @@
-using System.Net;
-using System.Net.Mail;
 using EmailHelper.Models;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
+using MimeKit.Text;
 
 namespace EmailHelper.Services
 {
@@ -21,51 +23,39 @@ namespace EmailHelper.Services
 
         private async Task HandleSendMailAsync(string subject, string body, List<string> toEmails, List<string>? ccEmails = null, List<EmailAttachment>? attachments = null)
         {
-            var message = new MailMessage
-            {
-                From = new MailAddress(_emailOptions.MailFrom ?? string.Empty, _emailOptions.SenderName)
-            };
+            // create message
+            var email = new MimeMessage();
+            email.From.Add(new MailboxAddress(_emailOptions.SenderName, _emailOptions.MailFrom ?? string.Empty));
 
-            //to emails
-            foreach (var email in toEmails.Where(email => !string.IsNullOrEmpty(email)))
+            foreach (var toEmail in toEmails.Where(email => !string.IsNullOrEmpty(email)))
             {
-                message.To.Add(email);
+                email.To.Add(MailboxAddress.Parse(toEmail));
             }
 
             //cc emails
             if (ccEmails?.Count > 0)
             {
-                foreach (var email in ccEmails.Where(email => !toEmails.Contains(email) && !string.IsNullOrEmpty(email)))
+                foreach (var ccEmail in ccEmails.Where(email => !toEmails.Contains(email) && !string.IsNullOrEmpty(email)))
                 {
-                    message.CC.Add(email);
+                    email.Cc.Add(MailboxAddress.Parse(ccEmail));
                 }
             }
 
-            //attachment
-            if (attachments?.Count > 0)
-            {
-                foreach (var attachment in attachments)
-                {
-                    message.Attachments.Add(new Attachment(new MemoryStream(attachment.Attachment), attachment.FileName));
-                }
-            }
-
-            message.IsBodyHtml = true;
             if (_emailOptions.Environment != "Production")
             {
-                message.Subject = $"[{_emailOptions.Environment}] " + subject;
+                email.Subject = $"[{_emailOptions.Environment}] " + subject;
             }
             else
             {
-                message.Subject = subject;
+                email.Subject = subject;
             }
+            email.Body = new TextPart(TextFormat.Html) { Text = body };
 
-            message.Body = body;
-
-            using var client = new SmtpClient(_emailOptions.SmtpServer, _emailOptions.SmtpPort);
-            client.Credentials = new NetworkCredential(_emailOptions.SmtpUser, _emailOptions.SmtpPassword);
-            client.EnableSsl = true;
-            await client.SendMailAsync(message);
+            using var smtp = new SmtpClient();
+            await smtp.ConnectAsync(_emailOptions.SmtpServer, _emailOptions.SmtpPort, SecureSocketOptions.StartTls);
+            await smtp.AuthenticateAsync(_emailOptions.SmtpUser, _emailOptions.SmtpPassword);
+            await smtp.SendAsync(email);
+            await smtp.DisconnectAsync(true);
         }
     }
 }
