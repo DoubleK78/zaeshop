@@ -13,6 +13,7 @@ public interface IUnitOfWork
     #region Transaction
     Task<IDbContextTransaction?> BeginTransactionAsync();
     Task CommitTransactionAsync(IDbContextTransaction? transaction);
+    Task CommitTransactionBulkOperationsAsync(IDbContextTransaction? transaction);
     void RollbackTransaction();
     #endregion
 

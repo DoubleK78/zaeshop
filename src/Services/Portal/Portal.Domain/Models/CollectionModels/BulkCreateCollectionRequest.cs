@@ -1,4 +1,5 @@
 using Common.Enums;
+using Portal.Domain.AggregatesModel.CollectionAggregate;
 
 namespace Portal.Domain.Models.CollectionModels
 {
@@ -14,5 +15,11 @@ namespace Portal.Domain.Models.CollectionModels
     {
         public string Name { get; set; } = null!;
         public int Size { get; set; }
+    }
+
+    public class BulkCreateCollectionDb
+    {
+        public Collection Collection { get; set; } = null!;
+        public List<ContentItem> ContentItems { get; set; } = new List<ContentItem>();
     }
 }

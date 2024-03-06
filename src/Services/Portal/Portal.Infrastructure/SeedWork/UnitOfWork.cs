@@ -125,6 +125,34 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         }
     }
 
+    public async Task CommitTransactionBulkOperationsAsync(IDbContextTransaction? transaction)
+    {
+        if (transaction == null)
+        {
+            ArgumentNullException.ThrowIfNull(nameof(transaction));
+            return;
+        }
+        if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+
+        try
+        {
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            RollbackTransaction();
+            throw;
+        }
+        finally
+        {
+            if (_currentTransaction != null)
+            {
+                _currentTransaction.Dispose();
+                _currentTransaction = null;
+            }
+        }
+    }
+
     public void RollbackTransaction()
     {
         try
