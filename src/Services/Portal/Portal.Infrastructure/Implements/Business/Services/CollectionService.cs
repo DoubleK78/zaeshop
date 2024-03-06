@@ -570,66 +570,85 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
         public async Task<ServiceResponse<string>> BulkCreateAsync(int albumId, List<BulkCreateCollectionRequest> collections)
         {
-            var album = await _albumRepository.GetByIdAsync(albumId);
-            if (album == null)
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
+            if (transaction == null) return new ServiceResponse<string>("error_transaction");
+            try
             {
-                return new ServiceResponse<string>("error_album_not_found");
-            }
-
-            var existsCollections = await _repository.GetQueryable().Where(o => o.AlbumId == albumId).ToListAsync();
-
-            var addCollections = new List<Collection>();
-            foreach (var item in collections)
-            {
-                bool isExists = existsCollections.Any(x => x.FriendlyName == item.Name);
-                if (!isExists)
+                var album = await _albumRepository.GetByIdAsync(albumId);
+                if (album == null)
                 {
-                    // convert friendly name to title
-                    string[] words = item.Name.Split('-');
-                    string title = string.Join(" ", words.Select(w => char.ToUpper(w[0]) + w[1..]));
-                    var contentItems = item.ContentItems.ConvertAll(x =>
-                    {
-                        // Prefix relative to stored folder places
-                        string prefixRelative = $"{album.FriendlyName}/{item.Name}";
-                        return new ContentItem
-                        {
-                            Name = x.Name,
-                            RelativeUrl = prefixRelative + "/" + x.Name,
-                            OrderBy = RegexHelper.GetNumberByText(x.Name)
-                        };
-                    }).OrderBy(x => x.OrderBy).ToList();
+                    return new ServiceResponse<string>("error_album_not_found");
+                }
 
-                    var newCollection = new Collection
+                var existsCollections = await _repository.GetQueryable().Where(o => o.AlbumId == albumId).ToListAsync();
+
+                var addCollections = new List<BulkCreateCollectionDb>();
+                foreach (var item in collections)
+                {
+                    bool isExists = existsCollections.Any(x => x.FriendlyName == item.Name);
+                    if (!isExists)
                     {
-                        AlbumId = albumId,
-                        Title = title,
-                        FriendlyName = item.Name,
-                        ContentItems = contentItems,
-                        LevelPublic = item.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
-                        StorageType = item.StorageType
-                    };
-                    addCollections.Add(newCollection);
+                        // convert friendly name to title
+                        string[] words = item.Name.Split('-');
+                        string title = string.Join(" ", words.Select(w => char.ToUpper(w[0]) + w[1..]));
+                        var contentItems = item.ContentItems.ConvertAll(x =>
+                        {
+                            // Prefix relative to stored folder places
+                            string prefixRelative = $"{album.FriendlyName}/{item.Name}";
+                            return new ContentItem
+                            {
+                                Name = x.Name,
+                                RelativeUrl = prefixRelative + "/" + x.Name,
+                                OrderBy = RegexHelper.GetNumberByText(x.Name)
+                            };
+                        }).OrderBy(x => x.OrderBy).ToList();
+
+                        var newCollection = new Collection
+                        {
+                            AlbumId = albumId,
+                            Title = title,
+                            FriendlyName = item.Name,
+                            LevelPublic = item.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
+                            StorageType = item.StorageType
+                        };
+                        addCollections.Add(new BulkCreateCollectionDb
+                        {
+                            Collection = newCollection,
+                            ContentItems = contentItems
+                        });
+                    }
+                }
+
+                if (addCollections.Count > 0)
+                {
+                    // Update Comic Recently uploaded
+                    album.UpdatedOnUtc = DateTime.UtcNow;
+
+                    await _unitOfWork.BulkInsertAsync(addCollections.ConvertAll(x => x.Collection));
+
+                    foreach (var item in addCollections)
+                    {
+                        item.ContentItems.ForEach(x => x.CollectionId = item.Collection.Id);
+                    }
+
+                    await _unitOfWork.BulkInsertAsync(addCollections.SelectMany(x => x.ContentItems).ToList());
+
+                    // Remove cache Comic Detail
+                    _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, album.FriendlyName));
+
+                    // Remove cache Comic Paging
+                    _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+
+                    await _unitOfWork.CommitTransactionBulkOperationsAsync(transaction);
                 }
             }
-
-            if (addCollections.Count > 0)
+            catch (Exception)
             {
-                // Update Comic Recently uploaded
-                album.UpdatedOnUtc = DateTime.UtcNow;
-
-                _repository.AddRange(addCollections);
-                await _unitOfWork.BulkSaveChangesAsync();
-
-                // Remove cache Comic Detail
-                _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, album.FriendlyName));
-
-                // Remove cache Comic Paging
-                _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+                await transaction.RollbackAsync();
+                throw;
             }
-
             return new ServiceResponse<string>("success");
         }
-
 
         public async Task ResetLevelPublicTaskAsync()
         {
