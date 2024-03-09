@@ -410,7 +410,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
             var prefixEnvironment = isDeployed ? "[Docker] " : string.Empty;
 
             // Get redis data from 10 minutes ago
-            var key = string.Format(Const.RedisCacheKey.ViewCount, Math.Abs(DateTime.UtcNow.Minute - (DateTime.UtcNow.Minute % 10) - 10));
+            var minutes = DateTime.UtcNow.Minute - (DateTime.UtcNow.Minute % 10) - 10;
+            var key = string.Format(Const.RedisCacheKey.ViewCount, minutes < 0 ? 50: minutes);
 
             // Get safely Cache value from key
             List<CollectionViewModel>? value;
