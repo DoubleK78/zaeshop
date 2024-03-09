@@ -322,15 +322,15 @@ namespace Portal.Infrastructure.Implements.Business.Services
             {
                 try
                 {
-                    scheduleJob.IsRunning = true;
-                    scheduleJob.StartOnUtc = DateTime.UtcNow;
-                    await _unitOfWork.BulkSaveChangesAsync();
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_StartJob", parameters);
 
                     await CalculateExperiencesFromRedisAsync();
 
-                    scheduleJob.EndOnUtc = DateTime.UtcNow;
-                    scheduleJob.IsRunning = false;
-                    await _unitOfWork.BulkSaveChangesAsync();
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
                 }
                 catch (Exception ex)
                 {
@@ -345,9 +345,11 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         StatusCode = "Internal Server Error"
                     });
 
-                    scheduleJob.EndOnUtc = DateTime.UtcNow;
-                    scheduleJob.IsRunning = false;
-                    await _unitOfWork.BulkSaveChangesAsync();
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
                 }
             }
         }
@@ -438,15 +440,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 if (addUserLevels.Count > 0)
                 {
-                    _unitOfWork.Repository<UserLevel>().AddRange(addUserLevels);
+                    await _unitOfWork.BulkInsertAsync(addUserLevels);
                 }
 
                 if (updateUserLevels.Count > 0)
                 {
-                    _unitOfWork.Repository<UserLevel>().UpdateRange(updateUserLevels);
+                    updateUserLevels.ForEach(x => x.UpdatedOnUtc = DateTime.UtcNow);
+                    await _unitOfWork.BulkUpdateAsync(addUserLevels);
                 }
-
-                await _unitOfWork.BulkSaveChangesAsync();
 
                 // Re-calculate Exps from users
                 var parameters = new Dictionary<string, object?>

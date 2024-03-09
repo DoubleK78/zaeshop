@@ -372,15 +372,15 @@ namespace Portal.Infrastructure.Implements.Business.Services
             {
                 try
                 {
-                    scheduleJob.IsRunning = true;
-                    scheduleJob.StartOnUtc = DateTime.UtcNow;
-                    await _unitOfWork.BulkSaveChangesAsync();
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_StartJob", parameters);
 
                     await CaclculateViewsFromRedisAsync();
 
-                    scheduleJob.EndOnUtc = DateTime.UtcNow;
-                    scheduleJob.IsRunning = false;
-                    await _unitOfWork.BulkSaveChangesAsync();
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
                 }
                 catch (Exception ex)
                 {
@@ -395,9 +395,11 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         StatusCode = "Internal Server Error"
                     });
 
-                    scheduleJob.EndOnUtc = DateTime.UtcNow;
-                    scheduleJob.IsRunning = false;
-                    await _unitOfWork.BulkSaveChangesAsync();
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
                 }
             }
         }
@@ -492,15 +494,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 if (addCollectionViews.Count > 0)
                 {
-                    _collectionViewRepository.AddRange(addCollectionViews);
+                    await _unitOfWork.BulkInsertAsync(addCollectionViews);
                 }
 
                 if (updateCollectionViews.Count > 0)
                 {
-                    _collectionViewRepository.UpdateRange(updateCollectionViews);
+                    updateCollectionViews.ForEach(x => x.UpdatedOnUtc = DateTime.UtcNow);
+                    await _unitOfWork.BulkUpdateAsync(updateCollectionViews);
                 }
-
-                await _unitOfWork.BulkSaveChangesAsync();
 
                 // Re-calculate views to collection and album
                 var parameters = new Dictionary<string, object?>
