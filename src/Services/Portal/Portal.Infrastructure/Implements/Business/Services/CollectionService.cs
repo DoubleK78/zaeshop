@@ -374,13 +374,13 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 {
                     scheduleJob.IsRunning = true;
                     scheduleJob.StartOnUtc = DateTime.UtcNow;
-                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.BulkSaveChangesAsync();
 
                     await CaclculateViewsFromRedisAsync();
 
                     scheduleJob.EndOnUtc = DateTime.UtcNow;
                     scheduleJob.IsRunning = false;
-                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.BulkSaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -397,7 +397,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                     scheduleJob.EndOnUtc = DateTime.UtcNow;
                     scheduleJob.IsRunning = false;
-                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.BulkSaveChangesAsync();
                 }
             }
         }
