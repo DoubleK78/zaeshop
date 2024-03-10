@@ -411,7 +411,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
             // Get redis data from 10 minutes ago
             var minutes = DateTime.UtcNow.Minute - (DateTime.UtcNow.Minute % 10) - 10;
-            var key = string.Format(Const.RedisCacheKey.ViewCount, minutes < 0 ? 50: minutes);
+            var key = string.Format(Const.RedisCacheKey.ViewCount, minutes < 0 ? 50 : minutes);
 
             // Get safely Cache value from key
             List<CollectionViewModel>? value;
@@ -572,82 +572,70 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
         public async Task<ServiceResponse<string>> BulkCreateAsync(int albumId, List<BulkCreateCollectionRequest> collections)
         {
-            using var transaction = await _unitOfWork.BeginTransactionAsync();
-            if (transaction == null) return new ServiceResponse<string>("error_transaction");
-            try
+            var album = await _albumRepository.GetByIdAsync(albumId);
+            if (album == null)
             {
-                var album = await _albumRepository.GetByIdAsync(albumId);
-                if (album == null)
-                {
-                    return new ServiceResponse<string>("error_album_not_found");
-                }
+                return new ServiceResponse<string>("error_album_not_found");
+            }
 
-                var existsCollections = await _repository.GetQueryable().Where(o => o.AlbumId == albumId).ToListAsync();
+            var existsCollections = await _repository.GetQueryable().Where(o => o.AlbumId == albumId).ToListAsync();
 
-                var addCollections = new List<BulkCreateCollectionDb>();
-                foreach (var item in collections)
+            var addCollections = new List<BulkCreateCollectionDb>();
+            foreach (var item in collections)
+            {
+                bool isExists = existsCollections.Any(x => x.FriendlyName == item.Name);
+                if (!isExists)
                 {
-                    bool isExists = existsCollections.Any(x => x.FriendlyName == item.Name);
-                    if (!isExists)
+                    // convert friendly name to title
+                    string[] words = item.Name.Split('-');
+                    string title = string.Join(" ", words.Select(w => char.ToUpper(w[0]) + w[1..]));
+                    var contentItems = item.ContentItems.ConvertAll(x =>
                     {
-                        // convert friendly name to title
-                        string[] words = item.Name.Split('-');
-                        string title = string.Join(" ", words.Select(w => char.ToUpper(w[0]) + w[1..]));
-                        var contentItems = item.ContentItems.ConvertAll(x =>
+                        // Prefix relative to stored folder places
+                        string prefixRelative = $"{album.FriendlyName}/{item.Name}";
+                        return new ContentItem
                         {
-                            // Prefix relative to stored folder places
-                            string prefixRelative = $"{album.FriendlyName}/{item.Name}";
-                            return new ContentItem
-                            {
-                                Name = x.Name,
-                                RelativeUrl = prefixRelative + "/" + x.Name,
-                                OrderBy = RegexHelper.GetNumberByText(x.Name)
-                            };
-                        }).OrderBy(x => x.OrderBy).ToList();
-
-                        var newCollection = new Collection
-                        {
-                            AlbumId = albumId,
-                            Title = title,
-                            FriendlyName = item.Name,
-                            LevelPublic = item.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
-                            StorageType = item.StorageType
+                            Name = x.Name,
+                            RelativeUrl = prefixRelative + "/" + x.Name,
+                            OrderBy = RegexHelper.GetNumberByText(x.Name)
                         };
-                        addCollections.Add(new BulkCreateCollectionDb
-                        {
-                            Collection = newCollection,
-                            ContentItems = contentItems
-                        });
-                    }
-                }
+                    }).OrderBy(x => x.OrderBy).ToList();
 
-                if (addCollections.Count > 0)
-                {
-                    // Update Comic Recently uploaded
-                    album.UpdatedOnUtc = DateTime.UtcNow;
-
-                    await _unitOfWork.BulkInsertAsync(addCollections.ConvertAll(x => x.Collection));
-
-                    foreach (var item in addCollections)
+                    var newCollection = new Collection
                     {
-                        item.ContentItems.ForEach(x => x.CollectionId = item.Collection.Id);
-                    }
-
-                    await _unitOfWork.BulkInsertAsync(addCollections.SelectMany(x => x.ContentItems).ToList());
-
-                    // Remove cache Comic Detail
-                    _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, album.FriendlyName));
-
-                    // Remove cache Comic Paging
-                    _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
-
-                    await _unitOfWork.CommitTransactionBulkOperationsAsync(transaction);
+                        AlbumId = albumId,
+                        Title = title,
+                        FriendlyName = item.Name,
+                        LevelPublic = item.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
+                        StorageType = item.StorageType
+                    };
+                    addCollections.Add(new BulkCreateCollectionDb
+                    {
+                        Collection = newCollection,
+                        ContentItems = contentItems
+                    });
                 }
             }
-            catch (Exception)
+
+            if (addCollections.Count > 0)
             {
-                await transaction.RollbackAsync();
-                throw;
+                // Update Comic Recently uploaded
+                album.UpdatedOnUtc = DateTime.UtcNow;
+
+                await _unitOfWork.BulkInsertAsync(addCollections.ConvertAll(x => x.Collection));
+
+                foreach (var item in addCollections)
+                {
+                    item.ContentItems.ForEach(x => x.CollectionId = item.Collection.Id);
+                }
+
+                await _unitOfWork.BulkInsertAsync(addCollections.SelectMany(x => x.ContentItems).ToList());
+
+                // Remove cache Comic Detail
+                _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, album.FriendlyName));
+
+                // Remove cache Comic Paging
+                _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
             }
             return new ServiceResponse<string>("success");
         }

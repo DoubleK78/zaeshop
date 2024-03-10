@@ -157,7 +157,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 #endregion
 
                 #region Collection (User go next chapter)
-                if (model.CollectionId.HasValue)
+                if (!model.CommentId.HasValue && model.CollectionId.HasValue)
                 {
                     // We use key LevelCount_00 & LevelCount_30
                     var key = string.Format(Const.RedisCacheKey.LevelCount, DateTime.UtcNow.Minute - (DateTime.UtcNow.Minute % 30));
@@ -440,14 +440,15 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 if (addUserLevels.Count > 0)
                 {
-                    await _unitOfWork.BulkInsertAsync(addUserLevels);
+                    _unitOfWork.Repository<UserLevel>().AddRange(addUserLevels);
                 }
 
                 if (updateUserLevels.Count > 0)
                 {
-                    updateUserLevels.ForEach(x => x.UpdatedOnUtc = DateTime.UtcNow);
-                    await _unitOfWork.BulkUpdateAsync(addUserLevels);
+                    _unitOfWork.Repository<UserLevel>().UpdateRange(addUserLevels);
                 }
+
+                await _unitOfWork.SaveChangesAsync();
 
                 // Re-calculate Exps from users
                 var parameters = new Dictionary<string, object?>
