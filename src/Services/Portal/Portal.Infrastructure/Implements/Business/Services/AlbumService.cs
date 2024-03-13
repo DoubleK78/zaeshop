@@ -26,12 +26,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly IServiceLogPublisher _serviceLogPublisher;
         private readonly IHostEnvironment _hostingEnvironment;
         private readonly IRedisService _redisService;
+        private readonly IBusinessCacheService _businessCacheService;
 
         public AlbumService(
             IUnitOfWork unitOfWork,
             IServiceLogPublisher serviceLogPublisher,
             IHostEnvironment hostingEnvironment,
-            IRedisService redisService)
+            IRedisService redisService,
+            IBusinessCacheService businessCacheService)
         {
             _unitOfWork = unitOfWork;
             _repository = unitOfWork.Repository<Album>();
@@ -41,6 +43,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _serviceLogPublisher = serviceLogPublisher;
             _hostingEnvironment = hostingEnvironment;
             _redisService = redisService;
+            _businessCacheService = businessCacheService;
         }
 
         public async Task<ServiceResponse<AlbumResponseModel>> CreateAsync(AlbumRequestModel requestModel)
@@ -121,7 +124,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             await _unitOfWork.SaveChangesAsync();
 
             // Remove cache Comic Paging
-            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+            await _businessCacheService.RelaodCacheRecentlyComicsAsync(entity.Region.ToString());
 
             // Map entity to response model
             var responseModel = new AlbumResponseModel
@@ -255,7 +258,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             await _unitOfWork.SaveChangesAsync();
 
             // Remove cache Comic Paging
-            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+            await _businessCacheService.RelaodCacheRecentlyComicsAsync(existingAlbum.Region.ToString());
 
             // Map to response
             var responseModel = new AlbumResponseModel
@@ -302,7 +305,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             await _unitOfWork.SaveChangesAsync();
 
             // Remove cache Comic Paging
-            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+            await _businessCacheService.ReloadCacheHomePageAsync(existingAlbum.Region.ToString());
 
             return new ServiceResponse<bool>(true);
         }
@@ -513,7 +516,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName));
                 }
 
-                _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+                // Remove cache Comic Paging
+                await _businessCacheService.RelaodCacheRecentlyComicsAsync("vi");
+                await _businessCacheService.RelaodCacheRecentlyComicsAsync("en");
             }
 
             return new ServiceResponse<bool>(true);
@@ -528,15 +533,15 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
             var albumsScheduleResponse = albumsSchedule.Select(x => new AlbumScheduleResponseModel
             {
-               Id = x.Id,
-               Title = x.Title,
-               TimeRelease = x.TimeRelease,
-               Type = x.Type,
-               BackgroundUrl = x.BackgroundUrl,
-               Url = x.Url,
-               DateRelease = x.DateRelease,
-               Region = x.Region,
-               Status = x.Status
+                Id = x.Id,
+                Title = x.Title,
+                TimeRelease = x.TimeRelease,
+                Type = x.Type,
+                BackgroundUrl = x.BackgroundUrl,
+                Url = x.Url,
+                DateRelease = x.DateRelease,
+                Region = x.Region,
+                Status = x.Status
             }).ToList();
 
             return new ServiceResponse<List<AlbumScheduleResponseModel>>(albumsScheduleResponse);

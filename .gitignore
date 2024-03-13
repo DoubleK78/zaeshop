@@ -353,3 +353,4 @@ MigrationBackup/
 dotnet-install.sh
 docker-compose.development.yml
 appsettings.Development.json
+.mono

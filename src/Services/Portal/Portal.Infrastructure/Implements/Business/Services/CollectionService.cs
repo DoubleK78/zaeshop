@@ -30,12 +30,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly IServiceLogPublisher _serviceLogPublisher;
         private readonly IHostEnvironment _hostingEnvironment;
         private readonly IGenericRepository<CollectionView> _collectionViewRepository;
+        private readonly IBusinessCacheService _businessCacheService;
 
         public CollectionService(
             IUnitOfWork unitOfWork,
             IRedisService redisService,
             IServiceLogPublisher serviceLogPublisher,
-            IHostEnvironment hostingEnvironment)
+            IHostEnvironment hostingEnvironment,
+            IBusinessCacheService businessCacheService)
         {
             _unitOfWork = unitOfWork;
             _repository = unitOfWork.Repository<Collection>();
@@ -46,6 +48,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _serviceLogPublisher = serviceLogPublisher;
             _hostingEnvironment = hostingEnvironment;
             _collectionViewRepository = unitOfWork.Repository<CollectionView>();
+            _businessCacheService = businessCacheService;
         }
 
         public async Task<ServiceResponse<CollectionResponseModel>> CreateAsync(CollectionRequestModel requestModel)
@@ -91,7 +94,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, existingAlbum.FriendlyName));
 
             // Remove cache Comic Paging
-            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+            await _businessCacheService.RelaodCacheRecentlyComicsAsync(existingAlbum.Region.ToString());
 
             // Map the entity to the response model
             var responseModel = new CollectionResponseModel
@@ -153,7 +156,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, existingAlbum.FriendlyName));
 
             // Remove cache Comic Paging
-            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+            await _businessCacheService.RelaodCacheRecentlyComicsAsync(existingAlbum.Region.ToString());
 
             // Map the updated entity to the response model
             var responseModel = new CollectionResponseModel
@@ -202,12 +205,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 return new ServiceResponse<bool>("error_collection_not_found");
             }
 
+            var locale = existingEntity.Album.Region.ToString();
+
             // Delete the entity from the repository and save changes
             _repository.Delete(existingEntity);
             await _unitOfWork.SaveChangesAsync();
 
             // Remove cache Comic Paging
-            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+            await _businessCacheService.ReloadCacheHomePageAsync(locale);
 
             return new ServiceResponse<bool>(true);
         }
@@ -529,8 +534,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     }
                 }
 
-                // Reset Top Rank Comics
-                _redisService.RemoveByPattern(Const.RedisCacheKey.ComicRankingPagingPattern);
+                // Reset Popular & Top Rank Comics
+                await _businessCacheService.ReloadCachePopularComicsAsync("vi");
+                await _businessCacheService.ReloadCacheTopComicsAsync("vi");
 
                 // Log to service log to stored
                 await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
@@ -635,7 +641,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, album.FriendlyName));
 
                 // Remove cache Comic Paging
-                _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+                await _businessCacheService.RelaodCacheRecentlyComicsAsync(album.Region.ToString());
             }
             return new ServiceResponse<string>("success");
         }
