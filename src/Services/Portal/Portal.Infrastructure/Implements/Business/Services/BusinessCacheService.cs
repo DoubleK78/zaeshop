@@ -72,7 +72,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 PageNumber = 1,
                 PageSize = 5,
                 SearchTerm = "",
-                SortColumn = "viewTopType",
+                SortColumn = "viewByTopType",
                 SortDirection = "desc",
             }, new FilterAdvanced
             {
