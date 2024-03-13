@@ -187,5 +187,32 @@ namespace Portal.API.Controllers
             _redisService.RemoveByPattern(pattern);
             return Ok(pattern);
         }
+
+        [HttpPost]
+        [Route("reload-popular")]
+        [Authorize(ERoles.Administrator)]
+        public IActionResult ReloadPopular()
+        {
+            _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.ReloadCachePopularComicsAsync("vi"));
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("reload-recently")]
+        [Authorize(ERoles.Administrator)]
+        public IActionResult ReloadRecently()
+        {
+            _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.RelaodCacheRecentlyComicsAsync("vi"));
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("reload-top")]
+        [Authorize(ERoles.Administrator)]
+        public IActionResult ReloadTop()
+        {
+            _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.ReloadCacheTopComicsAsync("vi"));
+            return Ok();
+        }
     }
 }

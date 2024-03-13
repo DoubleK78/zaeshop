@@ -13,9 +13,17 @@ namespace Common.ValueObjects
             public const string ViewCount = "ViewCount_{0}";
             public const string LevelCount = "LevelCount_{0}";
             public const string ComicDetail = "/api/client/comicapp/{0}";
+            public const string HomePopularComicsPaging = "/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-1|pagesize-12|rating-|region-{0}|searchterm-|sortcolumn-views|sortdirection-desc|status-false|year-";
+            public const string HomeRecentlyComicsPaging = "/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-1|pagesize-12|rating-|region-{0}|searchterm-|sortcolumn-updatedonutc|sortdirection-desc|status-false|year-";
+            public const string HomeTopDayComicsPaging = "/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-1|pagesize-5|rating-|region-{0}|searchterm-|sortcolumn-viewbytoptype|sortdirection-desc|status-false|toptype-day|year-";
+            public const string HomeTopMonthComicsPaging = "/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-1|pagesize-5|rating-|region-{0}|searchterm-|sortcolumn-viewbytoptype|sortdirection-desc|status-false|toptype-month|year-";
+            public const string HomeTopYearComicsPaging = "/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-1|pagesize-5|rating-|region-{0}|searchterm-|sortcolumn-viewbytoptype|sortdirection-desc|status-false|toptype-year|year-";
+
             public const string ComicPagingPattern = "*/api/client/comicapp/paging*";
             public const string UserRankingPagingPattern = "*/api/user/ranking*";
-            public const string ComicRankingPagingPattern = "*/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-*|pagesize-*|rating-|region-vi|searchterm-|sortcolumn-viewbytoptype|sortdirection-desc|toptype-*|year-*";
+            public const string PopularComicsPagingPattern = "*/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-*|pagesize-*|rating-|region-{0}|searchterm-|sortcolumn-views|sortdirection-desc|toptype-|year-*";
+            public const string RecentlyComicsPagingPattern = "*/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-*|pagesize-*|rating-|region-{0}|searchterm-|sortcolumn-updatedonutc|sortdirection-desc|toptype-|year-*";
+            public const string TopComicsPagingPattern = "*/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-*|pagesize-*|rating-|region-{0}|searchterm-|sortcolumn-viewbytoptype|sortdirection-desc|toptype-*|year-*";
         }
 
         public static class ServiceLogEventName

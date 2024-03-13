@@ -30,7 +30,7 @@ namespace Portal.API.Controllers
         }
 
         [HttpGet("paging")]
-        [RedisCache(30)]
+        [RedisCache(60 * 24)]
         public async Task<IActionResult> GetAsync([FromQuery] PagingCommonRequest request, [FromQuery] FilterAdvanced filter)
         {
             var response = await _albumService.GetPagingAsync(request, filter);
@@ -41,7 +41,7 @@ namespace Portal.API.Controllers
         }
 
         [HttpGet("{friendlyName}")]
-        [RedisCache(30)]
+        [RedisCache(60 * 24)]
         public async Task<IActionResult> GetByIdAsync(string friendlyName)
         {
             var parameters = new Dictionary<string, object?>
