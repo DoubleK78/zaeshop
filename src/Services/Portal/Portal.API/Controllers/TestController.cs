@@ -190,6 +190,7 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("reload-popular")]
+        [Authorize(ERoles.Administrator)]
         public IActionResult ReloadPopular()
         {
             _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.ReloadCachePopularComicsAsync("vi"));
@@ -198,6 +199,7 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("reload-recently")]
+        [Authorize(ERoles.Administrator)]
         public IActionResult ReloadRecently()
         {
             _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.RelaodCacheRecentlyComicsAsync("vi"));
@@ -206,6 +208,7 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("reload-top")]
+        [Authorize(ERoles.Administrator)]
         public IActionResult ReloadTop()
         {
             _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.ReloadCacheTopComicsAsync("vi"));
