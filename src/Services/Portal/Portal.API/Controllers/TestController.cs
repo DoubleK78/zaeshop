@@ -26,6 +26,7 @@ namespace Portal.API.Controllers
         private readonly IRedisService _redisService;
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
+        private readonly IFirebaseCloudMessageService _firebaseCloudMessageService;
 
         public TestController(
             IUnitOfWork unitOfWork,
@@ -36,7 +37,8 @@ namespace Portal.API.Controllers
             IServiceLogPublisher serviceLogPublisher,
             IRedisService redisService,
             IUserService userService,
-            IEmailService emailService)
+            IEmailService emailService,
+            IFirebaseCloudMessageService firebaseCloudMessageService)
         {
             _unitOfWork = unitOfWork;
             _backgroundJobClient = backgroundJobClient;
@@ -47,6 +49,7 @@ namespace Portal.API.Controllers
             _redisService = redisService;
             _userService = userService;
             _emailService = emailService;
+            _firebaseCloudMessageService = firebaseCloudMessageService;
         }
 
         [HttpGet]
@@ -212,6 +215,14 @@ namespace Portal.API.Controllers
         public IActionResult ReloadTop()
         {
             _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.ReloadCacheTopComicsAsync("vi"));
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("push-notification")]
+        public async Task<IActionResult> PushNotification(string registrationToken, string title, string description, string? clickAction = null)
+        {
+            _backgroundJobClient.Enqueue(() => _firebaseCloudMessageService.SendAsync(registrationToken, title, description, clickAction));
             return Ok();
         }
     }

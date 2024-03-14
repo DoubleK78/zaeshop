@@ -33,6 +33,7 @@ public static class PortalServiceExtensions
     {
         services.AddDbContext<ApplicationDbContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(config.GetConnectionString("PortalConnection")));
         services.Configure<AppSettings>(config.GetSection("AppSettings"));
+        services.Configure<FirebaseSettings>(config.GetSection("FirebaseSettings"));
         services.AddScoped<IAmazonS3>(x => new AmazonS3Client(config["AWS:AccessKey"], config["AWS:SecretKey"], RegionEndpoint.USEast1));
 
         services.AddStackExchangeRedisCache(options =>
@@ -81,6 +82,7 @@ public static class PortalServiceExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAmazonS3Service, AmazonS3Service>();
+        services.AddSingleton<IFirebaseCloudMessageService, FirebaseCloudMessageService>();
 
         // Hangfire use service differnce than Portal
         #region Email Service
