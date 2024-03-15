@@ -11,6 +11,13 @@ namespace Portal.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<int>(
+                name: "RemindSubscription",
+                table: "User",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
+
             migrationBuilder.CreateTable(
                 name: "UserDevice",
                 columns: table => new
@@ -48,6 +55,10 @@ namespace Portal.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "UserDevice");
+
+            migrationBuilder.DropColumn(
+                name: "RemindSubscription",
+                table: "User");
         }
     }
 }

@@ -598,6 +598,9 @@ namespace Portal.Infrastructure.Migrations
                     b.Property<int>("Region")
                         .HasColumnType("int");
 
+                    b.Property<int>("RemindSubscription")
+                        .HasColumnType("int");
+
                     b.Property<int>("RoleType")
                         .HasColumnType("int");
 

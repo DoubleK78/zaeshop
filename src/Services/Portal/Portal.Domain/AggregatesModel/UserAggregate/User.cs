@@ -24,6 +24,8 @@ public class User : Entity, IAggregateRoot
     public ERegion Region { get; set; }
     public bool IsBanned { get; set; }
 
+    public ERemindSubscription RemindSubscription { get; set; }
+
     [JsonIgnore]
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
