@@ -220,9 +220,19 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("push-notification")]
-        public async Task<IActionResult> PushNotification(string registrationToken, string title, string description, string? clickAction = null)
+        [Authorize(ERoles.Administrator)]
+        public IActionResult PushNotification(string registrationToken, string title, string description, string? clickAction = null)
         {
             _backgroundJobClient.Enqueue(() => _firebaseCloudMessageService.SendAsync(registrationToken, title, description, clickAction));
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("remind-subscription")]
+        [Authorize(ERoles.Administrator)]
+        public IActionResult RemindSubscription()
+        {
+            _backgroundJobClient.Enqueue<IUserService>(x => x.RemindSubscriptionAsync());
             return Ok();
         }
     }

@@ -183,43 +183,24 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
         public async Task RemindSubscriptionAsync()
         {
-            var usersUpdated = new List<User>();
-
             // Get all user pre with expried date
+            var next7days = DateTime.UtcNow.AddDays(7);
             var allUserPre = await _userRepository.GetQueryable()
                 .Where(x => (x.RoleType == ERoleType.UserPremium || x.RoleType == ERoleType.UserSuperPremium) &&
-                    x.ExpriedRoleDate.HasValue && DateTime.UtcNow.Subtract(x.ExpriedRoleDate.Value).TotalDays <= 7)
+                    x.ExpriedRoleDate.HasValue && x.ExpriedRoleDate.Value <= next7days)
                 .ToListAsync();
             var allUserPreIds = allUserPre.ConvertAll(x => x.Id);
 
             var userDevices = await _unitOfWork.Repository<UserDevice>()
                                 .GetQueryable()
-                                .Where(o => allUserPreIds.Contains(o.Id) && o.IsEnabled)
+                                .Where(o => allUserPreIds.Contains(o.UserId) && o.IsEnabled)
                                 .ToListAsync();
-
-            #region Update Remind Subscription Status
-            foreach (var user in allUserPre)
-            {
-                if (user.ExpriedRoleDate.HasValue && DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).TotalDays > 3 && DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).TotalDays <= 7)
-                {
-                    user.RemindSubscription = ERemindSubscription.SevenDays;
-                    usersUpdated.Add(user);
-                }
-                else if (user.ExpriedRoleDate.HasValue && DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).TotalDays <= 3)
-                {
-                    user.RemindSubscription = ERemindSubscription.ThreeDays;
-                    usersUpdated.Add(user);
-                }
-            }
-            #endregion
-
-            await _unitOfWork.BulkUpdateAsync(usersUpdated);
 
             #region Push Notification
             // Remind user will expried in 7 days
             var usersRemind7Days = allUserPre.Where(x => x.RemindSubscription != ERemindSubscription.SevenDays &&
                 x.ExpriedRoleDate.HasValue &&
-                DateTime.UtcNow.Subtract(x.ExpriedRoleDate.Value).TotalDays > 3).ToList();
+                Math.Abs(DateTime.UtcNow.Subtract(x.ExpriedRoleDate.Value).TotalDays) > 3).ToList();
 
             if (usersRemind7Days.Count > 0)
             {
@@ -274,7 +255,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             // Remind user will expried in 3 days
             var usersRemind3Days = allUserPre.Where(x => x.RemindSubscription != ERemindSubscription.ThreeDays &&
                x.ExpriedRoleDate.HasValue &&
-               DateTime.UtcNow.Subtract(x.ExpriedRoleDate.Value).TotalDays <= 3).ToList();
+               Math.Abs(DateTime.UtcNow.Subtract(x.ExpriedRoleDate.Value).TotalDays) <= 3).ToList();
 
             if (usersRemind3Days.Count > 0)
             {
@@ -326,6 +307,22 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 }
             }
             #endregion
+
+            #region Update Remind Subscription Status
+            foreach (var user in allUserPre)
+            {
+                if (user.ExpriedRoleDate.HasValue && Math.Abs(DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).TotalDays) > 3 && Math.Abs(DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).TotalDays) <= 7)
+                {
+                    user.RemindSubscription = ERemindSubscription.SevenDays;
+                }
+                else if (user.ExpriedRoleDate.HasValue && Math.Abs(DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).TotalDays) <= 3)
+                {
+                    user.RemindSubscription = ERemindSubscription.ThreeDays;
+                }
+            }
+            #endregion
+
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

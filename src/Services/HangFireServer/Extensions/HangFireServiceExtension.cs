@@ -56,6 +56,9 @@ namespace HangFireServer.Extensions
 
             // 30 Minutes to reset level public
             RecurringJob.AddOrUpdate<ICollectionService>(HangfireJobName.ResetLevelPublicChap, x => x.ResetLevelPublicTaskAsync(), "*/30 * * * *");
+        
+            // 10:05 AM ICT Daily To remind subscription
+            RecurringJob.AddOrUpdate<IUserService>(HangfireJobName.RemindSubscription, x => x.RemindSubscriptionTaskAsync(), "5 3 * * *");
         }
     }
 }
