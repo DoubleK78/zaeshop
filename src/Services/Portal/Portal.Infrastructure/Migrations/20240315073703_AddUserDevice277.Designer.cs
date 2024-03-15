@@ -12,7 +12,7 @@ using Portal.Infrastructure;
 namespace Portal.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240315044936_AddUserDevice277")]
+    [Migration("20240315073703_AddUserDevice277")]
     partial class AddUserDevice277
     {
         /// <inheritdoc />
@@ -599,6 +599,9 @@ namespace Portal.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("Region")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RemindSubscription")
                         .HasColumnType("int");
 
                     b.Property<int>("RoleType")

@@ -24,6 +24,8 @@ public class User : Entity, IAggregateRoot
     public ERegion Region { get; set; }
     public bool IsBanned { get; set; }
 
+    public ERemindSubscription RemindSubscription { get; set; }
+
     [JsonIgnore]
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
@@ -49,5 +51,5 @@ public class User : Entity, IAggregateRoot
     public virtual ICollection<ReplyComment>? ReplyComments { get; set; } = new List<ReplyComment>();
 
     [JsonIgnore]
-    public virtual ICollection<UserDevice>? UserDevices { get; set; } = new List<UserDevice>();
+    public virtual ICollection<UserDevice> UserDevices { get; set; } = new List<UserDevice>();
 }
