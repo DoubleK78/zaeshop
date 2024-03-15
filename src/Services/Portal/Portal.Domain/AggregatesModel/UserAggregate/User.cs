@@ -49,5 +49,5 @@ public class User : Entity, IAggregateRoot
     public virtual ICollection<ReplyComment>? ReplyComments { get; set; } = new List<ReplyComment>();
 
     [JsonIgnore]
-    public virtual ICollection<UserDevice>? UserDevices { get; set; } = new List<UserDevice>();
+    public virtual ICollection<UserDevice> UserDevices { get; set; } = new List<UserDevice>();
 }

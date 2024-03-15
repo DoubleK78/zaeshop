@@ -45,5 +45,14 @@ namespace Common.ValueObjects
             public const string ResetLevelPublic = "Reset level public";
             public const string ResetLevelPublicChap = "Reset level public chap";
         }
+
+        public static class PushNotification
+        {
+            public const string NewChapterComicVi = "Đã có chap mới truyện bạn đang theo dõi";
+            public const string NewChapterComicEn = "New chapter of the comic you are following is available";
+
+            public const string NewChapterComicDescriptionVi = "{0} {1} đã có mặt trên Fast Scans, Vui lòng nhấn thông báo để truy cập nhanh vào ứng dụng";
+            public const string NewChapterComicDescriptionEn = "{0} {1} is now available on Fast Scans. Please tap the notification to quickly access the app.";
+        }
     }
 }

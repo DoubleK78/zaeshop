@@ -5,6 +5,7 @@ using Common.Interfaces.Messaging;
 using Common.Models;
 using Common.Shared.Models.Logs;
 using Common.ValueObjects;
+using Hangfire;
 using Microsoft.Extensions.Hosting;
 using Portal.Domain.AggregatesModel.AlbumAggregate;
 using Portal.Domain.AggregatesModel.CollectionAggregate;
@@ -12,8 +13,10 @@ using Portal.Domain.AggregatesModel.TaskAggregate;
 using Portal.Domain.AggregatesModel.UserAggregate;
 using Portal.Domain.Enums;
 using Portal.Domain.Interfaces.Business.Services;
+using Portal.Domain.Interfaces.External;
 using Portal.Domain.Models.CollectionModels;
 using Portal.Domain.Models.ContentItemModels;
+using Portal.Domain.Models.UserModels;
 using Portal.Domain.SeedWork;
 using Portal.Infrastructure.Helpers;
 
@@ -31,13 +34,15 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly IHostEnvironment _hostingEnvironment;
         private readonly IGenericRepository<CollectionView> _collectionViewRepository;
         private readonly IBusinessCacheService _businessCacheService;
+        private readonly IBackgroundJobClient _backgroundJobClient;
 
         public CollectionService(
             IUnitOfWork unitOfWork,
             IRedisService redisService,
             IServiceLogPublisher serviceLogPublisher,
             IHostEnvironment hostingEnvironment,
-            IBusinessCacheService businessCacheService)
+            IBusinessCacheService businessCacheService,
+            IBackgroundJobClient backgroundJobClient)
         {
             _unitOfWork = unitOfWork;
             _repository = unitOfWork.Repository<Collection>();
@@ -49,6 +54,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _hostingEnvironment = hostingEnvironment;
             _collectionViewRepository = unitOfWork.Repository<CollectionView>();
             _businessCacheService = businessCacheService;
+            _backgroundJobClient = backgroundJobClient;
         }
 
         public async Task<ServiceResponse<CollectionResponseModel>> CreateAsync(CollectionRequestModel requestModel)
@@ -95,6 +101,12 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
             // Remove cache Comic Paging
             await _businessCacheService.RelaodCacheRecentlyComicsAsync(existingAlbum.Region.ToString());
+
+            // Push notification Comic
+            var titlePushNotification = existingAlbum.Region == ERegion.vi ? Const.PushNotification.NewChapterComicVi : Const.PushNotification.NewChapterComicEn;
+            var descriptionPushNotification = existingAlbum.Region == ERegion.vi ? string.Format(Const.PushNotification.NewChapterComicDescriptionVi, existingAlbum.Title, entity.Title) : string.Format(Const.PushNotification.NewChapterComicDescriptionEn, existingAlbum.Title, entity.Title);
+            var clickActionPushNotification = existingAlbum.Region == ERegion.vi ? $"/truyen-tranh/{existingAlbum.FriendlyName}" : $"/en/comics/{existingAlbum.FriendlyName}";
+            await PushNotificationComic(existingAlbum.Id, requestModel.IsPriority, titlePushNotification, descriptionPushNotification, clickActionPushNotification);
 
             // Map the entity to the response model
             var responseModel = new CollectionResponseModel
@@ -585,6 +597,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             }
 
             var existsCollections = await _repository.GetQueryable().Where(o => o.AlbumId == albumId).ToListAsync();
+            bool isPriority = collections.Any(x => x.IsPriority);
 
             var addCollections = new List<BulkCreateCollectionDb>();
             foreach (var item in collections)
@@ -612,7 +625,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         AlbumId = albumId,
                         Title = title,
                         FriendlyName = item.Name,
-                        LevelPublic = item.IsPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
+                        LevelPublic = isPriority ? ELevelPublic.SPremiumUser : ELevelPublic.AllUser,
                         StorageType = item.StorageType
                     };
                     addCollections.Add(new BulkCreateCollectionDb
@@ -642,6 +655,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 // Remove cache Comic Paging
                 await _businessCacheService.RelaodCacheRecentlyComicsAsync(album.Region.ToString());
+
+                // Push notification Comic
+                var lastestCollection = addCollections.ConvertAll(x => x.Collection).OrderByDescending(x => RegexHelper.GetNumberByText(x.Title)).FirstOrDefault();
+
+                var titlePushNotification = album.Region == ERegion.vi ? Const.PushNotification.NewChapterComicVi : Const.PushNotification.NewChapterComicEn;
+                var descriptionPushNotification = album.Region == ERegion.vi ? string.Format(Const.PushNotification.NewChapterComicDescriptionVi, album.Title, lastestCollection?.Title) : string.Format(Const.PushNotification.NewChapterComicDescriptionEn, album.Title, lastestCollection?.Title);
+                var clickActionPushNotification = album.Region == ERegion.vi ? $"/truyen-tranh/{album.FriendlyName}" : $"/en/comics/{album.FriendlyName}";
+                await PushNotificationComic(album.Id, isPriority, titlePushNotification, descriptionPushNotification, clickActionPushNotification);
             }
             return new ServiceResponse<string>("success");
         }
@@ -746,6 +767,68 @@ namespace Portal.Infrastructure.Implements.Business.Services
             }
 
             return new ServiceResponse<bool>(true);
+        }
+
+        public async Task PushNotificationComic(int albumId, bool isPriority, string title, string description, string clickAction)
+        {
+            // Find User is following album
+            var usersFollowing = await _unitOfWork.Repository<Following>()
+                                    .GetQueryable()
+                                    .Where(o => o.AlbumId == albumId && (o.User.RoleType == ERoleType.UserPremium || o.User.RoleType == ERoleType.UserSuperPremium))
+                                    .Select(x => new UserFollowingPushNotification
+                                    {
+                                        UserId = x.UserId,
+                                        UserName = x.User.UserName,
+                                        RoleType = x.User.RoleType,
+                                        RegistrationTokens = x.User.UserDevices.Where(o => o.IsEnabled).Select(x => x.RegistrationToken).ToList()
+                                    }).ToListAsync();
+
+            if (usersFollowing.Count > 0)
+            {
+                // Collection is priority, System divide 2 notifications
+                if (isPriority)
+                {
+                    // Push Notification for S-Pre delay 5 minutes
+                    var usersSpre = usersFollowing.Where(o => o.RoleType == ERoleType.UserSuperPremium).ToList();
+                    List<string> usersSpreTokens = usersSpre.SelectMany(u => u.RegistrationTokens).Distinct().ToList();
+                    if (usersSpre.Count > 0 && usersSpreTokens.Count > 0)
+                    {
+                        _backgroundJobClient.Schedule<IFirebaseCloudMessageService>(x => x.SendAllAsync(
+                            usersSpreTokens,
+                            title,
+                            description,
+                            clickAction
+                        ), TimeSpan.FromMinutes(5));
+                    }
+
+                    // Push Notification for Pre delay 4 hours
+                    var usersPre = usersFollowing.Where(o => o.RoleType == ERoleType.UserPremium).ToList();
+                    List<string> usersPreTokens = usersPre.SelectMany(u => u.RegistrationTokens).Distinct().ToList();
+                    if (usersPre.Count > 0 && usersPreTokens.Count > 0)
+                    {
+                        _backgroundJobClient.Schedule<IFirebaseCloudMessageService>(x => x.SendAllAsync(
+                            usersPreTokens,
+                            title,
+                            description,
+                            clickAction
+                        ), TimeSpan.FromHours(4));
+                    }
+                }
+                else
+                {
+                    // Not Is Priority, Send All that users are following album
+                    List<string> registrationTokens = usersFollowing.SelectMany(u => u.RegistrationTokens).Distinct().ToList();
+                    if (registrationTokens.Count > 0)
+                    {
+                        _backgroundJobClient.Schedule<IFirebaseCloudMessageService>(x => x.SendAllAsync(
+                               usersFollowing.SelectMany(u => u.RegistrationTokens).Distinct().ToList(),
+                               title,
+                               description,
+                               clickAction
+                           ), TimeSpan.FromMinutes(5));
+                    }
+                }
+            }
         }
     }
 }
