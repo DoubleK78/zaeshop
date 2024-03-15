@@ -44,6 +44,7 @@ namespace Common.ValueObjects
             public const string ResetJobNotUpdateRunningStatus = "Reset Job Not Update Running Status";
             public const string ResetLevelPublic = "Reset level public";
             public const string ResetLevelPublicChap = "Reset level public chap";
+            public const string RemindSubscription = "Remind subscription";
         }
 
         public static class PushNotification
@@ -53,6 +54,12 @@ namespace Common.ValueObjects
 
             public const string NewChapterComicDescriptionVi = "{0} {1} đã có mặt trên Fast Scans, Vui lòng nhấn thông báo để truy cập nhanh vào ứng dụng";
             public const string NewChapterComicDescriptionEn = "{0} {1} is now available on Fast Scans. Please tap the notification to quickly access the app.";
+
+            public const string RemindSubscriptionVi = "Gói Premium của bạn sắp hết hạn";
+            public const string RemindSubscriptionEn = "Your premium subscription is expiring soon";
+
+            public const string RemindSubscriptionDescriptionVi = "Còn {0} ngày nữa sẽ hết hạn. Để tiếp tục sử dụng không ngắt quảng, Vui lòng gia hạn hoặc nâng cấp gói Premium.";
+            public const string RemindSubscriptionDescriptionEn = "Only {0} days left until expiration. To continue uninterrupted usage, please renew or upgrade to the Premium subscription.";
         }
     }
 }

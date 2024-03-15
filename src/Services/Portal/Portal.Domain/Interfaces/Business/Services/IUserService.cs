@@ -9,5 +9,7 @@ namespace Portal.Domain.Interfaces.Business.Services
         Task ResetRoleTaskAsync();
         Task ResetRoleAsync();
         Task<ServiceResponse<PagingCommonResponse<UserPagingResponse>>> GetPagingAsync(PagingCommonRequest request, ERegion region);
+        Task RemindSubscriptionTaskAsync();
+        Task RemindSubscriptionAsync();
     }
 }

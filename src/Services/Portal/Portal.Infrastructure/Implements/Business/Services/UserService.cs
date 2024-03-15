@@ -4,11 +4,13 @@ using Common.Models;
 using Common.Shared.Models.Logs;
 using Common.Shared.Models.Users;
 using Common.ValueObjects;
+using Hangfire;
 using Microsoft.Extensions.Hosting;
 using Portal.Domain.AggregatesModel.TaskAggregate;
 using Portal.Domain.AggregatesModel.UserAggregate;
 using Portal.Domain.Enums;
 using Portal.Domain.Interfaces.Business.Services;
+using Portal.Domain.Interfaces.External;
 using Portal.Domain.Interfaces.Messaging;
 using Portal.Domain.Models.UserModels;
 using Portal.Domain.SeedWork;
@@ -23,18 +25,21 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly ISyncResetExpiredRolePublisher _syncResetExpiredRolePublisher;
         private readonly IServiceLogPublisher _serviceLogPublisher;
         private readonly IHostEnvironment _hostingEnvironment;
+        private readonly IBackgroundJobClient _backgroundJobClient;
 
         public UserService(
             IUnitOfWork unitOfWork,
             ISyncResetExpiredRolePublisher syncResetExpiredRolePublisher,
             IServiceLogPublisher serviceLogPublisher,
-            IHostEnvironment hostingEnvironment)
+            IHostEnvironment hostingEnvironment,
+            IBackgroundJobClient backgroundJobClient)
         {
             _unitOfWork = unitOfWork;
             _userRepository = unitOfWork.Repository<User>();
             _syncResetExpiredRolePublisher = syncResetExpiredRolePublisher;
             _serviceLogPublisher = serviceLogPublisher;
             _hostingEnvironment = hostingEnvironment;
+            _backgroundJobClient = backgroundJobClient;
         }
 
         public async Task ResetRoleTaskAsync()
@@ -90,6 +95,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 {
                     user.RoleType = ERoleType.User;
                     user.ExpriedRoleDate = null;
+                    user.RemindSubscription = ERemindSubscription.None;
                 }
             }
 
@@ -131,6 +137,195 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 RowNum = record.RowNum,
                 Data = result
             });
+        }
+
+        public async Task RemindSubscriptionTaskAsync()
+        {
+            bool isDeployed = bool.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT_DEPLOYED") ?? "false");
+            var prefixEnvironment = isDeployed ? "[Docker] " : string.Empty;
+
+            var scheduleJob = await _unitOfWork.Repository<HangfireScheduleJob>().GetByNameAsync(Const.HangfireJobName.RemindSubscription);
+            if (scheduleJob != null && scheduleJob.IsEnabled && !scheduleJob.IsRunning)
+            {
+                try
+                {
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_StartJob", parameters);
+
+                    await RemindSubscriptionAsync();
+
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
+                }
+                catch (Exception ex)
+                {
+                    await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
+                    {
+                        LogLevel = ELogLevel.Error,
+                        EventName = ex.Message,
+                        StackTrace = ex.StackTrace,
+                        ServiceName = "Hangfire",
+                        Environment = prefixEnvironment + _hostingEnvironment.EnvironmentName,
+                        Description = $"[Exception]: {ex.Message}",
+                        StatusCode = "Internal Server Error"
+                    });
+
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
+                }
+            }
+        }
+
+        public async Task RemindSubscriptionAsync()
+        {
+            var usersUpdated = new List<User>();
+
+            // Get all user pre with expried date
+            var allUserPre = await _userRepository.GetQueryable()
+                .Where(x => (x.RoleType == ERoleType.UserPremium || x.RoleType == ERoleType.UserSuperPremium) &&
+                    x.ExpriedRoleDate.HasValue && DateTime.UtcNow.Subtract(x.ExpriedRoleDate.Value).TotalDays <= 7)
+                .ToListAsync();
+            var allUserPreIds = allUserPre.ConvertAll(x => x.Id);
+
+            var userDevices = await _unitOfWork.Repository<UserDevice>()
+                                .GetQueryable()
+                                .Where(o => allUserPreIds.Contains(o.Id) && o.IsEnabled)
+                                .ToListAsync();
+
+            #region Update Remind Subscription Status
+            foreach (var user in allUserPre)
+            {
+                if (user.ExpriedRoleDate.HasValue && DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).TotalDays > 3 && DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).TotalDays <= 7)
+                {
+                    user.RemindSubscription = ERemindSubscription.SevenDays;
+                    usersUpdated.Add(user);
+                }
+                else if (user.ExpriedRoleDate.HasValue && DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).TotalDays <= 3)
+                {
+                    user.RemindSubscription = ERemindSubscription.ThreeDays;
+                    usersUpdated.Add(user);
+                }
+            }
+            #endregion
+
+            await _unitOfWork.BulkUpdateAsync(usersUpdated);
+
+            #region Push Notification
+            // Remind user will expried in 7 days
+            var usersRemind7Days = allUserPre.Where(x => x.RemindSubscription != ERemindSubscription.SevenDays &&
+                x.ExpriedRoleDate.HasValue &&
+                DateTime.UtcNow.Subtract(x.ExpriedRoleDate.Value).TotalDays > 3).ToList();
+
+            if (usersRemind7Days.Count > 0)
+            {
+                // Devide users by Region
+                var usersGroupByRegion = usersRemind7Days.GroupBy(x => new { x.Region });
+                foreach (var usersRegion in usersGroupByRegion)
+                {
+                    var region = usersRegion.Key.Region;
+                    if (region == ERegion.vi)
+                    {
+                        var usersVi = usersRegion.ToList();
+                        var usersViIds = usersVi.ConvertAll(x => x.Id);
+                        var userDeviceOfVi = userDevices.Where(x => usersViIds.Contains(x.UserId)).ToList();
+
+                        if (usersVi.Count > 0 && userDeviceOfVi.Count > 0)
+                        {
+                            var titlePushNotification = Const.PushNotification.RemindSubscriptionVi;
+                            var descriptionPushNotification = string.Format(Const.PushNotification.RemindSubscriptionDescriptionVi, 7);
+                            var clickActionPushNotification = "/nang-cap-goi";
+
+                            _backgroundJobClient.Schedule<IFirebaseCloudMessageService>(x => x.SendAllAsync(
+                               userDeviceOfVi.Select(u => u.RegistrationToken).Distinct().ToList(),
+                               titlePushNotification,
+                               descriptionPushNotification,
+                               clickActionPushNotification
+                           ), TimeSpan.FromMinutes(1));
+                        }
+                    }
+                    else if (region == ERegion.en)
+                    {
+                        var usersEn = usersRegion.ToList();
+                        var usersEnIds = usersEn.ConvertAll(x => x.Id);
+                        var userDeviceOfEn = userDevices.Where(x => usersEnIds.Contains(x.UserId)).ToList();
+
+                        if (usersEn.Count > 0 && userDeviceOfEn.Count > 0)
+                        {
+                            var titlePushNotification = Const.PushNotification.RemindSubscriptionEn;
+                            var descriptionPushNotification = string.Format(Const.PushNotification.RemindSubscriptionDescriptionEn, 7);
+                            var clickActionPushNotification = "/en/upgrade-package";
+
+                            _backgroundJobClient.Schedule<IFirebaseCloudMessageService>(x => x.SendAllAsync(
+                               userDeviceOfEn.Select(u => u.RegistrationToken).Distinct().ToList(),
+                               titlePushNotification,
+                               descriptionPushNotification,
+                               clickActionPushNotification
+                           ), TimeSpan.FromMinutes(1));
+                        }
+                    }
+                }
+            }
+
+            // Remind user will expried in 3 days
+            var usersRemind3Days = allUserPre.Where(x => x.RemindSubscription != ERemindSubscription.ThreeDays &&
+               x.ExpriedRoleDate.HasValue &&
+               DateTime.UtcNow.Subtract(x.ExpriedRoleDate.Value).TotalDays <= 3).ToList();
+
+            if (usersRemind3Days.Count > 0)
+            {
+                // Devide users by Region
+                var usersGroupByRegion = usersRemind3Days.GroupBy(x => new { x.Region });
+                foreach (var usersRegion in usersGroupByRegion)
+                {
+                    var region = usersRegion.Key.Region;
+                    if (region == ERegion.vi)
+                    {
+                        var usersVi = usersRegion.ToList();
+                        var usersViIds = usersVi.ConvertAll(x => x.Id);
+                        var userDeviceOfVi = userDevices.Where(x => usersViIds.Contains(x.UserId)).ToList();
+
+                        if (usersVi.Count > 0 && userDeviceOfVi.Count > 0)
+                        {
+                            var titlePushNotification = Const.PushNotification.RemindSubscriptionVi;
+                            var descriptionPushNotification = string.Format(Const.PushNotification.RemindSubscriptionDescriptionVi, 3);
+                            var clickActionPushNotification = "/nang-cap-goi";
+
+                            _backgroundJobClient.Schedule<IFirebaseCloudMessageService>(x => x.SendAllAsync(
+                               userDeviceOfVi.Select(u => u.RegistrationToken).Distinct().ToList(),
+                               titlePushNotification,
+                               descriptionPushNotification,
+                               clickActionPushNotification
+                           ), TimeSpan.FromMinutes(1));
+                        }
+                    }
+                    else if (region == ERegion.en)
+                    {
+                        var usersEn = usersRegion.ToList();
+                        var usersEnIds = usersEn.ConvertAll(x => x.Id);
+                        var userDeviceOfEn = userDevices.Where(x => usersEnIds.Contains(x.UserId)).ToList();
+
+                        if (usersEn.Count > 0 && userDeviceOfEn.Count > 0)
+                        {
+                            var titlePushNotification = Const.PushNotification.RemindSubscriptionEn;
+                            var descriptionPushNotification = string.Format(Const.PushNotification.RemindSubscriptionDescriptionEn, 3);
+                            var clickActionPushNotification = "/en/upgrade-package";
+
+                            _backgroundJobClient.Schedule<IFirebaseCloudMessageService>(x => x.SendAllAsync(
+                               userDeviceOfEn.Select(u => u.RegistrationToken).Distinct().ToList(),
+                               titlePushNotification,
+                               descriptionPushNotification,
+                               clickActionPushNotification
+                           ), TimeSpan.FromMinutes(1));
+                        }
+                    }
+                }
+            }
+            #endregion
         }
     }
 }
