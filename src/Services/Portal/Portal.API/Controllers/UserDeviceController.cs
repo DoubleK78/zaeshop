@@ -210,6 +210,8 @@ namespace Portal.API.Controllers
             }
             else
             {
+                // User can re-use token to other accounts
+                userDevice.UserId = user.Id;
                 userDevice.DeviceType = deviceType;
                 userDevice.ScreenResolution = model.ScreenResolution;
                 userDevice.BrowserVersion = model.BrowserVersion;
