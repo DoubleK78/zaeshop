@@ -99,8 +99,8 @@ namespace Portal.API.Controllers
                                         .LongCountAsync();
             var activityLogs = await _userActivityLogRepository.GetQueryable()
                                         .Where(o => o.UserId == user.Id && o.ActivityType == activityType)
-                                        .Page(request.PageNumber, request.PageSize)
                                         .Sort(x => x.CreatedOnUtc, false)
+                                        .Page(request.PageNumber, request.PageSize)                                   
                                         .ToListAsync();
 
             var resposne = activityLogs.ConvertAll(x => new ActivityLogResponseModel

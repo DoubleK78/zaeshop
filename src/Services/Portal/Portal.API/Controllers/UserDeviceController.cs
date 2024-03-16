@@ -43,8 +43,8 @@ namespace Portal.API.Controllers
                                         .LongCountAsync();
             var activityLogs = await _userDeviceRepository.GetQueryable()
                                         .Where(o => o.UserId == user.Id)
-                                        .Page(request.PageNumber, request.PageSize)
                                         .Sort(x => x.UpdatedOnUtc, false)
+                                        .Page(request.PageNumber, request.PageSize)
                                         .ToListAsync();
 
             var resposne = activityLogs.ConvertAll(x => new UserDeviceResponseModel
