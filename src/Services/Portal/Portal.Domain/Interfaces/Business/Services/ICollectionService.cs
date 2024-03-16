@@ -18,5 +18,6 @@ namespace Portal.Domain.Interfaces.Business.Services
         Task<ServiceResponse<string>> BulkCreateAsync(int albumId, List<BulkCreateCollectionRequest> collections);
         Task CaclculateViewsFromRedisAsync();
         Task ResetLevelPublicTaskAsync();
+        Task PushNotificationComic(int albumId, bool isPriority, string title, string description, string clickAction);
     }
 }

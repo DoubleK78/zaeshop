@@ -30,7 +30,7 @@ namespace Portal.API.Controllers
         }
 
         [HttpGet("paging")]
-        [RedisCache(60 * 24)]
+        [RedisCache(60 * 2)]
         public async Task<IActionResult> GetAsync([FromQuery] PagingCommonRequest request, [FromQuery] FilterAdvanced filter)
         {
             var response = await _albumService.GetPagingAsync(request, filter);

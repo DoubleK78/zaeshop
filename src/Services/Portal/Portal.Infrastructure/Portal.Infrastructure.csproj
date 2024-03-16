@@ -23,6 +23,7 @@
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.300" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="N.EntityFrameworkCore.Extensions" Version="8.0.0.4" />
+    <PackageReference Include="FirebaseAdmin" Version="2.4.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Helpers/" />

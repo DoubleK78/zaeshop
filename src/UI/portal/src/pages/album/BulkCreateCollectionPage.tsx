@@ -120,7 +120,7 @@ const BulkCreateCollectionPage = () => {
             setAlbumFolderName(null);
         }
         return [];
-    }, [files]);
+    }, [files, isPriority]);
 
     const onDeleteFolder = (folderName: string) => {
         setFiles(files.filter((file: any) => file.path.split("/")[1] !== folderName));

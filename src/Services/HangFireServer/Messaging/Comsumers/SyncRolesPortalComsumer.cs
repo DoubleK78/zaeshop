@@ -91,6 +91,9 @@ namespace HangFireServer.Messaging.Comsumers
 
             if (user.IsBanned != syncRolesMessage.IsBanned)
                 user.IsBanned = syncRolesMessage.IsBanned;
+            
+            // Reset remind subscription
+            user.RemindSubscription = ERemindSubscription.None;
 
             _userRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();
