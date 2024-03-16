@@ -34,7 +34,7 @@ const AlbumDetailCollectionPage: React.FC = () => {
     const [pageSize, setPageSize] = useState(5);
     const [search, setSearch] = useState<string>('');
     const [debouncedSearchValue] = useDebounce(search, 500);
-    const [sortColumn, setSortColumn] = useState<string>('title');
+    const [sortColumn, setSortColumn] = useState<string>('createdOnUtc');
     const [sortDirection, setSortDirection] = useState<string>('desc');
 
     useEffect(() => {
@@ -60,7 +60,12 @@ const AlbumDetailCollectionPage: React.FC = () => {
 
     const closeModal = (isReload?: boolean) => {
         if (isReload) {
-            dispatch(getCollectionPagingAsyncThunk({ pageNumber: pageIndex, pageSize, albumId: Number(albumId) }));
+            dispatch(getCollectionPagingAsyncThunk({
+                pageNumber: pageIndex, pageSize, albumId: Number(albumId),
+                searchTerm: debouncedSearchValue?.trim(),
+                sortColumn,
+                sortDirection
+            }));
         }
         setIsOpen(false);
     }
@@ -170,7 +175,7 @@ const AlbumDetailCollectionPage: React.FC = () => {
                                                         <th>{t('album_detail.id')}</th>
                                                         <th>{t('album_detail.title')}</th>
                                                         <th>{t('album_detail.level_public')}</th>
-                                                        <th>{t('album_detail.volume')}</th>                                     
+                                                        <th>{t('album_detail.volume')}</th>
                                                         <th>{t('album_detail.description')}</th>
                                                         <th>{t('album_detail.created_on')}</th>
                                                         <th>{t('album_detail.updated_on')}</th>
