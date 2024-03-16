@@ -44,7 +44,7 @@ namespace Portal.API.Controllers
             var activityLogs = await _userDeviceRepository.GetQueryable()
                                         .Where(o => o.UserId == user.Id)
                                         .Page(request.PageNumber, request.PageSize)
-                                        .Sort(x => x.CreatedOnUtc, false)
+                                        .Sort(x => x.UpdatedOnUtc, false)
                                         .ToListAsync();
 
             var resposne = activityLogs.ConvertAll(x => new UserDeviceResponseModel
@@ -162,6 +162,60 @@ namespace Portal.API.Controllers
             }
 
             _userDeviceRepository.Delete(userDevice);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("sync")]
+        public async Task<IActionResult> Sync([FromBody] UserDeviceRequestModel model)
+        {
+            var identityUserId = GetIdentityUserIdByToken();
+            if (string.IsNullOrEmpty(identityUserId))
+            {
+                return BadRequest("error_user_not_found");
+            }
+            var user = await _userRepository.GetByIdentityUserIdAsync(identityUserId);
+            if (user == null)
+            {
+                return BadRequest("error_user_not_found");
+            }
+
+            var deviceType = EDeviceType.Unknown;
+            if (model.DeviceTypeName?.ToLower() == "ios")
+            {
+                deviceType = EDeviceType.iOS;
+            }
+            else if (model.DeviceTypeName?.ToLower() == "adnroid")
+            {
+                deviceType = EDeviceType.Android;
+            }
+
+            var userDevice = await _userDeviceRepository.GetQueryable().FirstOrDefaultAsync(x => x.RegistrationToken == model.RegistrationToken);
+            if (userDevice == null)
+            {
+                userDevice = new UserDevice
+                {
+                    RegistrationToken = model.RegistrationToken,
+                    DeviceType = deviceType,
+                    ScreenResolution = model.ScreenResolution,
+                    IsEnabled = true,
+                    BrowserVersion = model.BrowserVersion,
+                    UserId = user.Id,
+                    UpdatedOnUtc = DateTime.UtcNow
+                };
+
+                _userDeviceRepository.Add(userDevice);
+            }
+            else
+            {
+                userDevice.DeviceType = deviceType;
+                userDevice.ScreenResolution = model.ScreenResolution;
+                userDevice.BrowserVersion = model.BrowserVersion;
+                userDevice.UpdatedOnUtc = DateTime.UtcNow;
+            }
+
             await _unitOfWork.SaveChangesAsync();
 
             return Ok();
