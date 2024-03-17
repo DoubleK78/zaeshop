@@ -228,6 +228,16 @@ namespace Portal.API.Controllers
         }
 
         [HttpPost]
+        [Route("push-notification-all")]
+        [Authorize(ERoles.Administrator)]
+        public IActionResult PushNotificationAll(string registrationTokens, string title, string description, string? clickAction = null)
+        {
+            List<string> tokens = registrationTokens.Split(',').ToList();
+            _backgroundJobClient.Enqueue(() => _firebaseCloudMessageService.SendAllAsync(tokens, title, description, clickAction));
+            return Ok();
+        }
+
+        [HttpPost]
         [Route("remind-subscription")]
         [Authorize(ERoles.Administrator)]
         public IActionResult RemindSubscription()

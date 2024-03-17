@@ -82,7 +82,7 @@ public static class PortalServiceExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IAmazonS3Service, AmazonS3Service>();
-        services.AddSingleton<IFirebaseCloudMessageService, FirebaseCloudMessageService>();
+        services.AddScoped<IFirebaseCloudMessageService, FirebaseCloudMessageService>();
 
         // Hangfire use service differnce than Portal
         #region Email Service
