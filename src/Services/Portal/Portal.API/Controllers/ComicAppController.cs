@@ -41,7 +41,7 @@ namespace Portal.API.Controllers
         }
 
         [HttpGet("{friendlyName}")]
-        [RedisCache(60 * 24)]
+        [RedisCache(60)]
         public async Task<IActionResult> GetByIdAsync(string friendlyName)
         {
             var parameters = new Dictionary<string, object?>

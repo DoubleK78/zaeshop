@@ -53,7 +53,7 @@ namespace Portal.API.Controllers
             collection.ContentItems = contentItems;
 
             var result = new ServiceResponse<ContentAppModel>(collection);
-            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.ComicContent, comicFriendlyName, contentFriendlyName), result.Data, 60 * 24);
+            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.ComicContent, comicFriendlyName, contentFriendlyName), result.Data, 60);
 
             if (!isBot)
             {
