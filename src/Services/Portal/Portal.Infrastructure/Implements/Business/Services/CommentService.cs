@@ -1,4 +1,6 @@
+using Common.Interfaces;
 using Common.Models;
+using Common.ValueObjects;
 using Portal.Domain.AggregatesModel.AlbumAggregate;
 using Portal.Domain.AggregatesModel.CollectionAggregate;
 using Portal.Domain.AggregatesModel.UserAggregate;
@@ -17,8 +19,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly IGenericRepository<User> _userRepository;
         private readonly IGenericRepository<Collection> _collectionRepository;
         private readonly IGenericRepository<ReplyComment> _replyCommentRepository;
+        private readonly IRedisService _redisService;
 
-        public CommentService(IUnitOfWork unitOfWork)
+        public CommentService(IUnitOfWork unitOfWork, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _commentRepository = _unitOfWork.Repository<Comment>();
@@ -26,6 +29,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _userRepository = _unitOfWork.Repository<User>();
             _collectionRepository = _unitOfWork.Repository<Collection>();
             _replyCommentRepository = _unitOfWork.Repository<ReplyComment>();
+            _redisService = redisService;
         }
 
         public async Task<ServiceResponse<CommentModel>> CreateAsync(CommentRequestModel request, string identityUserId)
@@ -75,6 +79,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 _commentRepository.Add(comment);
                 await _unitOfWork.SaveChangesAsync();
+
+                await BuildPagingOneCacheAsync(album.Id);
 
                 // Response
                 response = new CommentModel
@@ -172,6 +178,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     comment.Text = request.Text;
                     _commentRepository.Update(comment);
                     await _unitOfWork.SaveChangesAsync();
+
+                    await BuildPagingOneCacheAsync(album.Id);
 
                     // Response
                     response = new CommentModel
@@ -287,6 +295,41 @@ namespace Portal.Infrastructure.Implements.Business.Services
             return new ServiceResponse<bool>(true);
         }
 
+        public async Task<ServiceResponse<PagingCommonResponse<CommentPagingResposneModel>>> BuildPagingOneCacheAsync(int albumId)
+        {
+            var parameters = new Dictionary<string, object?>
+                {
+                    { "pageNumber", 1 },
+                    { "pageSize", 5 },
+                    { "searchTerm", string.Empty },
+                    { "sortColumn", "createdOnUtc" },
+                    { "sortDirection", "desc" },
+                    { "albumId", albumId },
+                    { "collectionId", null },
+                    { "userId", null },
+                };
+
+            var result = await _unitOfWork.QueryAsync<CommentPagingResposneModel>("Comment_All_Paging", parameters);
+            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.ComicCommentPageOneCache, albumId), result, 60);
+
+            var record = result.Find(o => o.IsTotalRecord);
+            if (record == null)
+            {
+                return new ServiceResponse<PagingCommonResponse<CommentPagingResposneModel>>(new PagingCommonResponse<CommentPagingResposneModel>
+                {
+                    RowNum = 0,
+                    Data = new List<CommentPagingResposneModel>()
+                });
+            }
+
+            result.Remove(record);
+            return new ServiceResponse<PagingCommonResponse<CommentPagingResposneModel>>(new PagingCommonResponse<CommentPagingResposneModel>
+            {
+                RowNum = record.RowNum,
+                Data = result
+            });
+        }
+
         public async Task<ServiceResponse<PagingCommonResponse<CommentPagingResposneModel>>> GetPagingAsync(CommentPagingRequestModel request)
         {
             List<CommentPagingResposneModel>? result;
@@ -318,7 +361,23 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     { "collectionId", request.CollectionId },
                     { "userId", request.UserId },
                 };
-                result = await _unitOfWork.QueryAsync<CommentPagingResposneModel>("Comment_All_Paging", parameters);
+
+                // Cache comment first page
+                if (request.PageNumber == 1 &&
+                    request.PageSize == 5 &&
+                    string.IsNullOrEmpty(request.SearchTerm) &&
+                    !request.CollectionId.HasValue &&
+                    !request.UserId.HasValue)
+                {
+                    result = await _redisService.GetByFunctionAsync(string.Format(Const.RedisCacheKey.ComicCommentPageOneCache, request.AlbumId), 60, () =>
+                    {
+                        return _unitOfWork.QueryAsync<CommentPagingResposneModel>("Comment_All_Paging", parameters);
+                    });
+                }
+                else
+                {
+                    result = await _unitOfWork.QueryAsync<CommentPagingResposneModel>("Comment_All_Paging", parameters);
+                }
             }
 
             var record = result.Find(o => o.IsTotalRecord);

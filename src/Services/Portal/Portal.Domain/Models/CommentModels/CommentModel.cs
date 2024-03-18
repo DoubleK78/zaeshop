@@ -41,10 +41,7 @@ namespace Portal.Domain.Models.CommentModels
 
     public class CommentPagingResposneModel : CommentModel
     {
-        [JsonIgnore]
         public long RowNum { get; set; }
-
-        [JsonIgnore]
         public bool IsTotalRecord { get; set; }
     }
 
