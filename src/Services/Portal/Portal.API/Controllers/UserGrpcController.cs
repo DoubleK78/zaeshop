@@ -94,39 +94,71 @@ namespace Portal.API.Controllers
                 };
             }
 
-            var hasUserExists = await _unitOfWork.Repository<User>().GetQueryable().AnyAsync(x =>
-                x.IdentityUserId == request.IdentityId ||
-                x.Email == request.Email ||
-                x.UserName == request.UserName);
-            if (hasUserExists)
+            try
             {
+                var hasUserExists = await _unitOfWork.Repository<User>().GetQueryable().AnyAsync(x =>
+                                x.IdentityUserId == request.IdentityId ||
+                                x.Email == request.Email ||
+                                x.UserName == request.UserName);
+                if (hasUserExists)
+                {
+                    return new SyncUserReply
+                    {
+                        PortalId = 0,
+                        IsSuccess = false,
+                        Message = HttpStatusCode.BadRequest.ToString()
+                    };
+                }
+
+                var user = new User
+                {
+                    IdentityUserId = request.IdentityId,
+                    FullName = request.FullName,
+                    Email = request.Email,
+                    UserName = request.UserName,
+                    Avatar = request.Avatar,
+                    Region = request.Region?.ToLower() == "vi" ? ERegion.vi : ERegion.en
+                };
+
+                _unitOfWork.Repository<User>().Add(user);
+                await _unitOfWork.SaveChangesAsync();
+
+                // Check data is integrity
+                var parameters = new Dictionary<string, object?>
+                {
+                    { "id",  user.Id },
+                    { "identityUserId", user.IdentityUserId }
+                };
+
+                var isSuccess = (await _unitOfWork.QueryAsync<bool?>("SELECT 1 from [User] WHERE Id = @id OR IdentityUserId = @identityUserId", parameters, commandType: CommandType.Text, commandTimeout: 90)).FirstOrDefault();
+                if (!isSuccess.HasValue || !isSuccess.Value)
+                {
+                    return new SyncUserReply
+                    {
+                        PortalId = 0,
+                        IsSuccess = false,
+                        Message = HttpStatusCode.BadRequest.ToString()
+                    };
+                }
+
+                return new SyncUserReply
+                {
+                    IsSuccess = true,
+                    Message = HttpStatusCode.OK.ToString(),
+                    PortalId = user.Id
+                };
+            }
+            catch (Exception)
+            {
+                // Before we throw exception, then we should return client knows.
                 return new SyncUserReply
                 {
                     PortalId = 0,
                     IsSuccess = false,
-                    Message = HttpStatusCode.BadRequest.ToString()
+                    Message = HttpStatusCode.InternalServerError.ToString()
                 };
+                throw;
             }
-
-            var user = new User
-            {
-                IdentityUserId = request.IdentityId,
-                FullName = request.FullName,
-                Email = request.Email,
-                UserName = request.UserName,
-                Avatar = request.Avatar,
-                Region = request.Region?.ToLower() == "vi" ? ERegion.vi : ERegion.en
-            };
-
-            _unitOfWork.Repository<User>().Add(user);
-            await _unitOfWork.SaveChangesAsync();
-
-            return new SyncUserReply
-            {
-                IsSuccess = true,
-                Message = HttpStatusCode.OK.ToString(),
-                PortalId = user.Id
-            };
         }
     }
 }

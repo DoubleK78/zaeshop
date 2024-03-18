@@ -338,7 +338,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 { "TopType", filter.TopType },
                 { "Region", regionEnum }
             };
-            var result = await _unitOfWork.QueryAsync<AlbumPagingResponse>("Album_All_Paging", parameters);
+            var result = await _unitOfWork.QueryAsync<AlbumPagingResponse>("Album_All_Paging", parameters, commandTimeout: 180);
 
             var record = result.Find(o => o.IsTotalRecord);
             if (record == null)
