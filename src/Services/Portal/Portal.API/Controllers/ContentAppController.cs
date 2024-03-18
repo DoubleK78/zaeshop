@@ -41,7 +41,7 @@ namespace Portal.API.Controllers
                 { "comicFriendlyName", comicFriendlyName },
                 { "contentFriendlyName",  contentFriendlyName }
             };
-            var collection = (await _unitOfWork.QueryAsync<ContentAppModel>("Collection_Content_GetByFriendlyName", parameters)).FirstOrDefault();
+            var collection = (await _unitOfWork.QueryAsync<ContentAppModel>("Collection_Content_GetByFriendlyName", parameters, commandTimeout: 180)).FirstOrDefault();
             if (collection == null)
             {
                 return BadRequest(new ServiceResponse<ContentAppModel>("Không tìm thấy chap truyện tranh"));
