@@ -447,9 +447,9 @@ namespace Identity.Infrastructure.Implements.Business.Services
                     // Flag to check Client registered
                     IsClientRegistered = true,
                     CreatedOnUtc = DateTime.UtcNow,
-                    Avatar = model.Image,
+                    Avatar = model.Image ?? string.Empty,
                     EmailConfirmed = model.EmailVerified,
-                    Region = model.Region
+                    Region = model.Region ?? "vi"
                 };
 
                 // Create account
@@ -470,10 +470,10 @@ namespace Identity.Infrastructure.Implements.Business.Services
                     Region = user.Region
                 });
 
-                if (resultApi != null && !resultApi.IsSuccess)
+                if (resultApi == null || !resultApi.IsSuccess)
                 {
                     await _userManager.DeleteAsync(user);
-                    return new ServiceResponse<AuthenticateWithRolesResponse>(resultApi.Message ?? string.Empty);
+                    return new ServiceResponse<AuthenticateWithRolesResponse>(resultApi?.Message ?? string.Empty);
                 }
 
                 // Add role User as default
@@ -498,8 +498,8 @@ namespace Identity.Infrastructure.Implements.Business.Services
             else if (user.FullName != model.Name.Split(' ').FirstOrDefault() || user.Avatar != model.Image || user.Region != model.Region)
             {
                 user.FullName = model.Name.Split(' ').FirstOrDefault() ?? string.Empty;
-                user.Avatar = model.Image;
-                user.Region = model.Region;
+                user.Avatar = model.Image ?? string.Empty;
+                user.Region = model.Region ?? "vi";
                 user.UpdatedOnUtc = DateTime.UtcNow;
 
                 _context.Users.Update(user);

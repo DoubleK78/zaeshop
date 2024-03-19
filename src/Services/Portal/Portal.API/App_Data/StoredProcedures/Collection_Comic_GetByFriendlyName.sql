@@ -1,6 +1,6 @@
 CREATE OR ALTER PROCEDURE Collection_Comic_GetByFriendlyName
 (
-    @friendlyName NVARCHAR(MAX)
+    @friendlyName VARCHAR(350)
 )
 AS
 BEGIN

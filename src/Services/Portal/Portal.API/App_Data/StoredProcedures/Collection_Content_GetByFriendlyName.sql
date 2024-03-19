@@ -1,7 +1,7 @@
 CREATE OR ALTER PROCEDURE Collection_Content_GetByFriendlyName
 (
-    @comicFriendlyName NVARCHAR(MAX),
-    @contentFriendlyName NVARCHAR(MAX)
+    @comicFriendlyName VARCHAR(350),
+    @contentFriendlyName VARCHAR(350)
 )
 AS
 BEGIN
