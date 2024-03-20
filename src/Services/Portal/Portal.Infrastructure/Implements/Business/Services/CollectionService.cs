@@ -14,6 +14,7 @@ using Portal.Domain.AggregatesModel.UserAggregate;
 using Portal.Domain.Enums;
 using Portal.Domain.Interfaces.Business.Services;
 using Portal.Domain.Interfaces.External;
+using Portal.Domain.Models.AlbumModels;
 using Portal.Domain.Models.CollectionModels;
 using Portal.Domain.Models.ContentItemModels;
 using Portal.Domain.Models.UserModels;
@@ -516,7 +517,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 // Reset cache when calculated successfully
                 _redisService.Remove(key);
 
-                // Remove cache comic details
+                // Build cache comic details
                 if (collectionIds.Count > 0)
                 {
                     var albumFriendlyNames = await _repository.GetQueryable()
@@ -524,16 +525,12 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                                     .Select(y => y.Album.FriendlyName)
                                                     .Distinct()
                                                     .ToListAsync();
-
-                    foreach (var friendlyName in albumFriendlyNames)
-                    {
-                        _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName));
-                    }
+                    _backgroundJobClient.Schedule<ICollectionService>(x => x.BuildCacheComicDetails(albumFriendlyNames), TimeSpan.FromMinutes(1));
                 }
 
                 // Reset Popular & Top Rank Comics
-                await _businessCacheService.ReloadCachePopularComicsAsync("vi");
-                await _businessCacheService.ReloadCacheTopComicsAsync("vi");
+                                _backgroundJobClient.Schedule<IBusinessCacheService>(x => x.ReloadCachePopularComicsAsync("vi"), TimeSpan.FromMinutes(3));
+                _backgroundJobClient.Schedule<IBusinessCacheService>(x => x.ReloadCacheTopComicsAsync("vi"), TimeSpan.FromMinutes(6));
 
                 // Log to service log to stored
                 await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
@@ -812,6 +809,49 @@ namespace Portal.Infrastructure.Implements.Business.Services
                                clickAction
                            ), TimeSpan.FromMinutes(5));
                     }
+                }
+            }
+        }
+
+        public async Task BuildCacheComicDetails(List<string?> comicFriendlyNames)
+        {
+            foreach (var friendlyName in comicFriendlyNames)
+            {
+                if (!string.IsNullOrEmpty(friendlyName))
+                {
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "friendlyName",  friendlyName }
+                    };
+
+                    var comic = (await _unitOfWork.QueryAsync<ComicAppModel>("Collection_Comic_GetByFriendlyName", parameters, commandTimeout: 180)).FirstOrDefault();
+                    if (comic == null)
+                    {
+                        continue;
+                    }
+
+                    var collections = await _repository.GetQueryable().Where(o => o.AlbumId == comic.Id).ToListAsync();
+                    comic.Contents = collections.ConvertAll(z => new ContentAppModel
+                    {
+                        Id = z.Id,
+                        Title = z.Title,
+                        FriendlyName = z.FriendlyName,
+                        CreatedOnUtc = z.CreatedOnUtc,
+                        UpdatedOnUtc = z.UpdatedOnUtc,
+                        IsPublic = z.IsPublic,
+                        AlbumId = z.AlbumId,
+                        AlbumTitle = comic.Title,
+                        AlbumFriendlyName = comic.FriendlyName,
+                        Views = z.Views,
+                        LevelPublic = z.LevelPublic,
+                        AlbumLevelPublic = comic.LevelPublic,
+                        Region = comic.Region,
+                        StorageType = z.StorageType
+                    }).OrderByDescending(x => RegexHelper.GetNumberByText(x.Title)).ToList();
+
+                    // Set cache comic detail
+                    var result = new ServiceResponse<ComicAppModel>(comic);
+                    _redisService.Set(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName), result, 60);
                 }
             }
         }

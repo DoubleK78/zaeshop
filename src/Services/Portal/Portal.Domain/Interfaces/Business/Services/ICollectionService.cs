@@ -19,5 +19,6 @@ namespace Portal.Domain.Interfaces.Business.Services
         Task CaclculateViewsFromRedisAsync();
         Task ResetLevelPublicTaskAsync();
         Task PushNotificationComic(int albumId, bool isPriority, string title, string description, string clickAction);
+        Task BuildCacheComicDetails(List<string?> comicFriendlyNames);
     }
 }
