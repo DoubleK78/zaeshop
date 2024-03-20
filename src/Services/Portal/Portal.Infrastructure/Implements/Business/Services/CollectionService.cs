@@ -453,12 +453,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 foreach (var item in value)
                 {
-                    var collectionView = collectionViewsInDb.Find(x => x.CollectionId == item.CollectionId && (
-                        x.UserId == item.UserId || x.IpAddress == item.IpAddress || x.SessionId == item.SessionId
-                    ));
-                    var newCollectionView = addCollectionViews.Find(x => x.CollectionId == item.CollectionId && (
-                        x.UserId == item.UserId || x.IpAddress == item.IpAddress || x.SessionId == item.SessionId
-                    ));
+                    var collectionView = collectionViewsInDb.Find(x => x.CollectionId == item.CollectionId && x.UserId == item.UserId);
+                    var newCollectionView = addCollectionViews.Find(x => x.CollectionId == item.CollectionId && x.UserId == item.UserId);
 
                     // Case 1: No records today, Create new record
                     if (collectionView == null && newCollectionView == null)
@@ -477,12 +473,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     else if (collectionView == null && newCollectionView != null)
                     {
                         newCollectionView.View++;
-
-                        if (item.UserId != null && newCollectionView.UserId == null)
-                        {
-                            newCollectionView.UserId = item.UserId;
-                        }
-
                         #region Update lastest IP and stored Previous IPs
                         if (!string.IsNullOrEmpty(item.IpAddress) && item.IpAddress != newCollectionView.IpAddress)
                         {
@@ -494,11 +484,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     else if (collectionView != null && newCollectionView == null)
                     {
                         collectionView.View++;
-
-                        if (item.UserId != null && collectionView.UserId == null)
-                        {
-                            collectionView.UserId = item.UserId;
-                        }
 
                         #region Update lastest IP and stored Previous IPs
                         if (!string.IsNullOrEmpty(item.IpAddress) && item.IpAddress != collectionView.IpAddress)
