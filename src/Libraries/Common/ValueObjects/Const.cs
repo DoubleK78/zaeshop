@@ -34,6 +34,8 @@ namespace Common.ValueObjects
 
             public const string ErrorAddExp = "Error From Add Experience From User To Redis";
             public const string StoredExpCache = "Stored Experience View Or Comment To Redis";
+
+            public const string StoredLevelPublicChap = "Stored Reset Level Public Chap";
         }
 
         public static class HangfireJobName

@@ -439,7 +439,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             bool isDeployed = bool.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT_DEPLOYED") ?? "false");
             var prefixEnvironment = isDeployed ? "[Docker] " : string.Empty;
 
-            var scheduleJob = await _unitOfWork.Repository<HangfireScheduleJob>().GetByNameAsync(Const.HangfireJobName.SendEmailSPremiumFollowers);
+            var scheduleJob = await _unitOfWork.Repository<HangfireScheduleJob>().GetByNameAsync(Const.HangfireJobName.ResetLevelPublic);
             if (scheduleJob != null && scheduleJob.IsEnabled && !scheduleJob.IsRunning)
             {
                 try
@@ -499,7 +499,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     albumFriendlyNames.Add(album.FriendlyName);
                 }
 
-                if (album.LevelPublic == ELevelPublic.PremiumUser && difference.TotalHours >= 12)
+                if ((album.LevelPublic == ELevelPublic.SPremiumUser || album.LevelPublic == ELevelPublic.PremiumUser) &&
+                     difference.TotalHours >= 12)
                 {
                     album.LevelPublic = ELevelPublic.AllUser;
                     albumFriendlyNames.Add(album.FriendlyName);

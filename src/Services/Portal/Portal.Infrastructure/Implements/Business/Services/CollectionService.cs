@@ -529,7 +529,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 }
 
                 // Reset Popular & Top Rank Comics
-                                _backgroundJobClient.Schedule<IBusinessCacheService>(x => x.ReloadCachePopularComicsAsync("vi"), TimeSpan.FromMinutes(3));
+                _backgroundJobClient.Schedule<IBusinessCacheService>(x => x.ReloadCachePopularComicsAsync("vi"), TimeSpan.FromMinutes(3));
                 _backgroundJobClient.Schedule<IBusinessCacheService>(x => x.ReloadCacheTopComicsAsync("vi"), TimeSpan.FromMinutes(6));
 
                 // Log to service log to stored
@@ -654,20 +654,20 @@ namespace Portal.Infrastructure.Implements.Business.Services
             bool isDeployed = bool.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT_DEPLOYED") ?? "false");
             var prefixEnvironment = isDeployed ? "[Docker] " : string.Empty;
 
-            var scheduleJob = await _unitOfWork.Repository<HangfireScheduleJob>().GetByNameAsync(Const.HangfireJobName.SendEmailSPremiumFollowers);
+            var scheduleJob = await _unitOfWork.Repository<HangfireScheduleJob>().GetByNameAsync(Const.HangfireJobName.ResetLevelPublicChap);
             if (scheduleJob != null && scheduleJob.IsEnabled && !scheduleJob.IsRunning)
             {
                 try
                 {
-                    scheduleJob.IsRunning = true;
-                    scheduleJob.StartOnUtc = DateTime.UtcNow;
-                    await _unitOfWork.SaveChangesAsync();
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_StartJob", parameters);
 
                     await ResetLevelPublicAsync();
 
-                    scheduleJob.EndOnUtc = DateTime.UtcNow;
-                    scheduleJob.IsRunning = false;
-                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
                 }
                 catch (Exception ex)
                 {
@@ -682,9 +682,11 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         StatusCode = "Internal Server Error"
                     });
 
-                    scheduleJob.EndOnUtc = DateTime.UtcNow;
-                    scheduleJob.IsRunning = false;
-                    await _unitOfWork.SaveChangesAsync();
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
                 }
             }
         }
@@ -692,6 +694,9 @@ namespace Portal.Infrastructure.Implements.Business.Services
         // Reset Level Public
         private async Task<ServiceResponse<bool>> ResetLevelPublicAsync()
         {
+            bool isDeployed = bool.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT_DEPLOYED") ?? "false");
+            var prefixEnvironment = isDeployed ? "[Docker] " : string.Empty;
+
             var collections = await _repository.GetQueryable()
                                     .Include(x => x.Album)
                                     .Where(x => x.LevelPublic != ELevelPublic.AllUser)
@@ -721,7 +726,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     updateCollections.Add(collection);
                 }
 
-                if (collection.LevelPublic == ELevelPublic.PremiumUser && difference.TotalHours >= 12)
+                if ((collection.LevelPublic == ELevelPublic.SPremiumUser || collection.LevelPublic == ELevelPublic.PremiumUser) && 
+                        difference.TotalHours >= 12)
                 {
                     collection.LevelPublic = ELevelPublic.AllUser;
                     albumFriendlyNames.Add(collection.Album.FriendlyName);
@@ -731,13 +737,21 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
             await _unitOfWork.BulkSaveChangesAsync();
 
-            // Remove cache comic details
+            // Build cache comic details
             if (albumFriendlyNames.Count > 0)
             {
-                foreach (var friendlyName in albumFriendlyNames.Distinct())
+                await BuildCacheComicDetails(albumFriendlyNames.Distinct().ToList());
+
+                // Log to service log to stored
+                var comicLogs = albumFriendlyNames.Where(x => !string.IsNullOrEmpty(x)).Distinct().Select(x => x!).JoinSeparator(isSpace: true);
+                await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
                 {
-                    _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName));
-                }
+                    LogLevel = ELogLevel.Information,
+                    EventName = Const.ServiceLogEventName.StoredLevelPublicChap,
+                    ServiceName = "Hangfire",
+                    Environment = prefixEnvironment + _hostingEnvironment.EnvironmentName,
+                    Description = $"Unlocked Comics ({comicLogs}), At {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}",
+                });
             }
 
             if (updateCollections.Count > 0)
