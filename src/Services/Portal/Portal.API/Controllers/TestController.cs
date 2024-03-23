@@ -193,7 +193,7 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("reload-popular")]
-        [Authorize(ERoles.Administrator)]
+        // [Authorize(ERoles.Administrator)]
         public IActionResult ReloadPopular()
         {
             _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.ReloadCachePopularComicsAsync("vi"));
@@ -202,7 +202,7 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("reload-recently")]
-        [Authorize(ERoles.Administrator)]
+        // [Authorize(ERoles.Administrator)]
         public IActionResult ReloadRecently()
         {
             _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.RelaodCacheRecentlyComicsAsync("vi"));
@@ -211,7 +211,7 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("reload-top")]
-        [Authorize(ERoles.Administrator)]
+        // [Authorize(ERoles.Administrator)]
         public IActionResult ReloadTop()
         {
             _backgroundJobClient.Enqueue<IBusinessCacheService>(x => x.ReloadCacheTopComicsAsync("vi"));
@@ -229,7 +229,7 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("push-notification-all")]
-        [Authorize(ERoles.Administrator)]
+        // [Authorize(ERoles.Administrator)]
         public IActionResult PushNotificationAll(string registrationTokens, string title, string description, string? clickAction = null)
         {
             List<string> tokens = registrationTokens.Split(',').ToList();
@@ -243,6 +243,23 @@ namespace Portal.API.Controllers
         public IActionResult RemindSubscription()
         {
             _backgroundJobClient.Enqueue<IUserService>(x => x.RemindSubscriptionAsync());
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("re-calculateview")]
+        public IActionResult ReCalculateView()
+        {
+            _backgroundJobClient.Enqueue<ICollectionService>(x => x.CaclculateViewsFromRedisAsync());
+            return Ok();
+        }
+
+        
+        [HttpPost]
+        [Route("reset-public-chap")]
+        public IActionResult ResetPublicChap()
+        {
+            _backgroundJobClient.Enqueue<ICollectionService>(x => x.ResetLevelPublicTaskAsync());
             return Ok();
         }
     }
