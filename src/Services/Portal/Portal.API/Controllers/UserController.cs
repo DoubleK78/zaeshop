@@ -111,7 +111,8 @@ namespace Portal.API.Controllers
                 IpV4Address = x.IpV4Address,
                 IpV6Address = x.IpV6Address,
                 LogTimes = x.LogTimes,
-                UserId = x.UserId
+                UserId = x.UserId,
+                CreatedOnUtc = x.CreatedOnUtc
             });
             return Ok(new ServiceResponse<PagingCommonResponse<ActivityLogResponseModel>>(new PagingCommonResponse<ActivityLogResponseModel>
             {

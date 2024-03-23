@@ -14,6 +14,7 @@ import DeleteUser from '../../components/user/DeleteUser';
 import { v4 as uuidv4 } from 'uuid';
 import { useDebounce } from 'use-debounce';
 import { Link } from 'react-router-dom';
+import dayjsCustom from '../../utils/dayjs/dayjs-custom';
 
 const UserPage: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -182,14 +183,14 @@ const UserPage: React.FC = () => {
                                                         <tr key={uuidv4()}>
                                                             <td>
                                                                 <Link className="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" to={`/users/${user.id}`}>{user.id}</Link>                                                       
-                                                                {dayjs().diff(dayjs(user.createdOnUtc), 'day') >= 0 && dayjs().diff(dayjs(user.createdOnUtc), 'day') < 7
+                                                                {dayjsCustom.utc().diff(dayjs(user.createdOnUtc), 'day') >= 0 && dayjsCustom.utc().diff(dayjs(user.createdOnUtc), 'day') < 7
                                                                     && <span className="badge bg-soft-success">New</span>}
                                                             </td>
                                                             <td>{user.fullName}</td>
                                                             <td>{user.userName}</td>
                                                             <td>{user.email}</td>
                                                             <td>{user.isBanned ? "Yes" : "No"}</td>
-                                                            <td>{dayjs(user.createdOnUtc).format('DD-MM-YYYY HH:mm')}</td>
+                                                            <td>{dayjsCustom.utc(user.createdOnUtc).local().format('DD-MM-YYYY HH:mm')}</td>
                                                             <td>
                                                                 {user?.roles?.split(',').map(role => (
                                                                     <span key={uuidv4()} className="badge bg-soft-primary">{role}</span>

@@ -23,5 +23,6 @@ namespace Portal.Domain.Models.ActivityLogs
         public EActivityType ActivityType { get; set; }
         public int LogTimes { get; set; }
         public int UserId { get; set; }
+        public DateTime CreatedOnUtc { get; set; }
     }
 }
