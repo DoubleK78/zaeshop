@@ -37,6 +37,10 @@ namespace Portal.Domain.AggregatesModel.AlbumAggregate
         #endregion
 
         public ulong Views { get; set; }
+        public ulong ViewsByTopDay { get; set; }
+        public ulong ViewsByTopWeek { get; set; }
+        public ulong ViewsByTopMonth { get; set; }
+        public ulong ViewsByTopYear { get; set; }
 
         [JsonIgnore]
         public virtual ICollection<Collection> Collections { get; set; } = new List<Collection>();

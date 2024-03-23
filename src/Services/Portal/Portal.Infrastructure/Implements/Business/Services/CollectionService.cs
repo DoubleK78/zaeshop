@@ -528,6 +528,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     _backgroundJobClient.Schedule<ICollectionService>(x => x.BuildCacheComicDetails(albumFriendlyNames), TimeSpan.FromMinutes(1));
                 }
 
+                _backgroundJobClient.Schedule<ICollectionService>(x => x.RecalculateAlbumViewsTopTypeAsync(collectionIds), TimeSpan.FromMinutes(2));
+
                 // Reset Popular & Top Rank Comics
                 _backgroundJobClient.Schedule<IBusinessCacheService>(x => x.ReloadCachePopularComicsAsync("vi"), TimeSpan.FromMinutes(3));
                 _backgroundJobClient.Schedule<IBusinessCacheService>(x => x.ReloadCacheTopComicsAsync("vi"), TimeSpan.FromMinutes(6));
@@ -726,7 +728,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     updateCollections.Add(collection);
                 }
 
-                if ((collection.LevelPublic == ELevelPublic.SPremiumUser || collection.LevelPublic == ELevelPublic.PremiumUser) && 
+                if ((collection.LevelPublic == ELevelPublic.SPremiumUser || collection.LevelPublic == ELevelPublic.PremiumUser) &&
                         difference.TotalHours >= 12)
                 {
                     collection.LevelPublic = ELevelPublic.AllUser;
@@ -867,6 +869,18 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     var result = new ServiceResponse<ComicAppModel>(comic);
                     _redisService.Set(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName), result, 60);
                 }
+            }
+        }
+
+        public async Task RecalculateAlbumViewsTopTypeAsync(List<int> collectionIds)
+        {
+            if (collectionIds.Count > 0)
+            {
+                var parameters = new Dictionary<string, object?>
+                {
+                    { "collectionIds",  string.Join(',', collectionIds)}
+                };
+                await _unitOfWork.ExecuteAsync("Album_RecalculateViewsTopType", parameters);
             }
         }
     }
