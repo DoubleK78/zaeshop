@@ -210,6 +210,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
             });
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopDayComicsPaging, locale), topDayComics, 60 * 24);
 
+            await Task.Delay(10000); // Wait for 10 seconds
+
             // Top Month Comic
             var topMonthComics = await GetComicPagingAsync(new PagingCommonRequest
             {
@@ -231,6 +233,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 Region = locale
             });
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopMonthComicsPaging, locale), topMonthComics, 60 * 24);
+
+            await Task.Delay(50000); // Wait for 50 seconds
 
             // Top Year Comic
             var topYearComics = await GetComicPagingAsync(new PagingCommonRequest
