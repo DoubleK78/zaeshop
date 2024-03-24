@@ -59,6 +59,9 @@ namespace HangFireServer.Extensions
         
             // 10:05 AM ICT Daily To remind subscription
             RecurringJob.AddOrUpdate<IUserService>(HangfireJobName.RemindSubscription, x => x.RemindSubscriptionTaskAsync(), "5 3 * * *");
+        
+            // 7:05 AM ICT Daily to Recalculate All Album Views
+            RecurringJob.AddOrUpdate<ICollectionService>(HangfireJobName.AlbumCalculatemViewsTopTypeAll, x => x.RecalculateAlbumViewsTopTypeAllTaskAsync(), "5 0 * * *");
         }
     }
 }

@@ -883,5 +883,52 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 await _unitOfWork.ExecuteAsync("Album_RecalculateViewsTopType", parameters);
             }
         }
+
+        public async Task RecalculateAlbumViewsTopTypeAllTaskAsync()
+        {
+            bool isDeployed = bool.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT_DEPLOYED") ?? "false");
+            var prefixEnvironment = isDeployed ? "[Docker] " : string.Empty;
+
+            var scheduleJob = await _unitOfWork.Repository<HangfireScheduleJob>().GetByNameAsync(Const.HangfireJobName.AlbumCalculatemViewsTopTypeAll);
+            if (scheduleJob != null && scheduleJob.IsEnabled && !scheduleJob.IsRunning)
+            {
+                try
+                {
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_StartJob", parameters);
+
+                    await RecalculateAlbumViewsTopTypeAllAsync();
+
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
+                }
+                catch (Exception ex)
+                {
+                    await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
+                    {
+                        LogLevel = ELogLevel.Error,
+                        EventName = ex.Message,
+                        StackTrace = ex.StackTrace,
+                        ServiceName = "Hangfire",
+                        Environment = prefixEnvironment + _hostingEnvironment.EnvironmentName,
+                        Description = $"[Exception]: {ex.Message}",
+                        StatusCode = "Internal Server Error"
+                    });
+
+                    var parameters = new Dictionary<string, object?>
+                    {
+                        { "Id",  scheduleJob.Id }
+                    };
+                    await _unitOfWork.ExecuteAsync("Hangfire_EndJob", parameters);
+                }
+            }
+        }
+
+        public async Task RecalculateAlbumViewsTopTypeAllAsync()
+        {
+            await _unitOfWork.ExecuteAsync("Album_RecalculateViewsTopType_All");
+        }
     }
 }

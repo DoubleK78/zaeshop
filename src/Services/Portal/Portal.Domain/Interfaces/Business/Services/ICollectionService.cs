@@ -21,5 +21,7 @@ namespace Portal.Domain.Interfaces.Business.Services
         Task PushNotificationComic(int albumId, bool isPriority, string title, string description, string clickAction);
         Task BuildCacheComicDetails(List<string?> comicFriendlyNames);
         Task RecalculateAlbumViewsTopTypeAsync(List<int> collectionIds);
+        Task RecalculateAlbumViewsTopTypeAllTaskAsync();
+        Task RecalculateAlbumViewsTopTypeAllAsync();
     }
 }
