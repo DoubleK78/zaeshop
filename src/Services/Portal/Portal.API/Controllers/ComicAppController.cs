@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Portal.API.Attributes;
 using Portal.Domain.AggregatesModel.AlbumAggregate;
 using Portal.Domain.AggregatesModel.CollectionAggregate;
+using Portal.Domain.Enums;
 using Portal.Domain.Interfaces.Business.Services;
 using Portal.Domain.Models.AlbumModels;
 using Portal.Domain.Models.CollectionModels;
@@ -69,7 +70,7 @@ namespace Portal.API.Controllers
                 Views = z.Views,
                 LevelPublic = z.LevelPublic,
                 AlbumLevelPublic = comic.LevelPublic,
-                Region = comic.Region,           
+                Region = comic.Region,
                 StorageType = z.StorageType
             }).OrderByDescending(x => RegexHelper.GetNumberByText(x.Title)).ToList();
 
@@ -119,6 +120,24 @@ namespace Portal.API.Controllers
                     ContentFriendlyNames = o.Collections.Where(c => !string.IsNullOrEmpty(c.FriendlyName)).Select(x => x.FriendlyName!).ToList()
                 }).ToListAsync();
             return Ok(comicSitemap);
+        }
+
+        [HttpGet]
+        [Route("comics-search")]
+        [RedisCache(60 * 24)]
+        public async Task<IActionResult> GetAllComicsSearch([FromQuery] ERegion region)
+        {
+            var comicsSearch = await _albumRepository.GetQueryable()
+                .Where(o => o.Region == region)
+                .OrderByDescending(o => o.Views)
+                .Select(o => new ComicSearchModel
+                {
+                    Title = o.Title,
+                    FriendlyName = o.FriendlyName,
+                    Region = o.Region
+                }).ToListAsync();
+
+            return Ok(new ServiceResponse<List<ComicSearchModel>?>(comicsSearch));
         }
     }
 }
