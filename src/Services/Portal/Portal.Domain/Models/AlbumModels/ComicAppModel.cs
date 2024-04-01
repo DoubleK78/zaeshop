@@ -64,5 +64,12 @@ namespace Portal.Domain.Models.AlbumModels
         public ERegion Region { get; set; }
         public List<string> ContentFriendlyNames { get; set; } = new List<string>();
     }
+
+    public class ComicSearchModel
+    {
+        public string Title { get; set; } = null!;
+        public string? FriendlyName { get; set; }
+        public ERegion Region { get; set; }
+    }
     #endregion
 }
