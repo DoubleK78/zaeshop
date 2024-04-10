@@ -116,6 +116,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
             bool isSyncUserPortal = user.FullName != userModel.FullName;
             user.FullName = userModel.FullName;
 
+            var originalBanned = user.IsBanned;
             user.IsBanned = userModel.IsBanned;
             user.LockoutEnd = userModel.IsBanned ? DateTime.UtcNow : null;
 
@@ -129,6 +130,12 @@ namespace Identity.Infrastructure.Implements.Business.Services
             {
                 errorResult.Description = string.Join(", ", result.Errors.Select(o => o.Description));
                 return null;
+            }
+
+            var userFingerPrints = _context.UserFingerPrints.Where(o => o.UserId == user.Id).ToList();
+            if (originalBanned != user.IsBanned)
+            {
+                userFingerPrints.ForEach(x => x.IsBanned = user.IsBanned);
             }
 
             // Update role

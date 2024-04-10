@@ -8,11 +8,12 @@ public class UserFingerPrint : Entity, IAggregateRoot
 {
     [Column(TypeName = "varchar(150)")]
     public string FingerPrint { get; set; } = null!;
-    public bool IsBanned { get; set; }
-    public int? UserId { get; set; }
 
     [Column(TypeName = "varchar(500)")]
     public string? AdditionalDetail { get; set; }
+
+    public bool IsBanned { get; set; }
+    public string? UserId { get; set; }
 
     [JsonIgnore]
     public virtual User? User { get; set; }

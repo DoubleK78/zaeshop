@@ -15,6 +15,7 @@ using Common.Implements.Messaging;
 using Identity.Domain.Interfaces.Messaging;
 using Identity.Infrastructure.Implements.Messaging;
 using System.Reflection;
+using Identity.Domain.Interfaces.Business.Services;
 
 namespace Identity.API.Extensions
 {
@@ -69,6 +70,7 @@ namespace Identity.API.Extensions
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IUserFingerPrintService, UserFingerPrintService>();
             return services;
         }
     }

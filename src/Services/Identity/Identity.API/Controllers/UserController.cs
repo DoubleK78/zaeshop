@@ -5,6 +5,7 @@ using Common.Models;
 using Identity.API.Attributes;
 using Identity.Domain.AggregatesModel.UserAggregate;
 using Identity.Domain.Business.Interfaces.Services;
+using Identity.Domain.Interfaces.Business.Services;
 using Identity.Domain.Models.ErrorCodes;
 using Identity.Domain.Models.ErrorResponses;
 using Identity.Domain.Models.Users;
@@ -23,17 +24,20 @@ namespace Identity.API.Controllers
         private readonly IUserService _userService;
         private readonly AppIdentityDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IUserFingerPrintService _userFingerPrintService;
         #endregion
 
         #region ctor
         public UserController(
             IUserService userService,
             AppIdentityDbContext context,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IUserFingerPrintService userFingerPrintService)
         {
             _userService = userService;
             _context = context;
             _userManager = userManager;
+            _userFingerPrintService = userFingerPrintService;
         }
         #endregion
 
@@ -187,24 +191,15 @@ namespace Identity.API.Controllers
 
         [HttpGet("prepare")]
         [Authorize]
-        public async Task<IActionResult> CheckCurrentUserFingerPrint()
+        public async Task<IActionResult> CheckBannedUserFingerPrint([FromQuery]string fingerPrint)
         {
-            var userId = User.FindFirstValue("id");
-            if (!string.IsNullOrEmpty(userId))
-            {
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user == null)
-                {
-                    return BadRequest("error_user_not_found");
-                }
-            }
-
-            return Ok();
+            var isBanned = await _userFingerPrintService.CheckBannedFromFingerPrintAsync(fingerPrint);
+            return Ok(isBanned);
         }
 
         [HttpPut("prepare")]
         [Authorize]
-        public async Task<IActionResult> CreateOrUpdateCurrentUserFingerPrint()
+        public async Task<IActionResult> CreateOrUpdateCurrentUserFingerPrint([FromBody] UserFingerPrintModel model)
         {
             var userId = User.FindFirstValue("id");
             if (!string.IsNullOrEmpty(userId))
@@ -214,6 +209,8 @@ namespace Identity.API.Controllers
                 {
                     return BadRequest("error_user_not_found");
                 }
+
+                await _userFingerPrintService.CreateOrUpdateAsync(userId, model.FingerPrint, model.AdditionalDetail);
             }
 
             return Ok();

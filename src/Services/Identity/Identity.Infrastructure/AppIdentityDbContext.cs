@@ -15,6 +15,8 @@ namespace Identity.Infrastructure
         {
         }
 
+        public DbSet<UserFingerPrint> UserFingerPrints { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
