@@ -1,3 +1,4 @@
+using Common.Enums;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Portal.API.Attributes;
@@ -26,6 +27,7 @@ namespace Portal.API.Controllers
             _contentItemService = contentItemService;
         }
 
+        [Authorize(ERoles.Administrator)]
         [HttpPost]
         public async Task<IActionResult> Create(CollectionRequestModel model)
         {
@@ -38,6 +40,7 @@ namespace Portal.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(ERoles.Administrator)]
         [HttpPut]
         [Route("{id}")]
         public async Task<IActionResult> Update(int id, CollectionRequestModel model)
@@ -64,6 +67,7 @@ namespace Portal.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(ERoles.Administrator)]
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -123,6 +127,7 @@ namespace Portal.API.Controllers
             return Ok(response);
         }
 
+        [Authorize(ERoles.Administrator)]
         [HttpPost]
         [Route("{id}/content-items/local")]
         public IActionResult BulkUploadByLocalServer([FromRoute] int id, [FromBody] List<ContentItemUploadLocalServer> items)
@@ -131,6 +136,7 @@ namespace Portal.API.Controllers
             return Ok();
         }
 
+        [Authorize(ERoles.Administrator)]
         [HttpPut]
         [Route("{id}/content-items/local")]
         public IActionResult BulkUpdateByLocalServer([FromRoute] int id, [FromBody] List<ContentItemUploadLocalServer> items)

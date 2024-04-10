@@ -184,5 +184,39 @@ namespace Identity.API.Controllers
 
             return Ok();
         }
+
+        [HttpGet("prepare")]
+        [Authorize]
+        public async Task<IActionResult> CheckCurrentUserFingerPrint()
+        {
+            var userId = User.FindFirstValue("id");
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return BadRequest("error_user_not_found");
+                }
+            }
+
+            return Ok();
+        }
+
+        [HttpPut("prepare")]
+        [Authorize]
+        public async Task<IActionResult> CreateOrUpdateCurrentUserFingerPrint()
+        {
+            var userId = User.FindFirstValue("id");
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return BadRequest("error_user_not_found");
+                }
+            }
+
+            return Ok();
+        }
     }
 }

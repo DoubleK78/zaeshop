@@ -22,7 +22,7 @@ namespace Portal.API.Controllers
             _backgroundJobClient = backgroundJobClient;
         }
 
-        [Authorize]
+        [Authorize(ERoles.Administrator)]
         [HttpPost]
         public async Task<IActionResult> Create(AlbumRequestModel model)
         {
@@ -34,7 +34,7 @@ namespace Portal.API.Controllers
             return Ok(response);
         }
 
-        [Authorize]
+        [Authorize(ERoles.Administrator)]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, AlbumRequestModel model)
         {
