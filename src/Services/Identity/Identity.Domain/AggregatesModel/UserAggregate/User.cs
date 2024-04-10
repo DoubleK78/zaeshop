@@ -34,5 +34,8 @@ namespace Identity.Domain.AggregatesModel.UserAggregate
 
         [JsonIgnore]
         public virtual ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();
+
+        [JsonIgnore]
+        public virtual ICollection<UserFingerPrint> UserFingerPrints { get; set; } = new List<UserFingerPrint>();
     }
 }
