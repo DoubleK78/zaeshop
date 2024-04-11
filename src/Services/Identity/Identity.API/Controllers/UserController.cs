@@ -190,7 +190,6 @@ namespace Identity.API.Controllers
         }
 
         [HttpGet("prepare")]
-        [Authorize]
         public async Task<IActionResult> CheckBannedUserFingerPrint([FromQuery] string code)
         {
             string fingerPrint = code;
