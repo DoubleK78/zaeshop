@@ -132,11 +132,11 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 return null;
             }
 
-            var userFingerPrints = _context.UserFingerPrints.Where(o => o.UserId == user.Id).ToList();
-            if (originalBanned != user.IsBanned)
-            {
-                userFingerPrints.ForEach(x => x.IsBanned = user.IsBanned);
-            }
+            // var userFingerPrints = _context.UserFingerPrints.Where(o => o.UserId == user.Id).ToList();
+            // if (originalBanned != user.IsBanned)
+            // {
+            //     userFingerPrints.ForEach(x => x.IsBanned = user.IsBanned);
+            // }
 
             // Update role
             if (userModel.Roles?.Count > 0)

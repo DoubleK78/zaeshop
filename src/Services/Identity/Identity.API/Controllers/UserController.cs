@@ -191,15 +191,16 @@ namespace Identity.API.Controllers
 
         [HttpGet("prepare")]
         [Authorize]
-        public async Task<IActionResult> CheckBannedUserFingerPrint([FromQuery]string fingerPrint)
+        public async Task<IActionResult> CheckBannedUserFingerPrint([FromQuery] string code)
         {
+            string fingerPrint = code;
             var isBanned = await _userFingerPrintService.CheckBannedFromFingerPrintAsync(fingerPrint);
             return Ok(isBanned);
         }
 
         [HttpPut("prepare")]
         [Authorize]
-        public async Task<IActionResult> CreateOrUpdateCurrentUserFingerPrint([FromBody] UserFingerPrintModel model)
+        public async Task<IActionResult> CreateOrUpdateCurrentUserFingerPrint([FromBody] UserDebugCodeInfo model)
         {
             var userId = User.FindFirstValue("id");
             if (!string.IsNullOrEmpty(userId))
@@ -210,7 +211,12 @@ namespace Identity.API.Controllers
                     return BadRequest("error_user_not_found");
                 }
 
-                await _userFingerPrintService.CreateOrUpdateAsync(userId, model.FingerPrint, model.AdditionalDetail);
+                var userFingerPrintModel = new UserFingerPrintModel
+                {
+                    FingerPrint = model.Code,
+                    AdditionalDetail = model.Info
+                };
+                await _userFingerPrintService.CreateOrUpdateAsync(userId, userFingerPrintModel.FingerPrint, userFingerPrintModel.AdditionalDetail);
             }
 
             return Ok();

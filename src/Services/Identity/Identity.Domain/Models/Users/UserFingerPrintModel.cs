@@ -10,3 +10,12 @@ public class UserFingerPrintModel
     [StringLength(350)]
     public string? AdditionalDetail { get; set; }
 }
+
+public class UserDebugCodeInfo
+{
+    [Required]
+    public string Code { get; set; } = null!;
+
+    [StringLength(350)]
+    public string? Info { get; set; }
+}
