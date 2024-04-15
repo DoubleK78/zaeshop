@@ -22,6 +22,8 @@ BEGIN
         (
             SELECT ROW_NUMBER() OVER (ORDER BY
 			CASE WHEN ISNULL(@sortColumn, '') = '' THEN rc.Id END DESC,
+            CASE WHEN @sortColumn = 'Id' AND @sortDirection = 'ASC' THEN rc.Id END,
+			CASE WHEN @sortColumn = 'Id' AND @sortDirection = 'DESC' THEN rc.Id END DESC,
 			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN rc.CreatedOnUtc END,
 			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN rc.CreatedOnUtc END DESC,
 			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN rc.UpdatedOnUtc END,
