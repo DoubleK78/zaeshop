@@ -1,3 +1,4 @@
+using Common;
 using Common.Interfaces;
 using Common.Models;
 using Common.ValueObjects;
@@ -330,9 +331,12 @@ namespace Portal.Infrastructure.Implements.Business.Services
             });
         }
 
-        public async Task<ServiceResponse<PagingCommonResponse<CommentPagingResposneModel>>> GetPagingAsync(CommentPagingRequestModel request)
+        public async Task<ServiceResponse<PagingCommentResponse>> GetPagingAsync(CommentPagingRequestModel request)
         {
             List<CommentPagingResposneModel>? result;
+            int? levelId = null;
+            int? currentExp = null;
+            DateTime? createOnUtc = null;
 
             if (request.IsReply.HasValue && request.IsReply.Value)
             {
@@ -378,23 +382,49 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 {
                     result = await _unitOfWork.QueryAsync<CommentPagingResposneModel>("Comment_All_Paging", parameters);
                 }
+
+
+                #region Get User Level information
+                if (!string.IsNullOrEmpty(request.IdentityUserId))
+                {
+                    var user = await _redisService.GetByFunctionAsync(string.Format(Const.RedisCacheKey.CurrentUserCommentPaging, request.IdentityUserId), CommonHelper.RemainMinutesToNextCalculateExp(DateTime.UtcNow.Minute) + 2, () =>
+                    {
+                        return _userRepository.GetQueryable().Where(o => o.IdentityUserId == request.IdentityUserId).Select(x => new UserCommentLevel
+                        {
+                            LevelId = x.LevelId,
+                            CurrentExp = x.CurrentExp,
+                            CreateOnUtc = x.CreatedOnUtc
+                        }).FirstOrDefaultAsync();
+                    });
+
+                    levelId = user?.LevelId;
+                    currentExp = user?.CurrentExp;
+                    createOnUtc = user?.CreateOnUtc;
+                }
+                #endregion
             }
 
             var record = result.Find(o => o.IsTotalRecord);
             if (record == null)
             {
-                return new ServiceResponse<PagingCommonResponse<CommentPagingResposneModel>>(new PagingCommonResponse<CommentPagingResposneModel>
+                return new ServiceResponse<PagingCommentResponse>(new PagingCommentResponse
                 {
                     RowNum = 0,
-                    Data = new List<CommentPagingResposneModel>()
+                    Data = new List<CommentPagingResposneModel>(),
+                    LevelId = levelId,
+                    CurrentExp = currentExp,
+                    CreateOnUtc = createOnUtc
                 });
             }
 
             result.Remove(record);
-            return new ServiceResponse<PagingCommonResponse<CommentPagingResposneModel>>(new PagingCommonResponse<CommentPagingResposneModel>
+            return new ServiceResponse<PagingCommentResponse>(new PagingCommentResponse
             {
                 RowNum = record.RowNum,
-                Data = result
+                Data = result,
+                LevelId = levelId,
+                CurrentExp = currentExp,
+                CreateOnUtc = createOnUtc
             });
         }
     }

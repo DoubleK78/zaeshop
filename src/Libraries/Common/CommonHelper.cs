@@ -147,6 +147,25 @@ namespace Common
 
             return string.Empty;
         }
+
+        public static int RemainMinutesToNextCalculateExp(int minutes)
+        {
+            if (minutes >= 0 && minutes < 15)
+            {
+                return 15 - minutes;
+            }
+            else if (minutes >= 15 && minutes < 45)
+            {
+                return 45 - minutes;
+            }
+            else if (minutes >= 45 && minutes < 60)
+            {
+                return 60 - minutes + 15;
+            }
+            
+            // Default
+            return 30;
+        }
     }
 
     public static class JsonSerializationHelper

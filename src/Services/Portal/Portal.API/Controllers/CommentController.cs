@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Portal.API.Attributes;
@@ -98,6 +97,9 @@ namespace Portal.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPagingAsync([FromQuery] CommentPagingRequestModel request)
         {
+            var identityUserId = GetIdentityUserIdByToken();
+            request.IdentityUserId = identityUserId;
+            
             var response = await _commentService.GetPagingAsync(request);
 
             if (!response.IsSuccess)

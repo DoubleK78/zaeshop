@@ -37,6 +37,11 @@ namespace Portal.Domain.Models.CommentModels
         public int? UserId { get; set; }
         public int? ParentCommentId { get; set; }
         public bool? IsReply { get; set; }
+
+        /// <summary>
+        /// User currently requesting
+        /// </summary>
+        public string? IdentityUserId { get; set; }
     }
 
     public class CommentPagingResposneModel : CommentModel
@@ -55,5 +60,19 @@ namespace Portal.Domain.Models.CommentModels
         public int? ParentCommentId { get; set; }
 
         public bool CanUpdate { get; set; }
+    }
+
+    public class PagingCommentResponse : PagingCommonResponse<CommentPagingResposneModel>
+    {
+        public int? LevelId { get; set; }
+        public int? CurrentExp { get; set; }
+        public DateTime? CreateOnUtc { get; set; }
+    }
+
+    public class UserCommentLevel
+    {
+        public int? LevelId { get; set; }
+        public int? CurrentExp { get; set; }
+        public DateTime? CreateOnUtc { get; set; }
     }
 }

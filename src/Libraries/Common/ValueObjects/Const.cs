@@ -19,6 +19,7 @@ namespace Common.ValueObjects
             public const string HomeTopMonthComicsPaging = "/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-1|pagesize-5|rating-|region-{0}|searchterm-|sortcolumn-viewbytoptype|sortdirection-desc|status-false|toptype-month|year-";
             public const string HomeTopYearComicsPaging = "/api/client/comicapp/paging|country-|firstchar-|genre-|language-|pagenumber-1|pagesize-5|rating-|region-{0}|searchterm-|sortcolumn-viewbytoptype|sortdirection-desc|status-false|toptype-year|year-";
             public const string ComicCommentPageOneCache = "ComicComment_{0}";
+            public const string CurrentUserCommentPaging = "CurrentUserComment_{0}";
 
             public const string ComicPagingPattern = "*/api/client/comicapp/paging*";
             public const string UserRankingPagingPattern = "*/api/user/ranking*";

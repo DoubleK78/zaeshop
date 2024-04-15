@@ -93,7 +93,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
             {
                 Id = x.Id,
                 Name = x.Name,
-                Description = x.Description
+                Description = x.Description,
+                Region = x.Region
             }).ToList();
 
             return new ServiceResponse<List<ContentTypeResponseModel>>(response);
