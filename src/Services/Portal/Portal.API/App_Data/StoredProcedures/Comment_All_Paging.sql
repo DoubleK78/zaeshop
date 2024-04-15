@@ -23,10 +23,8 @@ BEGIN
         (
             SELECT ROW_NUMBER() OVER (ORDER BY
 			CASE WHEN ISNULL(@sortColumn, '') = '' THEN c.Id END DESC,
-            CASE WHEN @sortColumn = 'Id' AND @sortDirection = 'ASC' THEN c.Id END,
-			CASE WHEN @sortColumn = 'Id' AND @sortDirection = 'DESC' THEN c.Id END DESC,
-			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN c.Id END,
-			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN c.Id END DESC,
+			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN c.CreatedOnUtc END,
+			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN c.CreatedOnUtc END DESC,
 			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN c.UpdatedOnUtc END,
 			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN c.UpdatedOnUtc END DESC
 		) AS RowNum,
