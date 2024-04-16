@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using Common.Enums;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Portal.API.Attributes;
@@ -75,7 +75,7 @@ namespace Portal.API.Controllers
             return Ok(response);
         }
 
-        [Authorize]
+        [Authorize(ERoles.Administrator)]
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)

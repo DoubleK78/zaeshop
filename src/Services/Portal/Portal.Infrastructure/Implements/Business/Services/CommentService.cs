@@ -56,9 +56,10 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 }
             }
 
+            Comment? parentComment = null;
             if (request.ParentCommentId.HasValue)
             {
-                var parentComment = await _commentRepository.GetByIdAsync(request.ParentCommentId.Value);
+                parentComment = await _commentRepository.GetByIdAsync(request.ParentCommentId.Value);
                 if (parentComment == null)
                 {
                     return new ServiceResponse<CommentModel>("error_parent_comment_not_found");
@@ -107,6 +108,11 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 _replyCommentRepository.Add(replyComment);
                 await _unitOfWork.SaveChangesAsync();
+
+                if (parentComment != null)
+                {
+                    await BuildPagingOneCacheAsync(parentComment.AlbumId);
+                }
 
                 // Response
                 response = new CommentModel
@@ -255,11 +261,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
             if (user == null)
             {
                 return new ServiceResponse<bool>("error_user_not_found");
-            }
-
-            if (comment.UserId != user.Id)
-            {
-                return new ServiceResponse<bool>("error_comment_not_belog_current_user");
             }
 
             comment.IsDeleted = true;

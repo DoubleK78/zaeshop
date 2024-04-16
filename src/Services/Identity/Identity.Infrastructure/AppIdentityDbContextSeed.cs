@@ -9,14 +9,14 @@ namespace Identity.Infrastructure
         {
             if (!userManager.Users.Any())
             {
-                var user = new User
-                {
-                    FullName = "Administrator",
-                    Email = "admin@test.com",
-                    UserName = "admin",
-                };
+                // var user = new User
+                // {
+                //     FullName = "",
+                //     Email = "",
+                //     UserName = "",
+                // };
 
-                await userManager.CreateAsync(user, "Abc123!@#");
+                // await userManager.CreateAsync(user, "");
             }
         }
     }
