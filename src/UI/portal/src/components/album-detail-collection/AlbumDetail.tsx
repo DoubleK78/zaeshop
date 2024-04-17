@@ -27,7 +27,11 @@ const AlbumDetail: React.FC<{ id: string | undefined }> = ({ id }) => {
 
     const { albumAlertMessages, contentTypes } = useSelector((state: StoreState) => state.album);
     const { albumDetail } = useSelector((state: StoreState) => state.albumDetailCollection);
-    const [region, setRegion] = useState<string>(albumDetail?.region === ERegion.en ? 'en' : 'vi');
+    const [region, setRegion] = useState<string>('vi');
+
+    useEffect(() => {
+        setRegion(albumDetail?.region === ERegion.en ? 'en' : 'vi');
+    }, [albumDetail?.region])
 
     // Dropdown options
     const contentTypesDropDown = useMemo((): DropDownOption<number>[] => {
