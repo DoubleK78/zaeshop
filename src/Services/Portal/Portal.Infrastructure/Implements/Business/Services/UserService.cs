@@ -85,9 +85,11 @@ namespace Portal.Infrastructure.Implements.Business.Services
         public async Task ResetRoleAsync()
         {
             var allUserPre = await _userRepository.GetQueryable()
-                .Where(x => (x.RoleType == ERoleType.UserPremium || x.RoleType == ERoleType.UserSuperPremium) && x.ExpriedRoleDate != null)
+                .Where(x => (x.RoleType == ERoleType.UserPremium || x.RoleType == ERoleType.UserSuperPremium) &&
+                     x.ExpriedRoleDate != null &&
+                     x.ExpriedRoleDate <= DateTime.UtcNow)
                 .ToListAsync();
-            var userExpiredRoleIds = allUserPre.ConvertAll(x => x.IdentityUserId);
+            var userExpiredRoleIds = new List<string>();
 
             foreach (var user in allUserPre)
             {
@@ -96,16 +98,21 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     user.RoleType = ERoleType.User;
                     user.ExpriedRoleDate = null;
                     user.RemindSubscription = ERemindSubscription.None;
+
+                    userExpiredRoleIds.Add(user.IdentityUserId);
                 }
             }
 
             await _unitOfWork.SaveChangesAsync();
 
             // Remove role from Identity and sync User
-            await _syncResetExpiredRolePublisher.SendAsync(new SyncResetExpiredRoleMessage
+            if (userExpiredRoleIds.Count > 0)
             {
-                UserIds = userExpiredRoleIds
-            });
+                await _syncResetExpiredRolePublisher.SendAsync(new SyncResetExpiredRoleMessage
+                {
+                    UserIds = userExpiredRoleIds
+                });
+            }
         }
 
         public async Task<ServiceResponse<PagingCommonResponse<UserPagingResponse>>> GetPagingAsync(PagingCommonRequest request, ERegion region)

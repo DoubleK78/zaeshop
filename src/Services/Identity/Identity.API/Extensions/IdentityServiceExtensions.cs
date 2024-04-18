@@ -40,8 +40,7 @@ namespace Identity.API.Extensions
 
             services.AddMassTransit(x =>
             {
-                var entryAssembly = Assembly.GetExecutingAssembly();
-                x.AddConsumers(entryAssembly);
+                x.AddConsumer<SyncResetExpiredRoleComsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
