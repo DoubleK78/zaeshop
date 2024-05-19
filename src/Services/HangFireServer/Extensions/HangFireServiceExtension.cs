@@ -22,7 +22,8 @@ namespace HangFireServer.Extensions
                     QueuePollInterval = TimeSpan.Zero,
                     UseRecommendedIsolationLevel = true,
                     DisableGlobalLocks = true
-                }));
+                })
+                .WithJobExpirationTimeout(TimeSpan.FromDays(1)));
 
             // Add the processing server as IHostedService
             services.AddHangfireServer();
