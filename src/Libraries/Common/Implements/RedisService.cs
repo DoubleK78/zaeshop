@@ -127,6 +127,24 @@ namespace Common.Implements
             }
         }
 
+        public async Task RemoveAsync(string key)
+        {
+            await _cache.RemoveAsync(key);
+        }
+
+        public async Task RemoveByPatternAsync(string pattern)
+        {
+            var redis = await ConnectionMultiplexer.ConnectAsync(_connectionString);
+            var server = redis.GetServer($"{_host}:{_port}");
+
+            var keys = server.KeysAsync(pattern: pattern);
+            await foreach (var key in keys)
+            {
+                await RemoveAsync(key.ToString().Replace(_instanceName, string.Empty));
+            }
+        }
+
+
         public void RemoveAllServicesByPattern(string pattern)
         {
             using ConnectionMultiplexer cm = ConnectionMultiplexer.Connect(_connectionString);

@@ -98,7 +98,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             await _unitOfWork.SaveChangesAsync();
 
             // Remove cache Comic Detail
-            _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, existingAlbum.FriendlyName));
+            await _redisService.RemoveAsync(string.Format(Const.RedisCacheKey.ComicDetail, existingAlbum.FriendlyName));
 
             // Remove cache Comic Paging
             await _businessCacheService.RelaodCacheRecentlyComicsAsync(existingAlbum.Region.ToString());
@@ -166,7 +166,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             await _unitOfWork.SaveChangesAsync();
 
             // Remove cache Comic Detail
-            _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, existingAlbum.FriendlyName));
+            await _redisService.RemoveAsync(string.Format(Const.RedisCacheKey.ComicDetail, existingAlbum.FriendlyName));
 
             // Remove cache Comic Paging
             await _businessCacheService.RelaodCacheRecentlyComicsAsync(existingAlbum.Region.ToString());
@@ -515,7 +515,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 await _unitOfWork.ExecuteAsync("Collection_Album_RecalculateViews", parameters);
 
                 // Reset cache when calculated successfully
-                _redisService.Remove(key);
+                await _redisService.RemoveAsync(key);
 
                 // Build cache comic details
                 if (collectionIds.Count > 0)
@@ -635,7 +635,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 await _unitOfWork.BulkInsertAsync(addCollections.SelectMany(x => x.ContentItems).ToList());
 
                 // Remove cache Comic Detail
-                _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, album.FriendlyName));
+                await _redisService.RemoveAsync(string.Format(Const.RedisCacheKey.ComicDetail, album.FriendlyName));
 
                 // Remove cache Comic Paging
                 await _businessCacheService.RelaodCacheRecentlyComicsAsync(album.Region.ToString());
@@ -760,7 +760,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             {
                 foreach (var collection in updateCollections)
                 {
-                    _redisService.Remove(string.Format(Const.RedisCacheKey.ComicContent, collection.Album.FriendlyName, collection.FriendlyName));
+                    await _redisService.RemoveAsync(string.Format(Const.RedisCacheKey.ComicContent, collection.Album.FriendlyName, collection.FriendlyName));
                 }
             }
 
@@ -867,7 +867,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                     // Set cache comic detail
                     var result = new ServiceResponse<ComicAppModel>(comic);
-                    _redisService.Set(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName), result, 60);
+                    await _redisService.SetAsync(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName), result, 60);
                 }
             }
         }

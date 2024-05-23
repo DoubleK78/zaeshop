@@ -21,7 +21,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
         public async Task ReloadCacheHomePageAsync(string locale)
         {
-            _redisService.RemoveByPattern(Const.RedisCacheKey.ComicPagingPattern);
+            await _redisService.RemoveByPatternAsync(Const.RedisCacheKey.ComicPagingPattern);
 
             // Override Home Cache
             // 1. Popular Comic
@@ -157,7 +157,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomePopularComicsPaging, locale), popularComics, 60 * 24);
 
             // Remove cache Comic Paging
-            _redisService.RemoveByPattern(string.Format(Const.RedisCacheKey.PopularComicsPagingPattern, locale));
+            await _redisService.RemoveByPatternAsync(string.Format(Const.RedisCacheKey.PopularComicsPagingPattern, locale));
         }
 
         public async Task RelaodCacheRecentlyComicsAsync(string locale)
@@ -183,7 +183,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeRecentlyComicsPaging, locale), recentlyComics, 60 * 24);
 
             // Remove cache Comic Paging
-            _redisService.RemoveByPattern(string.Format(Const.RedisCacheKey.RecentlyComicsPagingPattern, locale));
+            await _redisService.RemoveByPatternAsync(string.Format(Const.RedisCacheKey.RecentlyComicsPagingPattern, locale));
         }
 
         public async Task ReloadCacheTopComicsAsync(string locale)
@@ -255,7 +255,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopYearComicsPaging, locale), topYearComics, 60 * 24);
 
             // Remove cache Comic Paging
-            _redisService.RemoveByPattern(string.Format(Const.RedisCacheKey.TopComicsPagingPattern, locale));
+            await _redisService.RemoveByPatternAsync(string.Format(Const.RedisCacheKey.TopComicsPagingPattern, locale));
         }
 
         private async Task<ServiceResponse<PagingCommonResponse<AlbumPagingResponse>>> GetComicPagingAsync(PagingCommonRequest request, FilterAdvanced filter)
