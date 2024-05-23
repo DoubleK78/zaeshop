@@ -23,7 +23,7 @@ namespace HangFireServer.Extensions
                     UseRecommendedIsolationLevel = true,
                     DisableGlobalLocks = true
                 })
-                .WithJobExpirationTimeout(TimeSpan.FromHours(4)));
+                .WithJobExpirationTimeout(TimeSpan.FromMinutes(30)));
 
             // Add the processing server as IHostedService
             services.AddHangfireServer();
