@@ -458,10 +458,10 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 await _unitOfWork.ExecuteAsync("User_RecalculateExperience", parameters);
 
                 // Reset cache when calculated successfully
-                _redisService.Remove(key);
+                await _redisService.RemoveAsync(key);
 
                 // Reset User Ranking Paging
-                _redisService.RemoveByPattern(Const.RedisCacheKey.UserRankingPagingPattern);
+                await _redisService.RemoveByPatternAsync(Const.RedisCacheKey.UserRankingPagingPattern);
 
                 // Log to service log to stored
                 await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage

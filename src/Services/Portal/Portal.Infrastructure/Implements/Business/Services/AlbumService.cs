@@ -514,7 +514,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             {
                 foreach (var friendlyName in albumFriendlyNames)
                 {
-                    _redisService.Remove(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName));
+                    await _redisService.RemoveAsync(string.Format(Const.RedisCacheKey.ComicDetail, friendlyName));
                 }
 
                 // Remove cache Comic Paging

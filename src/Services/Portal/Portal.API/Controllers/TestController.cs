@@ -63,6 +63,7 @@ namespace Portal.API.Controllers
 
         [HttpGet]
         [Route("users-mapping")]
+        [Authorize(ERoles.Administrator)]
         public async Task<IActionResult> GetUserMapping()
         {
             var users = await _unitOfWork.Repository<User>().GetQueryable()
@@ -151,14 +152,16 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("clear-cache-key")]
-        public IActionResult ClearCacheByKey(string key)
+        [Authorize(ERoles.Administrator)]
+        public async Task<IActionResult> ClearCacheByKeyAsync(string key)
         {
-            _redisService.Remove(key);
+            await _redisService.RemoveAsync(key);
             return Ok();
         }
 
         [HttpPost]
         [Route("reset-role")]
+        [Authorize(ERoles.Administrator)]
         public async Task<IActionResult> ResetRoleUser()
         {
             await _userService.ResetRoleAsync();
@@ -167,6 +170,7 @@ namespace Portal.API.Controllers
 
         [HttpPost]
         [Route("noti-following")]
+        [Authorize(ERoles.Administrator)]
         public async Task<IActionResult> SendMailToFollowers()
         {
             await _emailService.SendEmailToFollowersTaskAsync();
@@ -185,9 +189,9 @@ namespace Portal.API.Controllers
         [HttpGet]
         [Route("remove-cache-pattern")]
         [Authorize(ERoles.Administrator)]
-        public IActionResult RemoveCachePattern([FromQuery] string pattern)
+        public async Task<IActionResult> RemoveByPatternAsync([FromQuery] string pattern)
         {
-            _redisService.RemoveByPattern(pattern);
+            await _redisService.RemoveByPatternAsync(pattern);
             return Ok(pattern);
         }
 

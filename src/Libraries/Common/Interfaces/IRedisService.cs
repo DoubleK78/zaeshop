@@ -12,5 +12,7 @@ namespace Common.Interfaces
         void Remove(string key);
         void RemoveByPattern(string pattern);
         void RemoveAllServicesByPattern(string pattern);
+        Task RemoveAsync(string key);
+        Task RemoveByPatternAsync(string pattern);
     }
 }
