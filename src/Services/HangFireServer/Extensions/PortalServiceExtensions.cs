@@ -25,6 +25,7 @@ using Portal.Infrastructure.Implements.Services;
 using Portal.Infrastructure.SeedWork;
 using Raven.Client.Documents;
 using Serilog;
+using StackExchange.Redis;
 
 namespace HangFireServer.Extensions;
 public static class PortalServiceExtensions
@@ -50,6 +51,9 @@ public static class PortalServiceExtensions
             Port = config.GetSection("RedisSettings").GetValue<string>("Port") ?? string.Empty,
             InstanceName = "Portal"
         }));
+
+        services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(config.GetConnectionString("RedisBackgroundConnection") ?? string.Empty));
+        services.AddScoped<IRedisBackgroundService, RedisBackgroundService>();
 
         services.AddMassTransit(x =>
         {

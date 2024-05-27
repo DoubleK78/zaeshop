@@ -17,6 +17,7 @@ using Portal.Infrastructure;
 using Portal.Infrastructure.Implements.External;
 using Portal.Infrastructure.Implements.Services;
 using Portal.Infrastructure.SeedWork;
+using StackExchange.Redis;
 
 namespace Portal.API.Extensions;
 public static class PortalServiceExtensions
@@ -43,6 +44,9 @@ public static class PortalServiceExtensions
             Port = config.GetSection("RedisSettings").GetValue<string>("Port") ?? string.Empty,
             InstanceName = "Portal"
         }));
+
+        services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(config.GetConnectionString("RedisBackgroundConnection") ?? string.Empty));
+        services.AddScoped<IRedisBackgroundService, RedisBackgroundService>();
 
         services.AddMassTransit(x =>
         {
