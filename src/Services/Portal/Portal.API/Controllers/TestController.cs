@@ -27,6 +27,7 @@ namespace Portal.API.Controllers
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
         private readonly IFirebaseCloudMessageService _firebaseCloudMessageService;
+        private readonly IRedisBackgroundService _redisBackgroundService;
 
         public TestController(
             IUnitOfWork unitOfWork,
@@ -38,7 +39,8 @@ namespace Portal.API.Controllers
             IRedisService redisService,
             IUserService userService,
             IEmailService emailService,
-            IFirebaseCloudMessageService firebaseCloudMessageService)
+            IFirebaseCloudMessageService firebaseCloudMessageService,
+            IRedisBackgroundService redisBackgroundService)
         {
             _unitOfWork = unitOfWork;
             _backgroundJobClient = backgroundJobClient;
@@ -50,6 +52,7 @@ namespace Portal.API.Controllers
             _userService = userService;
             _emailService = emailService;
             _firebaseCloudMessageService = firebaseCloudMessageService;
+            _redisBackgroundService = redisBackgroundService;
         }
 
         [HttpGet]
@@ -247,6 +250,24 @@ namespace Portal.API.Controllers
         public IActionResult RemindSubscription()
         {
             _backgroundJobClient.Enqueue<IUserService>(x => x.RemindSubscriptionAsync());
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("get-background-cache")]
+        [Authorize(ERoles.Administrator)]
+        public async Task<IActionResult> GetBackgroundCacheValueByKey([FromQuery] string key)
+        {
+            var response = await _redisBackgroundService.GetAsync<object>(key);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("create-background-cache")]
+        [Authorize(ERoles.Administrator)]
+        public async Task<IActionResult> PostBackgroundCacheValueByKey([FromQuery] string key, [FromQuery] string value)
+        {
+            await _redisBackgroundService.SetAsync(key, new { Value = value }, 10);
             return Ok();
         }
     }

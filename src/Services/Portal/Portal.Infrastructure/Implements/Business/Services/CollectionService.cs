@@ -36,6 +36,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly IGenericRepository<CollectionView> _collectionViewRepository;
         private readonly IBusinessCacheService _businessCacheService;
         private readonly IBackgroundJobClient _backgroundJobClient;
+        private readonly IRedisBackgroundService _redisBackgroundService;
 
         public CollectionService(
             IUnitOfWork unitOfWork,
@@ -43,7 +44,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
             IServiceLogPublisher serviceLogPublisher,
             IHostEnvironment hostingEnvironment,
             IBusinessCacheService businessCacheService,
-            IBackgroundJobClient backgroundJobClient)
+            IBackgroundJobClient backgroundJobClient,
+            IRedisBackgroundService redisBackgroundService)
         {
             _unitOfWork = unitOfWork;
             _repository = unitOfWork.Repository<Collection>();
@@ -56,6 +58,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _collectionViewRepository = unitOfWork.Repository<CollectionView>();
             _businessCacheService = businessCacheService;
             _backgroundJobClient = backgroundJobClient;
+            _redisBackgroundService = redisBackgroundService;
         }
 
         public async Task<ServiceResponse<CollectionResponseModel>> CreateAsync(CollectionRequestModel requestModel)
@@ -325,7 +328,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
                 // We use key ViewCount_0 -> ViewCount_50
                 var key = string.Format(Const.RedisCacheKey.ViewCount, DateTime.UtcNow.Minute - (DateTime.UtcNow.Minute % 10));
-                var value = await _redisService.GetAsync<List<CollectionViewModel>>(key);
+                var value = await _redisBackgroundService.GetAsync<List<CollectionViewModel>>(key);
                 if (value == null)
                 {
                     value = new List<CollectionViewModel>
@@ -340,7 +343,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         }
                     };
 
-                    await _redisService.SetAsync(key, value, 30);
+                    await _redisBackgroundService.SetAsync(key, value, 30);
                 }
                 else
                 {
@@ -359,7 +362,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                             CreatedOnUtc = DateTime.UtcNow
                         });
 
-                        await _redisService.SetAsync(key, value, 30);
+                        await _redisBackgroundService.SetAsync(key, value, 30);
                     }
                 }
             }
@@ -435,7 +438,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             List<CollectionViewModel>? value;
             try
             {
-                value = await _redisService.GetAsync<List<CollectionViewModel>>(key);
+                value = await _redisBackgroundService.GetAsync<List<CollectionViewModel>>(key);
             }
             catch
             {
@@ -515,7 +518,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 await _unitOfWork.ExecuteAsync("Collection_Album_RecalculateViews", parameters);
 
                 // Reset cache when calculated successfully
-                await _redisService.RemoveAsync(key);
+                await _redisBackgroundService.RemoveAsync(key);
 
                 // Build cache comic details
                 if (collectionIds.Count > 0)

@@ -26,12 +26,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
         private readonly IGenericRepository<User> _userRepository;
         private readonly IGenericRepository<Comment> _commentRepository;
         private readonly IRedisService _redisService;
+        private readonly IRedisBackgroundService _redisBackgroundService;
 
         public LevelService(
             IUnitOfWork unitOfWork,
             IServiceLogPublisher serviceLogPublisher,
             IHostEnvironment hostingEnvironment,
-            IRedisService redisService)
+            IRedisService redisService,
+            IRedisBackgroundService redisBackgroundService)
         {
             _unitOfWork = unitOfWork;
             _levelRepository = unitOfWork.Repository<Level>();
@@ -41,6 +43,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _userRepository = unitOfWork.Repository<User>();
             _commentRepository = unitOfWork.Repository<Comment>();
             _redisService = redisService;
+            _redisBackgroundService = redisBackgroundService;
         }
 
         private static int CalculateEarnExpFromViewOrComment(int? collectionId, int? albumId, int? commentId, ERoleType roleType)
@@ -161,7 +164,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 {
                     // We use key LevelCount_00 & LevelCount_30
                     var key = string.Format(Const.RedisCacheKey.LevelCount, DateTime.UtcNow.Minute - (DateTime.UtcNow.Minute % 30));
-                    var value = await _redisService.GetAsync<List<LevelBuildRedisModel>>(key);
+                    var value = await _redisBackgroundService.GetAsync<List<LevelBuildRedisModel>>(key);
                     if (value == null)
                     {
                         value = new List<LevelBuildRedisModel>
@@ -178,7 +181,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         };
 
                         // Stored cache to 50 minutes
-                        await _redisService.SetAsync(key, value, 50);
+                        await _redisBackgroundService.SetAsync(key, value, 50);
                     }
                     else
                     {
@@ -215,7 +218,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                             });
 
                             // Stored cache to 50 minutes
-                            await _redisService.SetAsync(key, value, 50);
+                            await _redisBackgroundService.SetAsync(key, value, 50);
                         }
                     }
                 }
@@ -227,7 +230,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     // Same logic #region Collection (User go next chapter)
                     // We use key LevelCount_00 & LevelCount_30
                     var key = string.Format(Const.RedisCacheKey.LevelCount, DateTime.UtcNow.Minute - (DateTime.UtcNow.Minute % 30));
-                    var value = await _redisService.GetAsync<List<LevelBuildRedisModel>>(key);
+                    var value = await _redisBackgroundService.GetAsync<List<LevelBuildRedisModel>>(key);
                     if (value == null)
                     {
                         value = new List<LevelBuildRedisModel>
@@ -245,7 +248,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         };
 
                         // Stored cache to 50 minutes
-                        await _redisService.SetAsync(key, value, 50);
+                        await _redisBackgroundService.SetAsync(key, value, 50);
                     }
                     else
                     {
@@ -289,7 +292,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                             });
 
                             // Stored cache to 50 minutes
-                            await _redisService.SetAsync(key, value, 50);
+                            await _redisBackgroundService.SetAsync(key, value, 50);
                         }
                     }
                 }
@@ -366,7 +369,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             List<LevelBuildRedisModel>? value;
             try
             {
-                value = await _redisService.GetAsync<List<LevelBuildRedisModel>>(key);
+                value = await _redisBackgroundService.GetAsync<List<LevelBuildRedisModel>>(key);
             }
             catch
             {
@@ -458,7 +461,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 await _unitOfWork.ExecuteAsync("User_RecalculateExperience", parameters);
 
                 // Reset cache when calculated successfully
-                await _redisService.RemoveAsync(key);
+                await _redisBackgroundService.RemoveAsync(key);
 
                 // Reset User Ranking Paging
                 await _redisService.RemoveByPatternAsync(Const.RedisCacheKey.UserRankingPagingPattern);
