@@ -28,7 +28,7 @@ const RoleSubscriptionPopup: React.FC<Props> = ({ closeModal, onSubmit, roleSubs
             neưExperiedDateDisplay = dayjsCustom.utc(roleSubscription?.expriedRoleDate ?? new Date()).add(activyHistory?.day ?? 0, 'day').local().format('DD-MM-YYYY HH:mm')
         } else if (roleSubscription?.role === 'User Premium' && activyHistory.role === 'User Super Premium') {
             const remainDays = Math.abs(dayjsCustom.utc().diff(dayjsCustom.utc(roleSubscription?.expriedRoleDate ?? new Date()), 'day'));
-            neưExperiedDateDisplay = dayjsCustom.utc().add(remainDays * 0.1 + (activyHistory?.day ?? 0), 'day').local().format('DD-MM-YYYY HH:mm')
+            neưExperiedDateDisplay = dayjsCustom.utc().add((remainDays / 3.0) + (activyHistory?.day ?? 0), 'day').local().format('DD-MM-YYYY HH:mm')
         }
 
         return (

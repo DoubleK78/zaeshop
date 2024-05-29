@@ -349,7 +349,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
                     // Assume ExpriedRoleDate is expired then remain will be zero
                     var trueRemainDays = remainDays > 0 ? remainDays : 0;
 
-                    user.ExpriedRoleDate = DateTime.UtcNow.AddDays((double)requestModel.Days + trueRemainDays * 0.1);
+                    user.ExpriedRoleDate = DateTime.UtcNow.AddDays((double)requestModel.Days + (trueRemainDays / 3.0));
                 }
             }
             else
