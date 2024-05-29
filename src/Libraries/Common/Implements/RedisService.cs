@@ -134,7 +134,7 @@ namespace Common.Implements
 
         public async Task RemoveByPatternAsync(string pattern)
         {
-            var redis = await ConnectionMultiplexer.ConnectAsync(_connectionString);
+            using var redis = await ConnectionMultiplexer.ConnectAsync(_connectionString);
             var server = redis.GetServer($"{_host}:{_port}");
 
             var keys = server.KeysAsync(pattern: pattern);
