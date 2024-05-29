@@ -45,8 +45,15 @@ public static class PortalServiceExtensions
             InstanceName = "Portal"
         }));
 
-        services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(config.GetConnectionString("RedisBackgroundConnection") ?? string.Empty));
-        services.AddScoped<IRedisBackgroundService, RedisBackgroundService>();
+        if (!string.IsNullOrEmpty(config.GetConnectionString("RedisBackgroundConnection")))
+        {
+            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(config.GetConnectionString("RedisBackgroundConnection") ?? string.Empty));
+            services.AddScoped<IRedisBackgroundService, RedisBackgroundService>();
+        }
+        else
+        {
+            services.AddScoped<IRedisBackgroundService, RedisBackgroundBlankService>();
+        }
 
         services.AddMassTransit(x =>
         {
