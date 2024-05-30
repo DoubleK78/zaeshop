@@ -9,8 +9,8 @@ using Portal.Infrastructure;
 int workerThreads, completionPortThreads;
 ThreadPool.GetMinThreads(out workerThreads, out completionPortThreads);
 
-// Set the minimum number of threads to 50 (example value for 2 vCPU)
-ThreadPool.SetMinThreads(50, completionPortThreads);
+// Set the minimum number of threads to 8 (2 vCPU * 4 threads)
+ThreadPool.SetMinThreads(8, completionPortThreads);
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(serverOptions =>
