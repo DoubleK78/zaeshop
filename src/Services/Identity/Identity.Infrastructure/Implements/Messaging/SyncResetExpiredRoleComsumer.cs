@@ -22,7 +22,7 @@ namespace Identity.Infrastructure.Implements.Messaging
             var users = await _context.Users.Where(o => syncResetExpiredRoleMessage.UserIds.Contains(o.Id)).ToListAsync();
             foreach (var user in users)
             {
-                if (user.ExpriedRoleDate <= DateTime.UtcNow)
+                if (user.ExpriedRoleDate <= DateTime.UtcNow.AddMinutes(5))
                 {
                     user.ExpriedRoleDate = null;
 
