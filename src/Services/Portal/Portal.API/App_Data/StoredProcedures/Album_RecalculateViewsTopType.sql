@@ -22,8 +22,16 @@ BEGIN
     WITH AlbumIds AS (
         SELECT DISTINCT a.Id AS AlbumId
         FROM dbo.Album a
-        JOIN dbo.Collection c ON c.AlbumId = a.Id
-        WHERE c.Id IN (SELECT CollectionId FROM @CollectionIdTable)
+        WHERE EXISTS (
+            SELECT 1
+            FROM dbo.Collection c
+            WHERE c.AlbumId = a.Id
+            AND EXISTS (
+                SELECT 1
+                FROM @CollectionIdTable ct
+                WHERE ct.CollectionId = c.Id
+            )
+        )
     )
     
     INSERT INTO #temp (AlbumId, ViewsByTopDay, ViewsByTopWeek, ViewsByTopMonth, ViewsByTopYear)
