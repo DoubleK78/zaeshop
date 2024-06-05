@@ -34,11 +34,12 @@ BEGIN
         )
     )
     
-    INSERT INTO #temp (AlbumId, ViewsByTopDay, ViewsByTopWeek, ViewsByTopMonth, ViewsByTopYear)
+    --INSERT INTO #temp (AlbumId, ViewsByTopDay, ViewsByTopWeek, ViewsByTopMonth, ViewsByTopYear)
+    INSERT INTO #temp (AlbumId, ViewsByTopDay, ViewsByTopMonth, ViewsByTopYear)
     SELECT 
         a.AlbumId,
         SUM(CASE WHEN cv.Date >= @startDate AND cv.Date < @endDate THEN cv.[View] ELSE 0 END) AS ViewsByTopDay,
-        SUM(CASE WHEN cv.Date >= @startDateOfWeek AND cv.Date < @endDate THEN cv.[View] ELSE 0 END) AS ViewsByTopWeek,
+        -- SUM(CASE WHEN cv.Date >= @startDateOfWeek AND cv.Date < @endDate THEN cv.[View] ELSE 0 END) AS ViewsByTopWeek,
         SUM(CASE WHEN cv.Date >= @startDateOfMonth AND cv.Date < @endDate THEN cv.[View] ELSE 0 END) AS ViewsByTopMonth,
         SUM(CASE WHEN cv.Date >= @startDateOfYear AND cv.Date < @endDate THEN cv.[View] ELSE 0 END) AS ViewsByTopYear
     FROM AlbumIds a
@@ -49,7 +50,7 @@ BEGIN
     UPDATE a
     SET 
         ViewsByTopDay = t.ViewsByTopDay,
-        ViewsByTopWeek = t.ViewsByTopWeek,
+        --ViewsByTopWeek = t.ViewsByTopWeek,
         ViewsByTopMonth = t.ViewsByTopMonth,
         ViewsByTopYear = t.ViewsByTopYear
     FROM dbo.Album a

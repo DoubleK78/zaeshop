@@ -1,4 +1,7 @@
 ﻿using Common.Models;
+using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using Portal.Domain.AggregatesModel.UserAggregate;
 using Portal.Domain.Enums;
 using Portal.Domain.Interfaces.Business.Services;
@@ -11,11 +14,13 @@ namespace Portal.Infrastructure.Implements.Business.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<UserActivityLog> _activityRepository;
+        private readonly IConfiguration _configuration;
 
-        public ActivityLogService(IUnitOfWork unitOfWork)
+        public ActivityLogService(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
             _activityRepository = unitOfWork.Repository<UserActivityLog>();
+            _configuration = configuration;
         }
 
         public async Task<ServiceResponse<bool>> CreateAsync(ActivityLogRequestModel requestModel)
@@ -54,5 +59,16 @@ namespace Portal.Infrastructure.Implements.Business.Services
             return new ServiceResponse<bool>(true);
         }
 
+        public async Task CleanJobsHangfireAsync()
+        {
+            string? connectionString = _configuration.GetConnectionString("HangfireConnection");
+
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                const string query = "Hangfire_CleanupJobs";
+                using var connection = new SqlConnection(connectionString);
+                await connection.ExecuteAsync(query, commandType: CommandType.StoredProcedure, commandTimeout: 1800);
+            }
+        }
     }
 }

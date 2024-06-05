@@ -19,8 +19,8 @@ namespace HangFireServer.Extensions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                    JobExpirationCheckInterval = TimeSpan.FromHours(1),
-                    InactiveStateExpirationTimeout = TimeSpan.FromMinutes(30),
+                    JobExpirationCheckInterval = TimeSpan.Zero,
+                    // InactiveStateExpirationTimeout = TimeSpan.FromMinutes(30),
                     QueuePollInterval = TimeSpan.Zero,
                     UseRecommendedIsolationLevel = true,
                     DisableGlobalLocks = true
@@ -65,6 +65,9 @@ namespace HangFireServer.Extensions
         
             // 7:05 AM ICT Daily to Recalculate All Album Views
             RecurringJob.AddOrUpdate<ICollectionService>(HangfireJobName.AlbumCalculatemViewsTopTypeAll, x => x.RecalculateAlbumViewsTopTypeAllTaskAsync(), "5 0 * * *");
+        
+            // 4:05 AM Hangfire Clean Jobs (All states)
+            RecurringJob.AddOrUpdate<IActivityLogService>(HangfireJobName.HangfireCleanupJobs, x => x.CleanJobsHangfireAsync(), "5 21 * * *");
         }
     }
 }

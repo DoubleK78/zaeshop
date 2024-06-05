@@ -49,6 +49,7 @@ namespace Common.ValueObjects
             public const string ResetLevelPublicChap = "Reset level public chap";
             public const string RemindSubscription = "Remind subscription";
             public const string AlbumCalculatemViewsTopTypeAll = "Album Calculatem Views Top Type All";
+            public const string HangfireCleanupJobs = "Hangfire Cleanup Jobs";
         }
 
         public static class PushNotification
