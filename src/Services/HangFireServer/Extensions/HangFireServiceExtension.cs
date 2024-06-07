@@ -19,7 +19,7 @@ namespace HangFireServer.Extensions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                    JobExpirationCheckInterval = TimeSpan.FromHours(12),
+                    JobExpirationCheckInterval = TimeSpan.FromHours(24),
                     // InactiveStateExpirationTimeout = TimeSpan.FromMinutes(30),
                     QueuePollInterval = TimeSpan.Zero,
                     UseRecommendedIsolationLevel = true,
