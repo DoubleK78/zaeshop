@@ -289,6 +289,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
             try
             {
                 User? user = null;
+                /* 09/06/2024 - Collection View doesn't calculate by user
                 if (!string.IsNullOrEmpty(model.IdentityUserId))
                 {
                     user = await _userRepository.GetByIdentityUserIdAsync(model.IdentityUserId);
@@ -307,7 +308,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                         });
                         return;
                     }
-                }
+                }*/
 
                 var collectionExists = await _repository.GetQueryable().AnyAsync(x => x.Id == model.CollectionId);
                 if (!collectionExists)
