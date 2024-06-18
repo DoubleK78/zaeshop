@@ -2,10 +2,12 @@ using Common.Enums;
 using Common.Models;
 using Microsoft.AspNetCore.Mvc;
 using Portal.API.Attributes;
+using Portal.Domain.AggregatesModel.CollectionAggregate;
 using Portal.Domain.AggregatesModel.UserAggregate;
 using Portal.Domain.Enums;
 using Portal.Domain.Interfaces.Business.Services;
 using Portal.Domain.Models.ActivityLogs;
+using Portal.Domain.Models.CommentModels;
 using Portal.Domain.Models.UserModels;
 
 namespace Portal.API.Controllers
@@ -18,6 +20,7 @@ namespace Portal.API.Controllers
         private readonly IGenericRepository<UserActivityLog> _userActivityLogRepository;
         private readonly IActivityLogService _activityLogService;
         private readonly IUserService _userService;
+        private readonly IUnitOfWork _unitOfWork;
 
         public UserController(IUnitOfWork unitOfWork, IActivityLogService activityLogService, IUserService userService)
         {
@@ -25,6 +28,7 @@ namespace Portal.API.Controllers
             _userActivityLogRepository = unitOfWork.Repository<UserActivityLog>();
             _activityLogService = activityLogService;
             _userService = userService;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -100,7 +104,7 @@ namespace Portal.API.Controllers
             var activityLogs = await _userActivityLogRepository.GetQueryable()
                                         .Where(o => o.UserId == user.Id && o.ActivityType == activityType)
                                         .Sort(x => x.CreatedOnUtc, false)
-                                        .Page(request.PageNumber, request.PageSize)                                   
+                                        .Page(request.PageNumber, request.PageSize)
                                         .ToListAsync();
 
             var resposne = activityLogs.ConvertAll(x => new ActivityLogResponseModel
@@ -131,6 +135,102 @@ namespace Portal.API.Controllers
                 return BadRequest(response);
 
             return Ok(response);
+        }
+
+
+        [HttpGet("activity-logs")]
+        [Authorize(ERoles.Administrator)]
+        public async Task<IActionResult> GetActivityLogs([FromQuery] PagingCommonRequest request)
+        {
+            // Paging shortcut linq to get paging user activity
+            var totalRecords = await _userActivityLogRepository.GetQueryable()
+                                        .Where(o => o.ActivityType == EActivityType.Subscription)
+                                        .LongCountAsync();
+            var activityLogs = await _userActivityLogRepository.GetQueryable()
+                                        .Where(o => o.ActivityType == EActivityType.Subscription)
+                                        .Sort(x => x.Id, false)
+                                        .Page(request.PageNumber, request.PageSize)
+                                        .Select(x => new ActivityLogsPagingReponseModel
+                                        {
+                                            Id = x.Id,
+                                            Description = x.Description,
+                                            UserId = x.UserId,
+                                            IdentityUserId = x.User.IdentityUserId,
+                                            CreatedOnUtc = x.CreatedOnUtc,
+                                            Email = x.User.Email
+                                        })
+                                        .ToListAsync();
+
+            return Ok(new ServiceResponse<PagingCommonResponse<ActivityLogsPagingReponseModel>>(new PagingCommonResponse<ActivityLogsPagingReponseModel>
+            {
+                RowNum = totalRecords,
+                Data = activityLogs
+            }));
+        }
+
+        [HttpGet("comments/check")]
+        [Authorize(ERoles.Administrator)]
+        public async Task<IActionResult> GetPagingManagementAsync([FromQuery] CommentManagementRequestModel request)
+        {
+            long totalRecords;
+            List<CommentManagementResponseModel>? response;
+
+            if (request.IsReply)
+            {
+                // Paging shortcut linq to get paging user activity
+                totalRecords = await _unitOfWork.Repository<ReplyComment>().GetQueryable()
+                                            .Where(o => o.IsDeleted == request.IsDeleted && o.CreatedOnUtc >= request.StartDate && o.CreatedOnUtc < request.EndDate)
+                                            .LongCountAsync();
+
+                response = await _unitOfWork.Repository<ReplyComment>().GetQueryable()
+                                            .Where(o => o.IsDeleted == request.IsDeleted && o.CreatedOnUtc >= request.StartDate && o.CreatedOnUtc < request.EndDate)
+                                            .Sort(x => x.Id, false)
+                                            .Page(request.PageNumber, request.PageSize)
+                                            .Select(x => new CommentManagementResponseModel
+                                            {
+                                                Id = x.Id,
+                                                UserId = x.UserId,
+                                                CreatedOnUtc = x.CreatedOnUtc,
+                                                Email = x.User.Email,
+                                                Text = x.Text,
+                                                AlbumFriendlyName = x.Comment!.Album!.FriendlyName,
+                                                IsReply = true
+                                            })
+                                            .ToListAsync();
+
+                return Ok(new ServiceResponse<PagingCommonResponse<CommentManagementResponseModel>>(new PagingCommonResponse<CommentManagementResponseModel>
+                {
+                    RowNum = totalRecords,
+                    Data = response
+                }));
+            }
+
+            // Paging shortcut linq to get paging user activity
+            totalRecords = await _unitOfWork.Repository<Comment>().GetQueryable()
+                                        .Where(o => o.IsDeleted == request.IsDeleted && o.CreatedOnUtc >= request.StartDate && o.CreatedOnUtc < request.EndDate)
+                                        .LongCountAsync();
+
+            response = await _unitOfWork.Repository<Comment>().GetQueryable()
+                                        .Where(o => o.IsDeleted == request.IsDeleted && o.CreatedOnUtc >= request.StartDate && o.CreatedOnUtc < request.EndDate)
+                                        .Sort(x => x.Id, false)
+                                        .Page(request.PageNumber, request.PageSize)
+                                        .Select(x => new CommentManagementResponseModel
+                                        {
+                                            Id = x.Id,
+                                            UserId = x.UserId,
+                                            CreatedOnUtc = x.CreatedOnUtc,
+                                            Email = x.User.Email,
+                                            Text = x.Text,
+                                            IsReply = false,
+                                            AlbumFriendlyName = x.Album!.FriendlyName
+                                        })
+                                        .ToListAsync();
+
+            return Ok(new ServiceResponse<PagingCommonResponse<CommentManagementResponseModel>>(new PagingCommonResponse<CommentManagementResponseModel>
+            {
+                RowNum = totalRecords,
+                Data = response
+            }));
         }
     }
 }

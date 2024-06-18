@@ -21,15 +21,15 @@ BEGIN
 	WITH FilteredData
 	AS (
 		SELECT ROW_NUMBER() OVER (ORDER BY
-			CASE WHEN ISNULL(@sortColumn, '') = '' THEN u.Id END,
+			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN u.CreatedOnUtc END DESC,
+			CASE WHEN ISNULL(@sortColumn, '') = '' THEN u.Id END,		
+			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN u.CreatedOnUtc END,
 			CASE WHEN @sortColumn = 'FullName' AND @sortDirection = 'ASC' THEN u.FullName END,
 			CASE WHEN @sortColumn = 'FullName' AND @sortDirection = 'DESC' THEN u.FullName END DESC,
 			CASE WHEN @sortColumn = 'UserName' AND @sortDirection = 'ASC' THEN u.UserName END,
 			CASE WHEN @sortColumn = 'UserName' AND @sortDirection = 'DESC' THEN u.UserName END DESC,
 			CASE WHEN @sortColumn = 'Email' AND @sortDirection = 'ASC' THEN u.Email END,
 			CASE WHEN @sortColumn = 'Email' AND @sortDirection = 'DESC' THEN u.Email END DESC,
-			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN u.CreatedOnUtc END,
-			CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN u.CreatedOnUtc END DESC,
 			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN u.UpdatedOnUtc END,
 			CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN u.UpdatedOnUtc END DESC,
 			CASE WHEN @sortColumn = 'IsBanned' AND @sortDirection = 'ASC' THEN u.IsBanned END,
@@ -47,10 +47,10 @@ BEGIN
 		FROM dbo.[User] u
 		LEFT JOIN dbo.AspNetUserRoles ur ON u.Id = ur.UserId
 		LEFT JOIN dbo.AspNetRoles r ON ur.RoleId = r.Id
-		WHERE (ISNULL(@searchTerm, '') = '' OR 
-			(u.FullName LIKE '' + @searchTerm + '%') OR
+		WHERE (ISNULL(@searchTerm, '') = '' OR
+			(u.Email LIKE '' + @searchTerm + '%') OR
 			(u.UserName LIKE '' + @searchTerm + '%') OR
-			(u.Email LIKE '' + @searchTerm + '%')
+			(u.FullName LIKE '' + @searchTerm + '%')		
 		)
 		GROUP BY u.Id,
 				 u.FullName,

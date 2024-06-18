@@ -25,4 +25,14 @@ namespace Portal.Domain.Models.ActivityLogs
         public int UserId { get; set; }
         public DateTime CreatedOnUtc { get; set; }
     }
+
+    public class ActivityLogsPagingReponseModel
+    {
+        public int Id { get; set; }
+        public string? Description { get; set; }
+        public int UserId { get; set; }
+        public string IdentityUserId { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public DateTime CreatedOnUtc { get; set; }
+    }
 }

@@ -56,4 +56,24 @@ namespace Portal.Domain.Models.CommentModels
 
         public bool CanUpdate { get; set; }
     }
+
+    public class CommentManagementRequestModel : PagingCommonRequest
+    {
+        public bool IsReply { get; set; } = false;
+        public bool IsDeleted { get; set; } = false;
+
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+    }
+
+    public class CommentManagementResponseModel
+    {
+        public int Id { get; set; }
+        public string Text { get; set; } = null!;
+        public DateTime CreatedOnUtc { get; set; }
+        public bool IsReply { get; set; }
+        public int UserId { get; set; }
+        public string Email { get; set; } = null!;
+        public string? AlbumFriendlyName { get; set; }
+    }
 }
