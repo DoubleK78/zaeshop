@@ -234,5 +234,17 @@
         "forever": "Forever",
         "subscription": "Subscription",
         "payment": "Payment"
+    },
+    "comment_management": {
+        "title": "Comment Management",
+        "album_friendly_name": "Friendly Name",
+        "email": "Email",
+        "text": "Text",
+        "created_on": "Created On",
+        "reply": "Reply",
+        "action": "Action",
+        "date_range": "Date Range",
+        "deleted": "Deleted",
+        "confirm_delete": "Are you sure to delete? User {{email}} of {{album_friendly_name}} with {{text}}"
     }
 }
