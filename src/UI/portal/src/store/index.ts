@@ -7,6 +7,8 @@ import { useDispatch } from 'react-redux'
 import albumDetailCollectionSlice from './reducers/albumDetailCollectionSlice'
 import contentItemSlice from './reducers/ContentItemSlice'
 import userRoleSubscriptionSlice from './reducers/userRoleSubscriptionSlice'
+import paymentManagementSlice from './reducers/paymentSlice'
+import commentManagementSlice from './reducers/commentsSlice'
 
 export const store = configureStore({
   reducer: {
@@ -16,7 +18,9 @@ export const store = configureStore({
     album: albumSlice,
     albumDetailCollection: albumDetailCollectionSlice,
     contentItem: contentItemSlice,
-    userRoleSubscription: userRoleSubscriptionSlice
+    userRoleSubscription: userRoleSubscriptionSlice,
+    paymentManagement: paymentManagementSlice,
+    commentManagement: commentManagementSlice
   }
 })
 
