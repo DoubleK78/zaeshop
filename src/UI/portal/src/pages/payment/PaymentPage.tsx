@@ -7,6 +7,7 @@ import Pagination from "../../components/shared/Pagination";
 import { v4 as uuidv4 } from 'uuid';
 import classNames from "classnames";
 import dayjsCustom from "../../utils/dayjs/dayjs-custom";
+import { Link } from "react-router-dom";
 
 const PaymentPage: React.FC = () => {
     const [t] = useTranslation();
@@ -85,7 +86,9 @@ const PaymentPage: React.FC = () => {
                                             <tbody>
                                                 {payments?.map((payment) => (
                                                     <tr key={uuidv4()}>
-                                                        <td className={classNames({ 'text-primary': payment.description?.includes('Subscription') })}>{payment.email}</td>
+                                                        <td>
+                                                            <Link className="link-muted link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" to={`/users/${payment.identityUserId}`}>{payment.email}</Link>   
+                                                        </td>
                                                         <td className={classNames({ 'text-primary': payment.description?.includes('Subscription') })}>{payment.description}</td>
                                                         <td>{dayjsCustom.utc(payment.createdOnUtc).local().format('DD-MM-YYYY HH:mm')}</td>
                                                     </tr>
