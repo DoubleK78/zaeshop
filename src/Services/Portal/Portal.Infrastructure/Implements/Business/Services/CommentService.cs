@@ -286,11 +286,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 return new ServiceResponse<bool>("error_user_not_found");
             }
 
-            if (replyComment.UserId != user.Id)
-            {
-                return new ServiceResponse<bool>("error_comment_not_belog_current_user");
-            }
-
             replyComment.IsDeleted = true;
             _replyCommentRepository.Update(replyComment);
             await _unitOfWork.SaveChangesAsync();

@@ -15,6 +15,7 @@ import AlbumDetailCollectionPage from "../pages/album/AlbumDetailCollectionPage"
 import ContentItemPage from "../pages/album/ContentItemPage";
 import UserRoleSubscriptionPage from "../pages/user/UserRoleSubscriptionPage";
 import CommentsPage from "../pages/comments/CommentsPage";
+import PaymentPage from "../pages/payment/PaymentPage";
 
 // Lazy load import for large components
 const BulkCreateCollectionPage = lazy(() => import('../pages/album/BulkCreateCollectionPage'));
@@ -47,6 +48,7 @@ const MainComponent: React.FC = () => {
                     <Route path="/albums/:albumId/bulk-create" Component={BulkCreateCollectionPage} />
                     <Route path="/collections/:collectionId" Component={ContentItemPage} />;
                     <Route path="/comments" Component={CommentsPage} />;
+                    <Route path="/payments" Component={PaymentPage} />
                     <Route path="*" Component={NotFoundPage} />;
                 </Routes>
             </Suspense>

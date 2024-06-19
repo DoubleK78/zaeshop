@@ -7,7 +7,7 @@ import { getCommentsAsyncThunk } from "../../store/reducers/commentsSlice";
 import dayjsCustom from "../../utils/dayjs/dayjs-custom";
 import { v4 as uuidv4 } from 'uuid';
 import CommentManagementResponse from "../../models/comments/CommentManagementResponse";
-import { deleteComment } from "../../services/comments/commentManagementService";
+import { deleteComment, deleteReply } from "../../services/comments/commentManagementService";
 import { offensiveWords } from '../../utils/word/vn_offensive';
 import classNames from "classnames";
 import { toast } from "react-toastify";
@@ -55,16 +55,44 @@ const CommentsPage: React.FC = () => {
                 hideProgressBar: true
             });
 
-            const response = await deleteComment(comment.id);
+            if (comment.isReply) {
+                const response = await deleteReply(comment.id);
 
-            if (response.status === 200) {
-                toast.update(toastId, {
-                    render: t("toast.delete_sucessfully"), type: toast.TYPE.SUCCESS, isLoading: false,
-                    autoClose: 2000
-                });
+                if (response.status === 200) {
+                    toast.update(toastId, {
+                        render: t("toast.delete_sucessfully"), type: toast.TYPE.SUCCESS, isLoading: false,
+                        autoClose: 2000
+                    });
 
-                return;
+                    return;
+                }
             }
+            else {
+                const response = await deleteComment(comment.id);
+
+                if (response.status === 200) {
+                    toast.update(toastId, {
+                        render: t("toast.delete_sucessfully"), type: toast.TYPE.SUCCESS, isLoading: false,
+                        autoClose: 2000
+                    });
+
+                    return;
+                }
+            }
+
+            await dispatch(getCommentsAsyncThunk({
+                params: {
+                    pageNumber: pageIndex,
+                    pageSize,
+                    sortColumn: 'createdOnUtc',
+                    sortDirection: 'desc',
+                    isDeleted,
+                    isReply,
+                    startDate,
+                    endDate
+                }
+            }));
+
             toast.done(toastId);
         }
     }

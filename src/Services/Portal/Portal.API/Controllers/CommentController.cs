@@ -95,6 +95,26 @@ namespace Portal.API.Controllers
             return Ok(response);
         }
 
+        [Authorize(ERoles.Administrator)]
+        [HttpDelete]
+        [Route("reply/{id}")]
+        public async Task<IActionResult> DeleteReply([FromRoute] int id)
+        {
+            var identityUserId = GetIdentityUserIdByToken();
+            if (string.IsNullOrEmpty(identityUserId))
+            {
+                return BadRequest("error_user_not_found");
+            }
+
+            var response = await _commentService.DeleteReplyAsync(id, identityUserId);
+            if (!response.IsSuccess)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetPagingAsync([FromQuery] CommentPagingRequestModel request)
         {

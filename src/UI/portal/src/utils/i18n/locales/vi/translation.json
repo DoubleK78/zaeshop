@@ -246,5 +246,11 @@
         "date_range": "Khoảng Thời Gian",
         "deleted": "Đã Xóa",
         "confirm_delete": "Bạn có chắc chắn muốn xóa? Người dùng {{email}} của {{album_friendly_name}} với {{text}}"
+    },
+    "payment_management": {
+        "title": "Quản Lý Thanh Toán",
+        "description": "Mô Tả",
+        "email": "Email",
+        "created_on": "Ngày Tạo"
     }
 }
