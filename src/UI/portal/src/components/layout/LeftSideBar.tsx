@@ -36,12 +36,12 @@ const LeftSideBar: React.FC = () => {
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/comments">
-                                    Comments
+                                    Commnt Management
                                 </Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/payments">
-                                    Payments
+                                    Payment Management
                                 </Link>
                             </li>
                         </ul>
