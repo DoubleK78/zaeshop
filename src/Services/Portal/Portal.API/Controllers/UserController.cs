@@ -193,7 +193,7 @@ namespace Portal.API.Controllers
                                                 CreatedOnUtc = x.CreatedOnUtc,
                                                 Email = x.User.Email,
                                                 Text = x.Text,
-                                                AlbumFriendlyName = x.Comment!.Album!.FriendlyName,
+                                                AlbumFriendlyName = x.Comment!.Album!.Title,
                                                 IsReply = true
                                             })
                                             .ToListAsync();
@@ -222,7 +222,7 @@ namespace Portal.API.Controllers
                                             Email = x.User.Email,
                                             Text = x.Text,
                                             IsReply = false,
-                                            AlbumFriendlyName = x.Album!.FriendlyName
+                                            AlbumFriendlyName = x.Album!.Title
                                         })
                                         .ToListAsync();
 
