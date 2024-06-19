@@ -267,6 +267,8 @@ namespace Portal.Infrastructure.Implements.Business.Services
             _commentRepository.Update(comment);
             await _unitOfWork.SaveChangesAsync();
 
+            await BuildPagingOneCacheAsync(comment.AlbumId);
+
             return new ServiceResponse<bool>(true);
         }
 

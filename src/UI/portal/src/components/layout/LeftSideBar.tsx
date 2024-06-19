@@ -34,6 +34,16 @@ const LeftSideBar: React.FC = () => {
                                     Album Management
                                 </Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/comments">
+                                    Comments
+                                </Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/payments">
+                                    Payments
+                                </Link>
+                            </li>
                         </ul>
                         {/*end nav*/}
                     </div>

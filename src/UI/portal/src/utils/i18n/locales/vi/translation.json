@@ -234,5 +234,17 @@
         "forever": "Mãi mãi",
         "subscription": "Đăng Ký",
         "payment": "Thanh Toán"
+    },
+    "comment_management": {
+        "title": "Quản Lý Bình Luận",
+        "album_friendly_name": "Tên Album",
+        "email": "Email",
+        "text": "Nội Dung",
+        "created_on": "Ngày Tạo",
+        "reply": "Trả Lời",
+        "action": "Hành Động",
+        "date_range": "Khoảng Thời Gian",
+        "deleted": "Đã Xóa",
+        "confirm_delete": "Bạn có chắc chắn muốn xóa? Người dùng {{email}} của {{album_friendly_name}} với {{text}}"
     }
 }
