@@ -8,6 +8,9 @@ import dayjsCustom from "../../utils/dayjs/dayjs-custom";
 import { v4 as uuidv4 } from 'uuid';
 import CommentManagementResponse from "../../models/comments/CommentManagementResponse";
 import { deleteComment } from "../../services/comments/commentManagementService";
+import { offensiveWords } from '../../utils/word/vn_offensive';
+import classNames from "classnames";
+import { toast } from "react-toastify";
 
 const CommentsPage: React.FC = () => {
     const [t] = useTranslation();
@@ -48,8 +51,35 @@ const CommentsPage: React.FC = () => {
         }));
 
         if (confirm) {
-            await deleteComment(comment.id);
+            const toastId = toast.loading(t("toast.please_wait"), {
+                hideProgressBar: true
+            });
+
+            const response = await deleteComment(comment.id);
+
+            if (response.status === 200) {
+                toast.update(toastId, {
+                    render: t("toast.delete_sucessfully"), type: toast.TYPE.SUCCESS, isLoading: false,
+                    autoClose: 2000
+                });
+
+                return;
+            }
+            toast.done(toastId);
         }
+    }
+
+    const hasOffensiveWord = (offensiveWords: string[], comment?: string | null): boolean => {
+        if (!comment) {
+            return false;
+        }
+
+        for (const word of offensiveWords) {
+            if (comment.toLowerCase().includes(word.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     return (
@@ -153,64 +183,64 @@ const CommentsPage: React.FC = () => {
                                                     <tr key={uuidv4()}>
                                                         <td>{comment.email}</td>
                                                         <td>{comment.albumFriendlyName}</td>
-                                                        <td><div dangerouslySetInnerHTML={{ __html: comment.text ?? '' }} /></td>
+                                                        <td className={classNames({ 'text-success': hasOffensiveWord(offensiveWords, comment.text) })}><div dangerouslySetInnerHTML={{ __html: comment.text ?? '' }} /></td>
                                                         <td>{comment.isReply ? "Yes" : "No"}</td>
                                                         <td>{dayjsCustom.utc(comment.createdOnUtc).local().format('DD-MM-YYYY HH:mm')}</td>
                                                         <td>
                                                             <button className="btn"
                                                                 onClick={() => onDeleteComment(comment)}>
-                                                            <i className="fa-solid fa-trash text-secondary font-16"></i>
-                                                        </button>
-                                                    </td>
+                                                                <i className="fa-solid fa-trash text-secondary font-16"></i>
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div className="row mt-2">
-                                    <div className="col">
-                                        <button className="btn btn-outline-light btn-sm px-4"> Comments
-                                        </button>
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <div className="col">
-                                        <select className="form-select"
-                                            style={{ width: "auto" }}
-                                            value={pageSize}
-                                            onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setPageSize(Number(event.target.value))}>
-                                            <option value={5}>5</option>
-                                            <option value={10}>10</option>
-                                            <option value={15}>15</option>
-                                            <option value={25}>25</option>
-                                            <option value={35}>35</option>
-                                        </select>
-                                    </div>{" "}
-                                    {/*end col*/}
-                                    <div className="col-auto">
-                                        <nav aria-label="...">
-                                            <Pagination
-                                                pageIndex={pageIndex}
-                                                totalCounts={totalRecords}
-                                                pageSize={pageSize}
-                                                onPageChange={page => setPageIndex(page)} />
-                                            {/*end pagination*/}
-                                        </nav>
-                                        {/*end nav*/}
-                                    </div>{" "}
-                                    {/*end col*/}
+                                    <div className="row mt-2">
+                                        <div className="col">
+                                            <button className="btn btn-outline-light btn-sm px-4"> Comments
+                                            </button>
+                                        </div>
+                                        <div className="col">
+                                            <select className="form-select"
+                                                style={{ width: "auto" }}
+                                                value={pageSize}
+                                                onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setPageSize(Number(event.target.value))}>
+                                                <option value={5}>5</option>
+                                                <option value={10}>10</option>
+                                                <option value={15}>15</option>
+                                                <option value={25}>25</option>
+                                                <option value={35}>35</option>
+                                            </select>
+                                        </div>{" "}
+                                        {/*end col*/}
+                                        <div className="col-auto">
+                                            <nav aria-label="...">
+                                                <Pagination
+                                                    pageIndex={pageIndex}
+                                                    totalCounts={totalRecords}
+                                                    pageSize={pageSize}
+                                                    onPageChange={page => setPageIndex(page)} />
+                                                {/*end pagination*/}
+                                            </nav>
+                                            {/*end nav*/}
+                                        </div>{" "}
+                                        {/*end col*/}
+                                    </div>
+                                    {/*end row*/}
                                 </div>
-                                {/*end row*/}
+                                {/*end card-body*/}
                             </div>
-                            {/*end card-body*/}
-                        </div>
-                        {/*end card*/}
-                    </div>{" "}
-                    {/*end col*/}
+                            {/*end card*/}
+                        </div>{" "}
+                        {/*end col*/}
+                    </div>
+                    {/*end row*/}
                 </div>
-                {/*end row*/}
+                {/* container */}
             </div>
-            {/* container */}
-        </div>
-            {/* end page content */ }
+            {/* end page content */}
         </div >
     )
 }
