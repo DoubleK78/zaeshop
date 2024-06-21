@@ -19,13 +19,12 @@ namespace HangFireServer.Extensions
                 {
                     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
                     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                    JobExpirationCheckInterval = TimeSpan.FromHours(24),
-                    // InactiveStateExpirationTimeout = TimeSpan.FromMinutes(30),
-                    QueuePollInterval = TimeSpan.Zero,
+                    JobExpirationCheckInterval = TimeSpan.FromDays(2),
+                    QueuePollInterval = TimeSpan.FromSeconds(15),
                     UseRecommendedIsolationLevel = true,
                     DisableGlobalLocks = true
-                }));
-                // .WithJobExpirationTimeout(TimeSpan.FromMinutes(30)))
+                })
+                .WithJobExpirationTimeout(TimeSpan.FromDays(2)));
 
             // Add the processing server as IHostedService
             services.AddHangfireServer();
