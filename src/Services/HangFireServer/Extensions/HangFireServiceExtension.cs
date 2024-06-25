@@ -27,7 +27,10 @@ namespace HangFireServer.Extensions
                 .WithJobExpirationTimeout(TimeSpan.FromDays(2)));
 
             // Add the processing server as IHostedService
-            services.AddHangfireServer();
+            services.AddHangfireServer(options =>
+            {
+                options.WorkerCount = 10;
+            });
 
             return services;
         }
@@ -49,7 +52,7 @@ namespace HangFireServer.Extensions
 
             // 1 Hours to reset role user
             RecurringJob.AddOrUpdate<IUserService>(HangfireJobName.ResetRoleUsers, x => x.ResetRoleTaskAsync(), "5 */1 * * *");
-        
+
             // 5 Minutes to check hangfire job is still running start StartOnUtc > endOnUtc + 5m then stop running status
             RecurringJob.AddOrUpdate<ILevelService>(HangfireJobName.ResetJobNotUpdateRunningStatus, x => x.ResetJobNotUpdateRunningStatus(), "*/5 * * * *");
 
@@ -58,15 +61,15 @@ namespace HangFireServer.Extensions
 
             // 30 Minutes to reset level public
             RecurringJob.AddOrUpdate<ICollectionService>(HangfireJobName.ResetLevelPublicChap, x => x.ResetLevelPublicTaskAsync(), "*/30 * * * *");
-        
+
             // 10:05 AM ICT Daily To remind subscription
             RecurringJob.AddOrUpdate<IUserService>(HangfireJobName.RemindSubscription, x => x.RemindSubscriptionTaskAsync(), "5 3 * * *");
-        
+
             // 7:05 AM ICT Daily to Recalculate All Album Views
             RecurringJob.AddOrUpdate<ICollectionService>(HangfireJobName.AlbumCalculatemViewsTopTypeAll, x => x.RecalculateAlbumViewsTopTypeAllTaskAsync(), "5 0 * * *");
-        
-            // 4:05 AM Hangfire Clean Jobs (All states)
-            RecurringJob.AddOrUpdate<IActivityLogService>(HangfireJobName.HangfireCleanupJobs, x => x.CleanJobsHangfireAsync(), "5 21 * * *");
+
+            // 4:02 AM and 2:02 PM  Hangfire Clean Jobs (All states)
+            RecurringJob.AddOrUpdate<IActivityLogService>(HangfireJobName.HangfireCleanupJobs, x => x.CleanJobsHangfireAsync(), "2 7,21 * * *");
         }
     }
 }
