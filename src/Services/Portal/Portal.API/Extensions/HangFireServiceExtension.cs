@@ -9,7 +9,7 @@ namespace Portal.API.Extensions
         {
             // Add Hangfire services.
             bool isDeployed = bool.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT_DEPLOYED") ?? "false");
-            if (!isDeployed)
+            if (isDeployed)
             {
                 services.AddHangfire(configuration => configuration
                                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
