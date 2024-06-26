@@ -25,7 +25,8 @@ public static class HangfireCircuitBreaker
                     _semaphore.Release();
                 }
 
-                await ProcessBacklogAsync(); // Fire and forget
+                // Fire and forget the backlog and avoid user waits
+                _ = Task.Run(ProcessBacklogAsync); 
             }
             return _isOpen;
         }
