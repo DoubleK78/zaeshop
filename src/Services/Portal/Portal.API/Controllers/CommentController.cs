@@ -40,7 +40,7 @@ namespace Portal.API.Controllers
             }
 
             #region Hangfire Enqueue Background
-            _backgroundJobClient.Enqueue<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
+            await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
             {
                 IdentityUserId = identityUserId,
                 CommentId = response.Data.Id,
