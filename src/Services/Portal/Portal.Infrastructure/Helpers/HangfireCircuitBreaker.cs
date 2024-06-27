@@ -85,17 +85,17 @@ public static class HangfireCircuitBreaker
                 job();
 
                 // Delay to avoid throttling, Delay for 0.5 second
-                await Task.Delay(500);
+                await Task.Delay(200);
             }
             catch (BackgroundJobClientException)
             {
                 await OpenAsync();
-                _backlogQueue.Enqueue(job);
+                EnqueueConcurrentQueue(job);
             }
             catch (SqlException)
             {
                 await OpenAsync();
-                _backlogQueue.Enqueue(job);
+                EnqueueConcurrentQueue(job);
                 break;
             }
         }
@@ -111,7 +111,7 @@ public static class HangfireCircuitBreaker
     {
         if (await IsOpenAsync())
         {
-            _backlogQueue.Enqueue(job);
+            EnqueueConcurrentQueue(job);
         }
         else
         {
@@ -122,13 +122,21 @@ public static class HangfireCircuitBreaker
             catch (BackgroundJobClientException)
             {
                 await OpenAsync();
-                _backlogQueue.Enqueue(job);
+                EnqueueConcurrentQueue(job);
             }
             catch (SqlException)
             {
                 await OpenAsync();
-                _backlogQueue.Enqueue(job);
+                EnqueueConcurrentQueue(job);
             }
+        }
+    }
+
+    private static void EnqueueConcurrentQueue(Action job)
+    {
+        if (_backlogQueue.Count <= 1000)
+        {
+            _backlogQueue.Enqueue(job);
         }
     }
 }

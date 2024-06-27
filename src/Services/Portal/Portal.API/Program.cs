@@ -10,8 +10,8 @@ int workerThreads, completionPortThreads;
 ThreadPool.GetMinThreads(out workerThreads, out completionPortThreads);
 
 // Set the minimum number of threads to 8 (2 vCPU * 4 threads)
-// Update 6/26/2024: x2 threads
-ThreadPool.SetMinThreads(16, completionPortThreads);
+// Update 6/27/2024: x3 threads
+ThreadPool.SetMinThreads(24, completionPortThreads);
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(serverOptions =>
