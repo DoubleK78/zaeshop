@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Hangfire;
 using Microsoft.Data.SqlClient;
 
 namespace Portal.Infrastructure.Helpers;
@@ -26,7 +27,7 @@ public static class HangfireCircuitBreaker
                 }
 
                 // Fire and forget the backlog and avoid user waits
-                _ = Task.Run(ProcessBacklogAsync); 
+                _ = Task.Run(ProcessBacklogAsync);
             }
             return _isOpen;
         }
@@ -86,6 +87,11 @@ public static class HangfireCircuitBreaker
                 // Delay to avoid throttling, Delay for 0.5 second
                 await Task.Delay(500);
             }
+            catch (BackgroundJobClientException)
+            {
+                await OpenAsync();
+                _backlogQueue.Enqueue(job);
+            }
             catch (SqlException)
             {
                 await OpenAsync();
@@ -112,6 +118,11 @@ public static class HangfireCircuitBreaker
             try
             {
                 job();
+            }
+            catch (BackgroundJobClientException)
+            {
+                await OpenAsync();
+                _backlogQueue.Enqueue(job);
             }
             catch (SqlException)
             {
