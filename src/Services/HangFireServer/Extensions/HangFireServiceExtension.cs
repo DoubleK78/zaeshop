@@ -12,7 +12,7 @@ namespace HangFireServer.Extensions
         {
             // Add Hangfire services.
             services.AddHangfire(configuration => configuration
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseSqlServerStorage(config.GetConnectionString("HangfireConnection"), new SqlServerStorageOptions

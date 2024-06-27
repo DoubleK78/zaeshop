@@ -58,7 +58,7 @@ namespace Portal.API.Controllers
             if (!isBot)
             {
                 #region Hangfire Enqueue Background
-                _backgroundJobClient.Enqueue<ICollectionService>(x => x.AddViewFromUserToRedisAsync(new CollectionViewUserBuildModel
+                await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ICollectionService>(x => x.AddViewFromUserToRedisAsync(new CollectionViewUserBuildModel
                 {
                     CollectionId = result.Data!.Id,
                     IdentityUserId = User.FindFirstValue("id"),
@@ -70,7 +70,7 @@ namespace Portal.API.Controllers
                 // User next chap from previous chapter
                 if (previousCollectionId.HasValue && !string.IsNullOrEmpty(identityUserId))
                 {
-                    _backgroundJobClient.Enqueue<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
+                    await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
                     {
                         IdentityUserId = identityUserId,
                         CollectionId = previousCollectionId.Value,
@@ -81,7 +81,7 @@ namespace Portal.API.Controllers
                 }
                 else if (DateTime.UtcNow.Subtract(collection.CreatedOnUtc).Hours < 4 && !string.IsNullOrEmpty(identityUserId))
                 {
-                    _backgroundJobClient.Enqueue<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
+                    await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
                     {
                         IdentityUserId = identityUserId,
                         CollectionId = collection.Id,
