@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 using Amazon;
 using Amazon.S3;
 using Common.Implements;
@@ -23,7 +22,6 @@ using Portal.Infrastructure.Helpers;
 using Portal.Infrastructure.Implements.External;
 using Portal.Infrastructure.Implements.Services;
 using Portal.Infrastructure.SeedWork;
-using Raven.Client.Documents;
 using Serilog;
 using StackExchange.Redis;
 
@@ -114,21 +112,14 @@ public static class PortalServiceExtensions
         #endregion
 
         #region System Log
-        using var client = new HttpClient();
-        byte[] ravenCertificate = client.GetByteArrayAsync(config.GetSection("RavenDbSettings").GetValue<string>("CertificateUrl")!).Result;
+        var mongoDbConnectionString = config.GetSection("MongoDbSettings").GetValue<string>("ConnectionString")!;
+        var mongoDbCollectionName = config.GetSection("MongoDbSettings").GetValue<string>("CollectionName")!;
 
-        var ravenStore = new DocumentStore
-        {
-            Urls = [config.GetSection("RavenDbSettings").GetValue<string>("ConnectionUrl")],
-            Database = config.GetSection("RavenDbSettings").GetValue<string>("DatabaseName"),
-            Certificate = new X509Certificate2(ravenCertificate)
-        };
-        ravenStore.Initialize();
-
-        var logger = new LoggerConfiguration()
-            .WriteTo.RavenDB(ravenStore)
+        // Configure Serilog
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.MongoDB(mongoDbConnectionString, collectionName: mongoDbCollectionName)
             .CreateLogger();
-        Log.Logger = logger;
         #endregion
 
         return services;
