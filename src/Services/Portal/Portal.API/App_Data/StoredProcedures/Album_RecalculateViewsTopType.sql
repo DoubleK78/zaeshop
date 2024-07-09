@@ -8,16 +8,11 @@ BEGIN
 
     DECLARE @startDateOfMonth DATETIME = DATEADD(mm, DATEDIFF(mm, 0, GETUTCDATE()), 0);
 
-    DECLARE @CollectionIdTable TABLE (CollectionId INT);
+    DECLARE @CollectionIdTable TABLE (CollectionId INT PRIMARY KEY CLUSTERED);
 
-    ;WITH ValidCollectionIds AS (
-        SELECT TRY_CAST(value AS INT) AS CollectionId
-        FROM STRING_SPLIT(@collectionIds, ',')
-        WHERE TRY_CAST(value AS INT) IS NOT NULL
-    )
     INSERT INTO @CollectionIdTable (CollectionId)
-    SELECT CollectionId
-    FROM ValidCollectionIds;
+    SELECT value
+    FROM STRING_SPLIT(@collectionIds, ',');
 
     CREATE TABLE #temp (AlbumId INT PRIMARY KEY, ViewsByTopDay INT, ViewsByTopMonth INT);
 
