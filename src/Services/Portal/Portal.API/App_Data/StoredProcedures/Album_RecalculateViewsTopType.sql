@@ -1,58 +1,53 @@
 CREATE OR ALTER PROCEDURE Album_RecalculateViewsTopType (
-    @collectionIds NVARCHAR(MAX)
+    @collectionIds VARCHAR(MAX)
 )
 AS
 BEGIN
     DECLARE @startDate DATETIME = DATEADD(d, -1, GETUTCDATE());
     DECLARE @endDate DATETIME = GETUTCDATE();
 
-    DECLARE @startDateOfWeek DATETIME = DATEADD(wk, DATEDIFF(wk, 0, GETUTCDATE()), 0);
-    DECLARE @startDateOfMonth DATETIME = DATEADD(mm, DATEDIFF(mm, 0, @startDateOfWeek), 0);
-    DECLARE @startDateOfYear DATETIME = DATEADD(yy, DATEDIFF(yy, 0, @startDateOfMonth), 0);
+    DECLARE @startDateOfMonth DATETIME = DATEADD(mm, DATEDIFF(mm, 0, GETUTCDATE()), 0);
 
     DECLARE @CollectionIdTable TABLE (CollectionId INT);
 
+    ;WITH ValidCollectionIds AS (
+        SELECT TRY_CAST(value AS INT) AS CollectionId
+        FROM STRING_SPLIT(@collectionIds, ',')
+        WHERE TRY_CAST(value AS INT) IS NOT NULL
+    )
     INSERT INTO @CollectionIdTable (CollectionId)
-    SELECT CAST(value AS INT)
-    FROM STRING_SPLIT(@collectionIds, ',');
+    SELECT CollectionId
+    FROM ValidCollectionIds;
 
-    CREATE TABLE #temp (AlbumId INT PRIMARY KEY, ViewsByTopDay INT, ViewsByTopWeek INT, ViewsByTopMonth INT, ViewsByTopYear INT);
+    CREATE TABLE #temp (AlbumId INT PRIMARY KEY, ViewsByTopDay INT, ViewsByTopMonth INT);
 
-    -- Select albums that have at least one collection in the specified @collectionIds
-    WITH AlbumIds AS (
+    ;WITH AlbumIds AS (
         SELECT DISTINCT a.Id AS AlbumId
         FROM dbo.Album a
         WHERE EXISTS (
             SELECT 1
             FROM dbo.Collection c
             WHERE c.AlbumId = a.Id
-            AND EXISTS (
-                SELECT 1
-                FROM @CollectionIdTable ct
-                WHERE ct.CollectionId = c.Id
-            )
+            AND c.Id IN (SELECT CollectionId FROM @CollectionIdTable)
         )
     )
-    
-    --INSERT INTO #temp (AlbumId, ViewsByTopDay, ViewsByTopWeek, ViewsByTopMonth, ViewsByTopYear)
-    INSERT INTO #temp (AlbumId, ViewsByTopDay, ViewsByTopMonth, ViewsByTopYear)
+    INSERT INTO #temp (AlbumId, ViewsByTopDay, ViewsByTopMonth)
     SELECT 
         a.AlbumId,
-        SUM(CASE WHEN cv.Date >= @startDate AND cv.Date < @endDate THEN cv.[View] ELSE 0 END) AS ViewsByTopDay,
-        -- SUM(CASE WHEN cv.Date >= @startDateOfWeek AND cv.Date < @endDate THEN cv.[View] ELSE 0 END) AS ViewsByTopWeek,
-        SUM(CASE WHEN cv.Date >= @startDateOfMonth AND cv.Date < @endDate THEN cv.[View] ELSE 0 END) AS ViewsByTopMonth,
-        SUM(CASE WHEN cv.Date >= @startDateOfYear AND cv.Date < @endDate THEN cv.[View] ELSE 0 END) AS ViewsByTopYear
+        SUM(CASE WHEN cv.Date >= @startDate THEN cv.[View] ELSE 0 END) AS ViewsByTopDay,
+        SUM(CASE WHEN cv.Date >= @startDateOfMonth THEN cv.[View] ELSE 0 END) AS ViewsByTopMonth
     FROM AlbumIds a
     JOIN dbo.Collection c ON c.AlbumId = a.AlbumId
     JOIN dbo.CollectionView cv ON cv.CollectionId = c.Id
+    WHERE cv.Date >= @startDateOfMonth AND cv.Date < @endDate
     GROUP BY a.AlbumId;
 
     UPDATE a
     SET 
         ViewsByTopDay = t.ViewsByTopDay,
-        --ViewsByTopWeek = t.ViewsByTopWeek,
-        ViewsByTopMonth = t.ViewsByTopMonth,
-        ViewsByTopYear = t.ViewsByTopYear
+        ViewsByTopMonth = t.ViewsByTopMonth
     FROM dbo.Album a
     JOIN #temp t ON a.Id = t.AlbumId;
+
+    DROP TABLE #temp;
 END;
