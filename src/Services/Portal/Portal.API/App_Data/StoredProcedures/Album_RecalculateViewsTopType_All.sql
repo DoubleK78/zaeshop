@@ -4,30 +4,44 @@ BEGIN
     DECLARE @startDate DATETIME = DATEADD(d, -1, GETUTCDATE());
     DECLARE @endDate DATETIME = GETUTCDATE();
 
-    DECLARE @startDateOfWeek DATETIME = DATEADD(wk, DATEDIFF(wk, 0, GETUTCDATE()), 0);
-    DECLARE @startDateOfMonth DATETIME = DATEADD(mm, DATEDIFF(mm, 0, @startDateOfWeek), 0);
-    DECLARE @startDateOfYear DATETIME = DATEADD(yy, DATEDIFF(yy, 0, @startDateOfMonth), 0);
+    DECLARE @isFirstDayOfMonth BIT;
+    DECLARE @isFirstDayOfYear BIT;
+    
+    SET @isFirstDayOfMonth = CASE 
+        WHEN DAY(GETUTCDATE()) = 1 THEN 1 
+        ELSE 0 
+    END
+    
+    SET @isFirstDayOfYear = CASE 
+        WHEN DATEPART(DAYOFYEAR, GETUTCDATE()) = 1 THEN 1 
+        ELSE 0 
+    END
 
-    CREATE TABLE #temp(AlbumId INT PRIMARY KEY, ViewsByTopDay INT, ViewsByTopWeek INT, ViewsByTopMonth INT, ViewsByTopYear INT);
+    CREATE TABLE #temp(AlbumId INT PRIMARY KEY, ViewsByTopDay INT, ViewsByTopWeek INT);
 
-    INSERT INTO #temp(AlbumId, ViewsByTopDay, ViewsByTopWeek, ViewsByTopMonth, ViewsByTopYear)
+    INSERT INTO #temp(AlbumId, ViewsByTopWeek, ViewsByTopDay)
     SELECT
       a.Id AS [AlbumId],
-      SUM(IIF(cv.Date >= @startDate AND cv.Date < @endDate, cv.[View], 0)) AS [ViewsByTopDay],
-      SUM(IIF(cv.Date >= @startDateOfWeek and cv.Date < @endDate, cv.[View], 0)) as [ViewsByTopWeek],
-      SUM(IIF(cv.Date >= @startDateOfMonth and cv.Date < @endDate, cv.[View], 0)) as [ViewsByTopMonth],
-      SUM(IIF(cv.Date >= @startDateOfYear and cv.Date < @endDate, cv.[View], 0)) as [ViewsByTopYear]
+      a.ViewsByTopWeek,
+      SUM(cv.[View]) AS [ViewsByTopDay]
     FROM dbo.Album a
       JOIN dbo.Collection c ON c.AlbumId = a.Id
       JOIN dbo.CollectionView cv ON cv.CollectionId = c.Id
-    GROUP BY a.Id
+    WHERE cv.Date >= @startDate AND cv.Date < @endDate
+    GROUP BY a.Id, a.ViewsByTopWeek
 
+    -- ViewsByTopWeek is snapshot of previous day
     UPDATE a
     SET
       [ViewsByTopDay] = t.ViewsByTopDay,
-      [ViewsByTopWeek] = t.ViewsByTopWeek,
-      [ViewsByTopMonth] = t.ViewsByTopMonth,
-      [ViewsByTopYear] = t.ViewsByTopYear
+      [ViewsByTopMonth] = IIF(@isFirstDayOfMonth = 1, t.ViewsByTopDay, a.ViewsByTopMonth + t.ViewsByTopWeek),
+      [ViewsByTopYear] = IIF(@isFirstDayOfYear = 1, t.ViewsByTopDay, a.ViewsByTopYear +  t.ViewsByTopWeek) 
     FROM dbo.Album a
       JOIN #temp t ON t.AlbumId = a.Id
+
+    -- Clean snapshot of previous day
+    Update Album
+    SET [ViewsByTopWeek] = 0
+
+    DROP TABLE #temp
 END
