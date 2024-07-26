@@ -15,20 +15,20 @@ namespace HangFireServer.Messaging.Comsumers
             {
                 case ELogLevel.Information:
                     Log.Logger.Information(
-                        "[{@Environment} {@ServiceName}] {@EventName} - {@Description} - Detail: {@Message}", 
+                        "[{@Environment} {@ServiceName}] {@EventName} - {@Description}",
                         serviceLogMessage.Environment,
                         serviceLogMessage.ServiceName, serviceLogMessage.EventName,
                         serviceLogMessage.Description, serviceLogMessage);
                     break;
                 case ELogLevel.Warning:
-                    Log.Logger.Warning("[{@Environment} {@ServiceName}] {@EventName} - {@Description} - Detail: {@Message}", 
+                    Log.Logger.Warning("[{@Environment} {@ServiceName}] {@EventName} - {@Description}",
                         serviceLogMessage.Environment,
                         serviceLogMessage.ServiceName, serviceLogMessage.EventName,
                         serviceLogMessage.Description, serviceLogMessage);
                     break;
                 case ELogLevel.Error:
                     Log.Logger.Error(
-                        "[{@Environment} {@ServiceName}] {@EventName} - {@Description} - Detail: {@Message}", 
+                        "[{@Environment} {@ServiceName}] {@EventName} - {@Description} - Detail",
                         serviceLogMessage.Environment,
                         serviceLogMessage.ServiceName, serviceLogMessage.EventName,
                         serviceLogMessage.Description,
