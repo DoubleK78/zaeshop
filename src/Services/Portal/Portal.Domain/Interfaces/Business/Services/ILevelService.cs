@@ -6,5 +6,7 @@ namespace Portal.Domain.Interfaces.Business.Services
     {
         Task AddExperienceFromUserToRedisAsync(LevelBuildRedisRequestModel model);
         Task CalculateExperiencesFromRedisTaskAsync();
+        Task CalculateExperiencesFromRedisAsync();
+        Task ResetJobNotUpdateRunningStatus();
     }
 }

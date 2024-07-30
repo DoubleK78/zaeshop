@@ -53,12 +53,15 @@ BEGIN
                 JOIN dbo.[User] u ON u.Id = c.UserId
                 LEFT JOIN dbo.Album a ON a.Id = c.AlbumId
                 LEFT JOIN dbo.Collection c2 ON c2.Id = c.CollectionId
-				LEFT JOIN dbo.Comment reply ON reply.ParentCommentId = c.Id
+				LEFT JOIN dbo.Comment reply ON c.Id = reply.ParentCommentId
             WHERE c.IsDeleted = 0 AND
                 (ISNULL(@userId, '') = '' OR c.UserId = @userId) AND
                 (ISNULL(@albumId, '') = '' OR a.Id = @albumId) AND
                 (ISNULL(@collectionId, '') = '' OR c2.Id = @collectionId) AND
-				(@isReply = 1 AND (c.ParentCommentId IS NOT NULL AND c.ParentCommentId = @parentCommentId) OR @isReply = 0 AND c.ParentCommentId IS NULL)
+				(
+					(@isReply = 0 AND c.ParentCommentId IS NULL) OR 
+					(@isReply = 1 AND c.ParentCommentId = @parentCommentId AND reply.ParentCommentId IS NULL)
+				)
             GROUP BY
 				c.Id,
                 c.Text,

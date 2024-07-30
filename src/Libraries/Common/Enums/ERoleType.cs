@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Portal.Domain.Enums
+namespace Common.Enums
 {
     public enum ERoleType
     {

@@ -15,7 +15,6 @@ import classNames from 'classnames';
 import AlbumAlertMessage from '../../models/album-alert-mesage/AlbumAlertMessage';
 import { FilePond } from "react-filepond";
 import { ActualFileObject, FilePondFile } from "filepond";
-import convertFileToBase64 from "../../utils/covert-base64";
 import { ERegion } from '../../models/enums/Eregion';
 
 type UpdateAlbumProps = {
@@ -122,17 +121,11 @@ const UpdateAlbum: React.FC<UpdateAlbumProps> = ({ album, closeModal }) => {
         };
 
         if (thumbnailFiles.length > 0) {
-            const base64File = await convertFileToBase64(thumbnailFiles[0]);
-
-            request.fileName = thumbnailFiles[0].name;
-            request.base64File = base64File?.split(',')[1];
+            request.fileNameThumbnail = thumbnailFiles[0].name;
         }
 
         if (backgroundFiles.length > 0) {
-            const base64File = await convertFileToBase64(backgroundFiles[0]);
-
-            request.fileNameOriginal = backgroundFiles[0].name;
-            request.base64FileOriginal = base64File?.split(',')[1];
+            request.fileNameBackground = backgroundFiles[0].name;
         }
 
         const response = await updateAlbum(album.id, request);

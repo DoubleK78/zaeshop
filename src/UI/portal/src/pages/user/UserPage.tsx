@@ -13,6 +13,7 @@ import Pagination from '../../components/shared/Pagination';
 import DeleteUser from '../../components/user/DeleteUser';
 import { v4 as uuidv4 } from 'uuid';
 import { useDebounce } from 'use-debounce';
+import { Link } from 'react-router-dom';
 
 const UserPage: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -178,8 +179,9 @@ const UserPage: React.FC = () => {
                                                 <tbody>
                                                     {users.map((user) => (
                                                         <tr key={uuidv4()}>
-                                                            <td>{user.id}
-                                                                {dayjs().diff(dayjs(user.createdOnUtc), 'day') > 0 && dayjs().diff(dayjs(user.createdOnUtc), 'day') < 7
+                                                            <td>
+                                                                <Link className="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" to={`/users/${user.id}`}>{user.id}</Link>                                                       
+                                                                {dayjs().diff(dayjs(user.createdOnUtc), 'day') >= 0 && dayjs().diff(dayjs(user.createdOnUtc), 'day') < 7
                                                                     && <span className="badge bg-soft-success">New</span>}
                                                             </td>
                                                             <td>{user.fullName}</td>

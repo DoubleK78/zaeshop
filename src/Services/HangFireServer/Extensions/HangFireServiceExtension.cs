@@ -41,6 +41,21 @@ namespace HangFireServer.Extensions
 
             // 30 Minutes to calculate exps from redis
             RecurringJob.AddOrUpdate<ILevelService>(HangfireJobName.CalculateExperiencesFromRedis, x => x.CalculateExperiencesFromRedisTaskAsync(), "*/30 * * * *");
+
+            // 12 Hours to send email noti
+            RecurringJob.AddOrUpdate<IEmailService>(HangfireJobName.SendEmailSPremiumFollowers, x => x.SendEmailToFollowersTaskAsync(), "0 */12 * * *");
+
+            // 1 Hours to reset role user
+            RecurringJob.AddOrUpdate<IUserService>(HangfireJobName.ResetRoleUsers, x => x.ResetRoleTaskAsync(), "0 */1 * * *");
+        
+            // 5 Minutes to check hangfire job is still running start StartOnUtc > endOnUtc + 5m then stop running status
+            RecurringJob.AddOrUpdate<ILevelService>(HangfireJobName.ResetJobNotUpdateRunningStatus, x => x.ResetJobNotUpdateRunningStatus(), "*/5 * * * *");
+
+            // 30 Minutes to reset level public
+            RecurringJob.AddOrUpdate<IAlbumService>(HangfireJobName.ResetLevelPublic, x => x.ResetLevelPublicTaskAsync(), "*/30 * * * *");
+
+            // 30 Minutes to reset level public
+            RecurringJob.AddOrUpdate<ICollectionService>(HangfireJobName.ResetLevelPublicChap, x => x.ResetLevelPublicTaskAsync(), "*/30 * * * *");
         }
     }
 }

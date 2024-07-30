@@ -13,14 +13,12 @@ namespace Portal.Domain.Models.AlbumModels
         public int? AlbumAlertMessageId { get; set; }
         public List<int>? ContentTypeIds { get; set; }
         public bool? IsPublic { get; set; }
-        public string? FileName { get; set; }
-        public string? Base64File { get; set; }
-        public byte[]? FileData => !string.IsNullOrEmpty(Base64File) ? Convert.FromBase64String(Base64File) : null;
+
+        public string? FileNameThumbnail { get; set; }
         public bool IsUpdateThumbnail { get; set; }
-        public string? FileNameOriginal { get; set; }
-        public string? Base64FileOriginal { get; set; }
-        public byte[]? FileDataOriginal => !string.IsNullOrEmpty(Base64FileOriginal) ? Convert.FromBase64String(Base64FileOriginal) : null;
-        public bool IsUpdateOriginalUrl { get; set; }
+        public string? FileNameBackground { get; set; }
+        public bool IsUpdateBackground { get; set; }
+
 
         [Required(ErrorMessage = "error_album_region_is_required")]
         public string Region { get; set; } = null!;

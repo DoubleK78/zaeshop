@@ -351,3 +351,5 @@ MigrationBackup/
 
 # Others
 dotnet-install.sh
+docker-compose.development.yml
+appsettings.Development.json

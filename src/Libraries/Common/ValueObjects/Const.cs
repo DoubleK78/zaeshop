@@ -12,6 +12,9 @@ namespace Common.ValueObjects
             public const string ComicContent = "ComicContent_ComicFriendlyName_{0}_ContentFriendlyName_{1}";
             public const string ViewCount = "ViewCount_{0}";
             public const string LevelCount = "LevelCount_{0}";
+            public const string ComicDetail = "/api/client/comicapp/{0}";
+            public const string ComicPagingPattern = "*/api/client/comicapp/paging*";
+            public const string UserRankingPagingPattern = "*/api/user/ranking*";
         }
 
         public static class ServiceLogEventName
@@ -27,6 +30,11 @@ namespace Common.ValueObjects
         {
             public const string CalculateViewsFromRedis = "Calculate Views From Redis";
             public const string CalculateExperiencesFromRedis = "Calculate Experiences From Redis";
+            public const string SendEmailSPremiumFollowers = "Send notification to SPremium followers";
+            public const string ResetRoleUsers = "Reset role users";
+            public const string ResetJobNotUpdateRunningStatus = "Reset Job Not Update Running Status";
+            public const string ResetLevelPublic = "Reset level public";
+            public const string ResetLevelPublicChap = "Reset level public chap";
         }
     }
 }

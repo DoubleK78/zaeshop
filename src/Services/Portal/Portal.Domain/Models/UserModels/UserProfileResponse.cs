@@ -1,4 +1,4 @@
-using Portal.Domain.Enums;
+using Common.Enums;
 
 namespace Portal.Domain.Models.UserModels
 {

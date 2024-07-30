@@ -1,4 +1,6 @@
+using System.Text;
 using Common;
+using Common.Enums;
 using Common.Shared.Models.Users;
 using MassTransit;
 using Portal.Domain.AggregatesModel.UserAggregate;
@@ -12,11 +14,13 @@ namespace HangFireServer.Messaging.Comsumers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<User> _userRepository;
+        private readonly IGenericRepository<UserActivityLog> _userActivityLogRepository;
 
         public SyncRolesPortalComsumer(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _userRepository = unitOfWork.Repository<User>();
+            _userActivityLogRepository = unitOfWork.Repository<UserActivityLog>();
         }
 
         public async Task Consume(ConsumeContext<SyncRolesPortalMessage> context)
@@ -53,6 +57,37 @@ namespace HangFireServer.Messaging.Comsumers
             {
                 user.RoleType = ERoleType.User;
             }
+
+            #region Update Subscription from new roles
+            if (syncRolesMessage.IsUpdateSubscription)
+            {
+                // Log
+                var descriptionBuilder = new StringBuilder();
+                if (syncRolesMessage.OldRoleType != syncRolesMessage.NewRoleType)
+                {
+                    descriptionBuilder.AppendFormat("Upgrade Subscription: {0} -> {1}\n", CommonHelper.GetSubscriptionByRoleType(syncRolesMessage.OldRoleType, syncRolesMessage.Days), CommonHelper.GetSubscriptionByRoleType(syncRolesMessage.NewRoleType, syncRolesMessage.Days));
+                    descriptionBuilder.AppendFormat("Role: {0} -> {1}\n", CommonHelper.GetDescription(syncRolesMessage.OldRoleType), CommonHelper.GetDescription(syncRolesMessage.NewRoleType));
+                }
+                else
+                {
+                    descriptionBuilder.AppendFormat("Extend Subscription: {0}\n", CommonHelper.GetSubscriptionByRoleType(syncRolesMessage.OldRoleType, syncRolesMessage.Days));
+                }
+
+                if (user.ExpriedRoleDate != syncRolesMessage.ExpriedRoleDate)
+                {
+                    descriptionBuilder.AppendFormat("ExpriedRoleDate: {0} -> {1}\n", user.ExpriedRoleDate, syncRolesMessage.ExpriedRoleDate);
+                    user.ExpriedRoleDate = syncRolesMessage.ExpriedRoleDate;
+                }
+
+                var userActivityLog = new UserActivityLog
+                {
+                    UserId = user.Id,
+                    ActivityType = EActivityType.Subscription,
+                    Description = descriptionBuilder.ToString()
+                };
+                _userActivityLogRepository.Add(userActivityLog);
+            }
+            #endregion
 
             _userRepository.Update(user);
             await _unitOfWork.SaveChangesAsync();

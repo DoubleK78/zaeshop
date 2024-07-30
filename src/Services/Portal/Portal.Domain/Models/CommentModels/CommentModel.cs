@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Common.Enums;
 using Common.Models;
-using Portal.Domain.Enums;
 
 namespace Portal.Domain.Models.CommentModels
 {

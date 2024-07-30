@@ -2,6 +2,7 @@ using System.Net;
 using Grpc.Core;
 using Portal.API.Extensions;
 using Portal.Domain.AggregatesModel.UserAggregate;
+using Portal.Domain.Enums;
 using PortalGrpc;
 
 namespace Portal.API.Controllers
@@ -113,7 +114,8 @@ namespace Portal.API.Controllers
                 FullName = request.FullName,
                 Email = request.Email,
                 UserName = request.UserName,
-                Avatar = request.Avatar
+                Avatar = request.Avatar,
+                Region = request.Region?.ToLower() == "vi" ? ERegion.vi : ERegion.en
             };
 
             _unitOfWork.Repository<User>().Add(user);

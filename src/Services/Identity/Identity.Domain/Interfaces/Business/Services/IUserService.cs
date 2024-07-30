@@ -15,5 +15,7 @@ namespace Identity.Domain.Business.Interfaces.Services
         Task<PagingCommonResponse<UserPaging>> GetPagingAsync(PagingCommonRequest model);
         Task<PagingCommonResponse<RolePaging>> GetRolesPagingAsync(int pageNumber, int pageSize);
         Task<User?> GetByProviderAccountIdAsync(string providerAccountId);
+        Task<ServiceResponse<UserRoleSubcriptionModel>> GetUserRoleSubcriptionAsync(string userId);
+        Task<string?> UpdateUserRoleFromSubscriptionAsync(UserRoleSubcriptionRequestModel requestModel);
     }
 }

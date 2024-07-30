@@ -447,7 +447,9 @@ namespace Identity.Infrastructure.Implements.Business.Services
                     // Flag to check Client registered
                     IsClientRegistered = true,
                     CreatedOnUtc = DateTime.UtcNow,
-                    Avatar = model.Image
+                    Avatar = model.Image,
+                    EmailConfirmed = model.EmailVerified,
+                    Region = model.Region
                 };
 
                 // Create account
@@ -464,7 +466,8 @@ namespace Identity.Infrastructure.Implements.Business.Services
                     FullName = user.FullName,
                     Email = user.Email,
                     UserName = user.UserName,
-                    Avatar = user.Avatar
+                    Avatar = user.Avatar,
+                    Region = user.Region
                 });
 
                 if (resultApi != null && !resultApi.IsSuccess)
@@ -491,10 +494,11 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
             }
-            else if (user.FullName != model.Name.Split(' ').FirstOrDefault() || user.Avatar != model.Image)
+            else if (user.FullName != model.Name.Split(' ').FirstOrDefault() || user.Avatar != model.Image || user.Region != model.Region)
             {
                 user.FullName = model.Name.Split(' ').FirstOrDefault() ?? string.Empty;
                 user.Avatar = model.Image;
+                user.Region = model.Region;
                 user.UpdatedOnUtc = DateTime.UtcNow;
 
                 _context.Users.Update(user);
@@ -506,7 +510,8 @@ namespace Identity.Infrastructure.Implements.Business.Services
                     IdentityUserId = user.Id,
                     FullName = user.FullName,
                     Avatar = user.Avatar,
-                    IsUpdateAvatar = true
+                    IsUpdateAvatar = true,
+                    Region = user.Region
                 });
             }
 

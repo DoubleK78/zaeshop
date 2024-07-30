@@ -14,15 +14,15 @@ using Common.Interfaces.Messaging;
 using Common.Implements.Messaging;
 using Identity.Domain.Interfaces.Messaging;
 using Identity.Infrastructure.Implements.Messaging;
+using System.Reflection;
 
 namespace Identity.API.Extensions
 {
     public static class IdentityServiceExtensions
     {
-        public static IServiceCollection AddIdentityServices(this IServiceCollection services,
-          IConfiguration config)
+        public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
         {
-            services.AddDbContext<AppIdentityDbContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(config.GetConnectionString("IdentityConnection")));
+            services.AddDbContextPool<AppIdentityDbContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(config.GetConnectionString("IdentityConnection")));
             services.AddDataProtection();
             services.AddSingleton(TimeProvider.System);
 
@@ -40,6 +40,9 @@ namespace Identity.API.Extensions
 
             services.AddMassTransit(x =>
             {
+                var entryAssembly = Assembly.GetExecutingAssembly();
+                x.AddConsumers(entryAssembly);
+
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host(config.GetSection("RabitMQSettings").GetValue<string>("Hostname"), 5671, config.GetSection("RabitMQSettings").GetValue<string>("VHost"), h =>
@@ -51,6 +54,8 @@ namespace Identity.API.Extensions
                             s.Protocol = SslProtocols.Tls12;
                         });
                     });
+
+                    cfg.ConfigureEndpoints(context);
                 });
             });
 

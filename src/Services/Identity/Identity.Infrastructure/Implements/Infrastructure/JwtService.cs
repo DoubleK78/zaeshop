@@ -28,7 +28,7 @@ namespace Identity.Infrastructure.Implements.Infrastructure
             _userManager = userManager;
         }
 
-        public string GenerateJwtToken(User user, int expirationInMinutes = 15)
+        public string GenerateJwtToken(User user, int expirationInMinutes = 60)
         {
             var roles = _userManager.GetRolesAsync(user).Result;
 

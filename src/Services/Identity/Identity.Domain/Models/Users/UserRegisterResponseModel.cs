@@ -14,5 +14,6 @@ namespace Identity.Domain.Models.Users
         public string Email { get; set; } = null!;
         public string? UserName { get; set; }
         public string? Avatar { get; set; }
+        public string? Region { get; set; }
     }
 }

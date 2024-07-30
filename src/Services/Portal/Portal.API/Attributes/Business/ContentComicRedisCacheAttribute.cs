@@ -17,6 +17,12 @@ namespace Portal.API.Attributes.Business
     {
         private static string? IpAddress(ActionExecutingContext context)
         {
+            var ipAddress = GetIpAddress(context);
+            return ipAddress?.Split(',').FirstOrDefault();
+        }
+
+        private static string? GetIpAddress(ActionExecutingContext context)
+        {
             // get source ip address for the current request
             if (context.HttpContext.Request.Headers.TryGetValue("X-Forwarded-For", out Microsoft.Extensions.Primitives.StringValues value))
                 return value;

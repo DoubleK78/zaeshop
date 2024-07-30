@@ -42,6 +42,7 @@ message SyncUserRequest {
     string Email = 3;
     string UserName = 4;
     string Avatar = 5;
+    string Region = 6;
 }
 
 message SyncUserReply {

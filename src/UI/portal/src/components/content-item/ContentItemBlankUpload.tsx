@@ -108,7 +108,7 @@ const ContentItemBlankUpload: React.FC<ContentItemBlankUploadProps> = ({ id, isC
                                     files={files}
                                     onupdatefiles={onUpdateFiles}
                                     allowMultiple={true}
-                                    maxFiles={250}
+                                    // maxFiles={250}
                                     name="files"
                                     labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
                                     beforeAddFile={(file) => {

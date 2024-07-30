@@ -49,7 +49,7 @@ namespace Portal.API.Controllers
 
             var contentItems = await _contentItemRepository.GetQueryable()
                             .Where(o => o.CollectionId == collection.Id).OrderBy(o => o.OrderBy)
-                            .Select(x => x.DisplayUrl).ToListAsync();
+                            .Select(x => x.RelativeUrl).ToListAsync();
             collection.ContentItems = contentItems;
 
             var result = new ServiceResponse<ContentAppModel>(collection);
@@ -108,7 +108,8 @@ namespace Portal.API.Controllers
                     ContentFriendlyName = o.FriendlyName,
                     ComicTitle = o.Album.Title,
                     ComicFriendlyName = o.Album.FriendlyName,
-                    ComicImageUrl = o.Album.CdnThumbnailUrl
+                    ComicImageUrl = o.Album.CdnThumbnailUrl,
+                    Region = o.Album.Region
                 })
                 .FirstOrDefaultAsync(x => x.ComicFriendlyName == comicFriendlyName && x.ContentFriendlyName == contentFriendlyName);
 
@@ -121,7 +122,8 @@ namespace Portal.API.Controllers
             {
                 ComicTitle = collectionMetadata.ComicTitle,
                 ContentTitle = collectionMetadata.ContentTitle,
-                ComicImageUrl = collectionMetadata.ComicImageUrl
+                ComicImageUrl = collectionMetadata.ComicImageUrl,
+                Region = collectionMetadata.Region
             });
         }
     }

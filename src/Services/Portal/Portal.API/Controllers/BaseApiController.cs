@@ -15,6 +15,12 @@ namespace Portal.API.Controllers
         [NonAction]
         public string? IpAddress()
         {
+            var ipAddress = GetIpAddress();
+            return ipAddress?.Split(',').FirstOrDefault();
+        }
+
+        private string? GetIpAddress()
+        {
             // get source ip address for the current request
             if (Request.Headers.TryGetValue("X-Forwarded-For", out Microsoft.Extensions.Primitives.StringValues value))
                 return value;

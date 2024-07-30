@@ -10,11 +10,13 @@ using Common.Interfaces.Messaging;
 using Common.Models.Redis;
 using EmailHelper.Models;
 using EmailHelper.Services;
+using HangFireServer.Messaging.Publishers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Portal.Domain.Interfaces.External;
 using Portal.Domain.Interfaces.Infrastructure;
+using Portal.Domain.Interfaces.Messaging;
 using Portal.Domain.SeedWork;
 using Portal.Infrastructure;
 using Portal.Infrastructure.Helpers;
@@ -29,7 +31,7 @@ public static class PortalServiceExtensions
 {
     public static IServiceCollection AddPortalServices(this IServiceCollection services, IConfiguration config)
     {
-        services.AddDbContext<ApplicationDbContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(config.GetConnectionString("PortalConnection")));
+        services.AddDbContextPool<ApplicationDbContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(config.GetConnectionString("PortalConnection")));
         services.Configure<AppSettings>(config.GetSection("AppSettings"));
         services.Configure<SmtpSettings>(config.GetSection("SmtpSettings"));
         services.AddScoped<IAmazonS3>(x => new AmazonS3Client(config["AWS:AccessKey"], config["AWS:SecretKey"], RegionEndpoint.USEast1));
@@ -43,6 +45,7 @@ public static class PortalServiceExtensions
 
         services.AddScoped<IRedisService>(x => new RedisService(x.GetRequiredService<IDistributedCache>(), new RedisOptions
         {
+            ConnectionString = config.GetConnectionString("RedisConnection") ?? string.Empty,
             Host = config.GetSection("RedisSettings").GetValue<string>("Host") ?? string.Empty,
             Port = config.GetSection("RedisSettings").GetValue<string>("Port") ?? string.Empty,
             InstanceName = "Portal"
@@ -72,6 +75,7 @@ public static class PortalServiceExtensions
         // Portal registers publishers for MassTransit
         services.AddScoped<ISendMailPublisher, SendMailPublisher>();
         services.AddScoped<IServiceLogPublisher, ServiceLogPublisher>();
+        services.AddScoped<ISyncResetExpiredRolePublisher, SyncResetExpiredRolePublisher>();
 
         // Inject Services
         services.AddScoped<IApiService, ApiService>();
@@ -81,18 +85,19 @@ public static class PortalServiceExtensions
 
         // Hangfire use service differnce than Portal
         #region Email Service
-        var appSettingsConfig = config.GetSection("AppSettings");
+        var appSettingsConfig = config.GetSection("SmtpSettings");
         var options = new EmailOptions
         {
             Environment = appSettingsConfig.GetValue<string>("Environment"),
-            SmtpServer = appSettingsConfig.GetValue<string>("SmtpServer"),
-            SmtpPort = appSettingsConfig.GetValue<int>("SmtpPort"),
-            SmtpUser = appSettingsConfig.GetValue<string>("SmtpUser"),
-            SmtpPassword = appSettingsConfig.GetValue<string>("SmtpPass"),
-            MailFrom = appSettingsConfig.GetValue<string>("EmailFrom"),
+            SmtpServer = appSettingsConfig.GetValue<string>("Host"),
+            SmtpPort = appSettingsConfig.GetValue<int>("Port"),
+            SmtpUser = appSettingsConfig.GetValue<string>("Username"),
+            SmtpPassword = appSettingsConfig.GetValue<string>("Password"),
+            MailFrom = appSettingsConfig.GetValue<string>("SenderEmail"),
+            SenderName = appSettingsConfig.GetValue<string>("SenderName"),
         };
         services.AddScoped<IEmailService>(x =>
-            new EmailMockupService(options)
+            new EmailService(options)
         );
         #endregion
 

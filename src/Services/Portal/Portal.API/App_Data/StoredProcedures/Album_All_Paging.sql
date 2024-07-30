@@ -83,6 +83,31 @@ BEGIN
 		END
 	END
 
+	/* Genere Filter */
+	CREATE TABLE #genereAlbums(AlbumId INT)
+	IF ISNULL(@genre, '') <> ''
+	BEGIN
+		INSERT INTO #genereAlbums
+		SELECT a.Id AS AlbumId
+		FROM dbo.Album a
+		WHERE EXISTS (
+		    SELECT 1
+		    FROM (
+		        SELECT act.AlbumId, STRING_AGG(CAST(act.ContentTypeId AS VARCHAR(10)), ',') AS ContentTypeIds
+		        FROM dbo.AlbumContentType act
+		        GROUP BY act.AlbumId
+		    ) AS act_agg
+		    CROSS JOIN STRING_SPLIT(CASE WHEN ',' + @genre + ',' LIKE '%,%' THEN @genre ELSE ',' + @genre + ',' END, ',') s
+		    WHERE act_agg.AlbumId = a.Id
+		    AND ',' + act_agg.ContentTypeIds + ',' LIKE '%,' + CAST(TRIM(s.value) AS VARCHAR(10)) + ',%'
+		    GROUP BY act_agg.AlbumId
+		    HAVING COUNT(DISTINCT CAST(TRIM(s.value) AS INT)) = (
+		        SELECT COUNT(DISTINCT CAST(TRIM(value) AS INT))
+		        FROM STRING_SPLIT(CASE WHEN ',' + @genre + ',' LIKE '%,%' THEN @genre ELSE ',' + @genre + ',' END, ',')
+		    )
+		)
+	END
+
     ;WITH FilteredData
     AS (
 		SELECT ROW_NUMBER() OVER (ORDER BY
@@ -123,6 +148,7 @@ BEGIN
 			   a.Region
         FROM dbo.Album a
 			LEFT JOIN #topAlbums ta ON ta.AlbumId = a.Id
+			LEFT JOIN #genereAlbums ga ON ga.AlbumId = a.Id
 			LEFT JOIN dbo.AlbumAlertMessage aam ON aam.Id = a.AlbumAlertMessageId
 			LEFT JOIN dbo.AlbumContentType act ON act.AlbumId = a.Id
 			LEFT JOIN dbo.ContentType ct ON ct.Id = act.ContentTypeId
@@ -138,11 +164,9 @@ BEGIN
 			(a.Tags LIKE '%' + @searchTerm + '%'))
 			AND (ISNULL(@firstChar, '') = '' OR
 			(a.FriendlyName LIKE @firstChar + '%'))
-			AND (ISNULL(@genre, '') = '' OR
-				(SELECT COUNT(*) FROM STRING_SPLIT(@genre, ',') g
-				 WHERE CHARINDEX(CAST(g.value AS VARCHAR(10)), ct.Id) > 0) = (SELECT COUNT(*) FROM STRING_SPLIT(@genre, ',')))
+			AND (ISNULL(@genre, '') = '' OR ga.AlbumId IS NOT NULL)
 			AND (ISNULL(@year, '') = '' OR (a.ReleaseYear LIKE @year + '%'))
-			AND (a.AlbumStatus = @status)
+			AND (ISNULL(@status, '') = '' OR (a.AlbumStatus = @status))
 			AND (ISNULL(@topType, '') = '' OR ta.ViewByTopType IS NOT NULL)
 			AND a.Region = @region
         GROUP BY a.Id,
@@ -193,4 +217,5 @@ BEGIN
 		BETWEEN @offset + 1 AND @offset + @pageSize
 
     DROP TABLE #topAlbums
+	DROP TABLE #genereAlbums
 END

@@ -216,6 +216,54 @@ namespace Portal.Infrastructure.Migrations
                     b.ToTable("Following", (string)null);
                 });
 
+            modelBuilder.Entity("Portal.Domain.AggregatesModel.AlbumAggregate.ScheduleAlbum", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BackgroundUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DateRelease")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Region")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TimeRelease")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ScheduleAlbum", (string)null);
+                });
+
             modelBuilder.Entity("Portal.Domain.AggregatesModel.CollectionAggregate.Collection", b =>
                 {
                     b.Property<int>("Id")
@@ -243,6 +291,9 @@ namespace Portal.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<int>("LevelPublic")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StorageType")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -289,10 +340,10 @@ namespace Portal.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("IpAddress")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("SessionId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime?>("UpdatedOnUtc")
                         .HasColumnType("datetime2");
@@ -373,23 +424,23 @@ namespace Portal.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DisplayUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varchar(250)");
 
                     b.Property<bool>("IsPublic")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varchar(250)");
 
                     b.Property<int>("OrderBy")
                         .HasColumnType("int");
 
                     b.Property<string>("OriginalUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varchar(550)");
 
                     b.Property<string>("RelativeUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varchar(550)");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -401,7 +452,7 @@ namespace Portal.Infrastructure.Migrations
 
                     b.HasIndex("CollectionId");
 
-                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("CollectionId"), new[] { "DisplayUrl" });
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("CollectionId"), new[] { "RelativeUrl" });
 
                     b.ToTable("ContentItem", (string)null);
                 });
@@ -510,6 +561,9 @@ namespace Portal.Infrastructure.Migrations
                     b.Property<int>("NextLevelExp")
                         .HasColumnType("int");
 
+                    b.Property<int>("Region")
+                        .HasColumnType("int");
+
                     b.Property<int>("RoleType")
                         .HasColumnType("int");
 
@@ -534,6 +588,45 @@ namespace Portal.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("User", (string)null);
+                });
+
+            modelBuilder.Entity("Portal.Domain.AggregatesModel.UserAggregate.UserActivityLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActivityType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpV4Address")
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("IpV6Address")
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<int>("LogTimes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserActivityLog", (string)null);
                 });
 
             modelBuilder.Entity("Portal.Domain.AggregatesModel.UserAggregate.UserConnection", b =>
@@ -590,13 +683,13 @@ namespace Portal.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("IpAddress")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("LevelId")
                         .HasColumnType("int");
 
                     b.Property<string>("SessionId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime?>("UpdatedOnUtc")
                         .HasColumnType("datetime2");
@@ -739,6 +832,17 @@ namespace Portal.Infrastructure.Migrations
                     b.Navigation("Level");
                 });
 
+            modelBuilder.Entity("Portal.Domain.AggregatesModel.UserAggregate.UserActivityLog", b =>
+                {
+                    b.HasOne("Portal.Domain.AggregatesModel.UserAggregate.User", "User")
+                        .WithMany("UserActivityLogs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Portal.Domain.AggregatesModel.UserAggregate.UserConnection", b =>
                 {
                     b.HasOne("Portal.Domain.AggregatesModel.UserAggregate.User", "User")
@@ -818,6 +922,8 @@ namespace Portal.Infrastructure.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Followings");
+
+                    b.Navigation("UserActivityLogs");
 
                     b.Navigation("UserConnections");
 

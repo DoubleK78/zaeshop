@@ -6,6 +6,7 @@ using Common.Implements.Messaging;
 using Common.Interfaces;
 using Common.Interfaces.Messaging;
 using Common.Models.Redis;
+using HangFireServer.Messaging.Publishers;
 using MassTransit;
 using Microsoft.Extensions.Caching.Distributed;
 using Portal.API.Hubs;
@@ -14,7 +15,6 @@ using Portal.Domain.Interfaces.Infrastructure;
 using Portal.Domain.Interfaces.Messaging;
 using Portal.Infrastructure;
 using Portal.Infrastructure.Implements.External;
-using Portal.Infrastructure.Implements.Messaging;
 using Portal.Infrastructure.Implements.Services;
 using Portal.Infrastructure.SeedWork;
 
@@ -23,7 +23,7 @@ public static class PortalServiceExtensions
 {
     public static IServiceCollection AddPortalServices(this IServiceCollection services, IConfiguration config)
     {
-        services.AddDbContext<ApplicationDbContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(config.GetConnectionString("PortalConnection")));
+        services.AddDbContextPool<ApplicationDbContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(config.GetConnectionString("PortalConnection")));
         services.Configure<AppSettings>(config.GetSection("AppSettings"));
 
         services.AddScoped<IAmazonS3>(x => new AmazonS3Client(config["AWS:AccessKey"], config["AWS:SecretKey"], RegionEndpoint.USEast1));
@@ -37,6 +37,7 @@ public static class PortalServiceExtensions
 
         services.AddScoped<IRedisService>(x => new RedisService(x.GetRequiredService<IDistributedCache>(), new RedisOptions
         {
+            ConnectionString = config.GetConnectionString("RedisConnection") ?? string.Empty,
             Host = config.GetSection("RedisSettings").GetValue<string>("Host") ?? string.Empty,
             Port = config.GetSection("RedisSettings").GetValue<string>("Port") ?? string.Empty,
             InstanceName = "Portal"
@@ -59,9 +60,9 @@ public static class PortalServiceExtensions
         });
 
         // Portal registers publishers for MassTransit
-        services.AddScoped<IHelloWorldPublisher, HelloWorldPublisher>();
         services.AddScoped<ISendMailPublisher, SendMailPublisher>();
         services.AddScoped<IServiceLogPublisher, ServiceLogPublisher>();
+        services.AddScoped<ISyncResetExpiredRolePublisher, SyncResetExpiredRolePublisher>();
 
         // Inject Services
         services.AddScoped<IApiService, ApiService>();

@@ -45,15 +45,18 @@ namespace Identity.Domain.Models.Authenticates
     public class AuthenticateWithRolesResponse : AuthenticateResponse
     {
         public List<string> Roles { get; set; } = null!;
+        public DateTime? ExpriedRoleDate { get; set; }
 
         public AuthenticateWithRolesResponse(User user, string? jwtToken, UserToken userToken, List<string> roles) : base(user, jwtToken, userToken)
         {
             Roles = roles;
+            ExpriedRoleDate = user?.ExpriedRoleDate;
         }
 
         public AuthenticateWithRolesResponse(User user, string? jwtToken, List<string> roles) : base(user, jwtToken)
         {
             Roles = roles;
+            ExpriedRoleDate = user?.ExpriedRoleDate;
         }
 
         public AuthenticateWithRolesResponse()

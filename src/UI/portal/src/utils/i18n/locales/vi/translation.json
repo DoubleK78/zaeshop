@@ -5,6 +5,7 @@
     "error_album_not_found": "Không tìm thấy Album",
     "error_album_name_is_required": "Tên album là bắt buộc",
     "error_album_region_is_required": "Khu vực album là bắt buộc",
+    "error_upgrade_not_support_downgrade": "Đăng ký vai trò không hỗ trợ hạ cấp",
     "toast": {
         "please_wait": "Vui lòng đợi...",
         "login_sucessfully": "Đăng nhập thành công",
@@ -181,7 +182,13 @@
         "sort_direction_label": "Hướng Sắp Xếp: ",
         "sort_direction_asc": "Tăng Dần",
         "sort_direction_desc": "Giảm Dần",
-        "clear_cache": "Xóa Bộ Nhớ Cache"
+        "clear_cache": "Xóa Bộ Nhớ Cache",
+        "bulk_create": "Tạo Hàng Loạt",
+        "bulk_create_sub_title": "Tạo hàng loạt chỉ với một cú nhấp chuột",
+        "bulk_create_sub_description": "Tạo nhiều chương và tải lên hàng loạt hình ảnh cho mỗi chương",
+        "bulk_create_Preview": "Xem Trước",
+        "spre_priority": "Ưu tiên S-Premium",
+        "level_public": "Level Public"
     },
     "content_item": {
         "title": "Tải lên hình ảnh",
@@ -200,5 +207,30 @@
         "upload_cloud_server": "Tải lên máy chủ đám mây",
         "lazy_loading_images": "Hiển thị ảnh khi cần thiết",
         "coppy_links_to_clipboard": "Sao chép liên kết vào clipboard"
+    },
+    "role_subscription": {
+        "title": "Đăng ký vai trò",
+        "activity_header": "Hoạt động",
+        "activity_id": "ID",
+        "activity_type": "Loại",
+        "activity_description": "Mô tả",
+        "activity_ipv4_address": "Địa chỉ IPv4",
+        "activity_ipv6_address": "Địa chỉ IPv6",
+        "activity_created_on": "Được Tạo Lúc",
+        "expired_date": "Ngày Hết Hạn",
+        "username": "Tên người dùng",
+        "email": "Email",
+        "created_on": "Được Tạo Lúc",
+        "role": "Vai trò",
+        "update_subscription": "Cập Nhật Đăng Ký",
+        "day": "Ngày",
+        "submit": "Gửi",
+        "reset": "Đặt Lại",
+        "current_roles": "Vai Trò Hiện Tại",
+        "days": "Ngày",
+        "none": "Không",
+        "forever": "Mãi mãi",
+        "subscription": "Đăng Ký",
+        "payment": "Thanh Toán"
     }
 }

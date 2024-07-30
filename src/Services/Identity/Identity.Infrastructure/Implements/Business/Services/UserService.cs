@@ -250,5 +250,126 @@ namespace Identity.Infrastructure.Implements.Business.Services
             var user = await _context.Users.FirstOrDefaultAsync(o => o.ProviderAccountId == providerAccountId);
             return user;
         }
+
+        public async Task<ServiceResponse<UserRoleSubcriptionModel>> GetUserRoleSubcriptionAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new ServiceResponse<UserRoleSubcriptionModel>("error_user_not_found");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var currentRoleType = CommonHelper.GetRoleType([.. roles]);
+
+            return new ServiceResponse<UserRoleSubcriptionModel>(new UserRoleSubcriptionModel
+            {
+                UserId = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Username = user.UserName,
+                Avatar = user.Avatar,
+                Role = CommonHelper.GetDescription(currentRoleType),
+                ExpriedRoleDate = user.ExpriedRoleDate,
+                CreatedOnUtc = user.CreatedOnUtc
+            });
+        }
+
+        public async Task<string?> UpdateUserRoleFromSubscriptionAsync(UserRoleSubcriptionRequestModel requestModel)
+        {
+            var user = await _userManager.FindByIdAsync(requestModel.UserId);
+            if (user == null)
+            {
+                return "error_user_not_found";
+            }
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var currentUserRole = CommonHelper.GetRoleType([.. userRoles]);
+            var newRoleType = CommonHelper.GetRoleType([requestModel.Role]);
+
+            #region Validate
+            // Add new roles
+            var isValidRole = await _roleManager.Roles.AnyAsync(r => r.Name == requestModel.Role);
+            if (!isValidRole)
+            {
+                return "error_role_not_found";
+            }
+
+            // Three roles in subscription, other roles that we can use Edit User Feature
+            if (newRoleType != ERoleType.User && newRoleType != ERoleType.UserPremium && newRoleType != ERoleType.UserSuperPremium)
+            {
+                return "error_role_not_in_subscription";
+            }
+
+            // User can upgrade but not support downgrade
+            if (newRoleType < currentUserRole)
+            {
+                return "error_upgrade_not_support_downgrade";
+            }
+            #endregion
+
+            // Remove current roles
+            if (userRoles.Any())
+            {
+                await _userManager.RemoveFromRolesAsync(user, userRoles);
+            }
+
+            await _userManager.AddToRolesAsync(user, [requestModel.Role]);
+
+            // Update expries role for user
+            // Case 1: New role subscription from user -> DateTime.UtcNow + days
+            // Case 2: Same role subscription -> Increase expries date
+            // Case 3: New role subscription from user premium to user super premium
+            // Calculate and convert expries date of current role user premium = 10 % remaining days and add days
+            if (newRoleType != ERoleType.User && requestModel.Days.HasValue)
+            {
+                // Case 1
+                if (currentUserRole == ERoleType.User)
+                {
+                    user.ExpriedRoleDate = DateTime.UtcNow.AddDays(requestModel.Days.Value);
+                }
+                // Case 2
+                else if (currentUserRole == newRoleType)
+                {
+                    if (user.ExpriedRoleDate.HasValue)
+                    {
+                        user.ExpriedRoleDate = user.ExpriedRoleDate.Value.AddDays(requestModel.Days.Value);
+                    }
+                    else
+                    {
+                        user.ExpriedRoleDate = DateTime.UtcNow.AddDays(requestModel.Days.Value);
+                    }
+                }
+                // Case 3
+                else if (currentUserRole == ERoleType.UserPremium && newRoleType == ERoleType.UserSuperPremium && user.ExpriedRoleDate.HasValue)
+                {
+                    var remainDays = Math.Abs(DateTime.UtcNow.Subtract(user.ExpriedRoleDate.Value).Days);
+                    // Assume ExpriedRoleDate is expired then remain will be zero
+                    var trueRemainDays = remainDays > 0 ? remainDays : 0;
+
+                    user.ExpriedRoleDate = DateTime.UtcNow.AddDays((double)requestModel.Days + trueRemainDays * 0.1);
+                }
+            }
+            else
+            {
+                user.ExpriedRoleDate = null;
+            }
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            // Sync to Portal and logs
+            await _syncRolesPortalPublisher.SyncRolesPortalAsync(new SyncRolesPortalMessage
+            {
+                Days = requestModel.Days,
+                IsUpdateSubscription = true,
+                IdentityUserId = user.Id,
+                Roles = [requestModel.Role],
+                OldRoleType = currentUserRole,
+                NewRoleType = newRoleType,
+                ExpriedRoleDate = user.ExpriedRoleDate
+            });
+
+            return string.Empty;
+        }
     }
 }

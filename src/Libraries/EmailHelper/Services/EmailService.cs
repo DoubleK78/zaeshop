@@ -23,7 +23,7 @@ namespace EmailHelper.Services
         {
             var message = new MailMessage
             {
-                From = new MailAddress(_emailOptions.SmtpUser ?? string.Empty, _emailOptions.MailFrom)
+                From = new MailAddress(_emailOptions.MailFrom ?? string.Empty, _emailOptions.SenderName)
             };
 
             //to emails

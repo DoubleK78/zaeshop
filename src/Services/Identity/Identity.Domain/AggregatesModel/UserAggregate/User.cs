@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Identity.Domain.SeedWork;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +20,13 @@ namespace Identity.Domain.AggregatesModel.UserAggregate
         public bool IsClientRegistered { get; set; }
 
         public string? Avatar { get; set; }
+        public DateTime? ExpriedRoleDate { get; set; }
+
+        /// <summary>
+        /// Current user locale from Google provided
+        /// </summary>
+        [Column(TypeName = "varchar(15)")]
+        public string? Region { get; set; }
 
         public DateTime CreatedOnUtc { get; set; }
         public DateTime? UpdatedOnUtc { get; set; }

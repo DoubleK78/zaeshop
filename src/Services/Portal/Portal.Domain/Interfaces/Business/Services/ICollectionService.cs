@@ -15,5 +15,8 @@ namespace Portal.Domain.Interfaces.Business.Services
         Task AddViewFromUserToRedisAsync(CollectionViewUserBuildModel model);
         Task CalculateViewsFromRedisTaskAsync();
         Task<ServiceResponse<CollectionResponseModel>> GetByIdAsync(int id);
+        Task<ServiceResponse<string>> BulkCreateAsync(int albumId, List<BulkCreateCollectionRequest> collections);
+        Task CaclculateViewsFromRedisAsync();
+        Task ResetLevelPublicTaskAsync();
     }
 }

@@ -3,6 +3,18 @@
 version: '3.4'
 
 services:
+  envoy:
+    image: envoyproxy/envoy:tools-v1.27-latest
+    volumes:
+      - ./envoy/envoy.yaml:/etc/envoy/envoy.yaml
+      - ./envoy/https.crt:/etc/ssl/certs/https.crt
+      - ./envoy/key.pem:/etc/ssl/certs/key.pem
+    ports:
+      - "80:80"
+      - "443:443"
+      - "9901:9901"
+    networks:
+      - mynetwork
   hangfireserver:
     image: hangfireserver
     build:
@@ -12,6 +24,10 @@ services:
       - 5286:5286
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    networks:
+      - mynetwork
   identity:
     image: identity
     build:
@@ -21,6 +37,11 @@ services:
       - 5287:5287
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT_DEPLOYED=True
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    networks:
+      - mynetwork
   portal:
     image: portal
     build:
@@ -30,3 +51,11 @@ services:
       - 5288:5288
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT_DEPLOYED=True
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    networks:
+      - mynetwork
+networks:
+  mynetwork:
+    driver: bridge

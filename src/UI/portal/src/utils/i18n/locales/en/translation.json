@@ -5,6 +5,7 @@
     "error_album_not_found": "Album not found",
     "error_album_name_is_required": "Album name is required",
     "error_album_region_is_required": "Album region is required",
+    "error_upgrade_not_support_downgrade": "Role subscription not support downgrade",
     "toast": {
         "please_wait": "Please wait...",
         "login_sucessfully": "Login Sucessfully",
@@ -181,7 +182,13 @@
         "sort_direction_label": "Sort Direction: ",
         "sort_direction_asc": "Ascending",
         "sort_direction_desc": "Descending",
-        "clear_cache": "Clear Cache"
+        "clear_cache": "Clear Cache",
+        "bulk_create": "Bulk Create",
+        "bulk_create_sub_title": "Bulk create with one click",
+        "bulk_create_sub_description": "Create multiple chapters and Bulk upload images by each chapter",
+        "bulk_create_Preview": "Preview",
+        "spre_priority": "S-Premium Priority",
+        "level_public": "Level Public"
     },
     "content_item": {
         "title": "Upload images",
@@ -200,5 +207,30 @@
         "upload_cloud_server": "Upload cloud server",
         "lazy_loading_images": "Show Images by Lazy loading mode",
         "coppy_links_to_clipboard": "Copy links to clipboard"
+    },
+    "role_subscription": {
+        "title": "Role Subscription",
+        "activity_header": "Activities",
+        "activity_id": "ID",
+        "acitivy_type": "Type",
+        "activity_description": "Description",
+        "activity_ipv4_address": "IPv4 Address",
+        "activity_ipv6_address": "IPv6 Address",
+        "activity_created_on": "Created On",
+        "expried_date": "Expried Date",
+        "username": "Username",
+        "email": "Email",
+        "created_on": "Created On",
+        "role": "Role",
+        "update_subscription": "Update Subscription",
+        "day": "Day",
+        "submit": "Submit",
+        "reset": "Reset",
+        "current_roles": "Current Roles",
+        "days": "Days",
+        "none": "None",
+        "forever": "Forever",
+        "subscription": "Subscription",
+        "payment": "Payment"
     }
 }

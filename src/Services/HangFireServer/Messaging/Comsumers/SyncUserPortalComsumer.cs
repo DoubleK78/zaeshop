@@ -3,6 +3,7 @@ using MassTransit;
 using Portal.Domain.AggregatesModel.UserAggregate;
 using Portal.Domain.SeedWork;
 using Microsoft.EntityFrameworkCore;
+using Portal.Domain.Enums;
 
 namespace HangFireServer.Messaging.Comsumers
 {
@@ -26,6 +27,7 @@ namespace HangFireServer.Messaging.Comsumers
             {
                 user.FullName = syncUserMessage.FullName;
                 user.Avatar = syncUserMessage.IsUpdateAvatar ? syncUserMessage.Avatar : user.Avatar;
+                user.Region = syncUserMessage.Region?.ToLower() == "vi" ? ERegion.vi : ERegion.en;
 
                 _userRepository.Update(user);
                 await _unitOfWork.SaveChangesAsync();

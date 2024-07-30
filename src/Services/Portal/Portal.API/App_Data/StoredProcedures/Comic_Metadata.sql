@@ -21,13 +21,16 @@ BEGIN
             Title
         from #collectionTmp
         order by ChapterNumber desc ) as LastestChapter,
-        a.CdnThumbnailUrl as [ComicImageUrl]
+        a.CdnThumbnailUrl as [ComicImageUrl],
+		a.Region
     FROM dbo.Album a
     WHERE a.FriendlyName = @comicFriendlyName
     GROUP BY
         a.Id,
         a.Title,
-        a.FriendlyName
+        a.FriendlyName,
+		a.CdnThumbnailUrl,
+		a.Region
 
     drop table #collectionTmp
 END

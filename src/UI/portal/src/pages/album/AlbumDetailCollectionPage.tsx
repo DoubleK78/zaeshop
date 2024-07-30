@@ -143,7 +143,9 @@ const AlbumDetailCollectionPage: React.FC = () => {
                                                             <option value={'title'}>{t('album_detail.sort_column_title')}</option>
                                                             <option value={'createdOnUtc'}>{t('album_detail.sort_column_uploaded_on')}</option>
                                                             <option value={'updatedOnUtc'}>{t('album_detail.sort_column_updated_on')}</option>
-                                                            <option value={'views'}>{t('album_detail.sort_column_views')}</option>                                                        </select>
+                                                            <option value={'views'}>{t('album_detail.sort_column_views')}</option>
+                                                            <option value={'levelPublic'}>{t('album_detail.level_public')}</option>
+                                                        </select>
                                                     </div>
                                                     <div className="col">
                                                         <label>{t('album_detail.sort_direction_label')}</label>
@@ -167,7 +169,8 @@ const AlbumDetailCollectionPage: React.FC = () => {
                                                     <tr>
                                                         <th>{t('album_detail.id')}</th>
                                                         <th>{t('album_detail.title')}</th>
-                                                        <th>{t('album_detail.volume')}</th>
+                                                        <th>{t('album_detail.level_public')}</th>
+                                                        <th>{t('album_detail.volume')}</th>                                     
                                                         <th>{t('album_detail.description')}</th>
                                                         <th>{t('album_detail.created_on')}</th>
                                                         <th>{t('album_detail.updated_on')}</th>
@@ -184,6 +187,7 @@ const AlbumDetailCollectionPage: React.FC = () => {
                                                                     to={`/collections/${collection.id}`}>{collection.title}
                                                                 </Link>
                                                             </td>
+                                                            <td>{collection.levelPublic}</td>
                                                             <td>{collection.volume}</td>
                                                             <td>{collection.description}</td>
                                                             <td>{dayjsCustom.utc(collection.createdOnUtc).local().format('DD-MM-YYYY HH:mm')}</td>
@@ -210,6 +214,10 @@ const AlbumDetailCollectionPage: React.FC = () => {
                                                     onClick={() => openModal(ActionTypeGrid.CREATE)}>
                                                     + {t('user.add_new')}
                                                 </button>
+                                                <Link className="btn btn-primary btn-sm px-4"
+                                                    to={`/albums/${albumId}/bulk-create`}>
+                                                    + {t('album_detail.bulk_create')}
+                                                </Link>
                                             </div>
                                             <div className="col">
                                                 <select className="form-select"

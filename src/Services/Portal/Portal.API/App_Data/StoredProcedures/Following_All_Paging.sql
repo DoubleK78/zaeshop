@@ -25,8 +25,8 @@ BEGIN
             CASE WHEN ISNULL(@sortColumn, '') = '' THEN f.Id END DESC,
             CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN f.CreatedOnUtc END,
             CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN f.CreatedOnUtc END DESC,
-            CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN f.UpdatedOnUtc END,
-            CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN f.UpdatedOnUtc END DESC
+            CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN a.UpdatedOnUtc END,
+            CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN a.UpdatedOnUtc END DESC
         ) AS RowNum,
         f.Id,
         f.UserId,

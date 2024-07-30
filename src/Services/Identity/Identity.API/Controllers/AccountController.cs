@@ -2,7 +2,6 @@ using Identity.API.Attributes;
 using Identity.Domain.Business.Interfaces.Services;
 using Identity.Domain.Models.Authenticates;
 using Identity.Domain.Models.ErrorResponses;
-using Identity.Domain.Models.Users;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.API.Controllers
@@ -95,25 +94,6 @@ namespace Identity.API.Controllers
                 return BadRequest(response);
 
             return Ok(response);
-        }
-
-        [HttpPost("register")]
-        [AllowAnonymous]
-        public async Task<IActionResult> RegisterAsync([FromBody] UserRegisterRequestModel model)
-        {
-            if (!model.IsAcceptTerm)
-            {
-                return BadRequest(new { message = "Accept Term is enabled." });
-            }
-
-            var errorResult = new ErrorResult();
-            var userResponse = await _accountService.RegisterAsync(model, errorResult);
-
-            if (userResponse == null || !string.IsNullOrEmpty(errorResult.Description))
-            {
-                return BadRequest(errorResult);
-            }
-            return Ok(userResponse);
         }
 
         [HttpGet("verify-email")]

@@ -14,5 +14,8 @@ namespace Identity.Domain.Models.Authenticates
         public string Email { get; set; } = null!;
 
         public string? Image { get; set; }
+
+        public string? Region { get; set; }
+        public bool EmailVerified { get; set; }
     }
 }

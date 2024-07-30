@@ -6,5 +6,6 @@ namespace Common.Shared.Models.Users
         public string FullName { get; set; } = null!;
         public string? Avatar { get; set; }
         public bool IsUpdateAvatar { get; set; }
+        public string? Region { get; set; }
     }
 }

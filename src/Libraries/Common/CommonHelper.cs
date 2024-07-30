@@ -91,6 +91,62 @@ namespace Common
             await stream.CopyToAsync(ms);
             return ms.ToArray();
         }
+
+        public static ERoleType GetRoleType(List<string>? roles)
+        {
+            if (roles == null || roles.Count == 0) return ERoleType.User;
+            if (roles.Exists(r => r == GetDescription(ERoleType.Administrator)))
+            {
+                return ERoleType.Administrator;
+            }
+            else if (roles.Exists(r => r == GetDescription(ERoleType.Partner)))
+            {
+                return ERoleType.Partner;
+            }
+            else if (roles.Exists(r => r == GetDescription(ERoleType.UserSuperPremium)))
+            {
+                return ERoleType.UserSuperPremium;
+            }
+            else if (roles.Exists(r => r == GetDescription(ERoleType.UserPremium)))
+            {
+                return ERoleType.UserPremium;
+            }
+            else if (roles.Exists(r => r == GetDescription(ERoleType.User)))
+            {
+                return ERoleType.User;
+            }
+
+            return ERoleType.User;
+        }
+
+        public static string GetSubscriptionByRoleType(ERoleType roleType, int? days)
+        {
+            string subscriptionLevel = string.Empty;
+            if (days == 30)
+            {
+                subscriptionLevel = "1";
+            }
+            else if (days == 90)
+            {
+                subscriptionLevel = "2";
+            }
+            else if (days == 365)
+            {
+                subscriptionLevel = "3";
+            }
+
+            switch (roleType)
+            {
+                case ERoleType.UserSuperPremium:
+                    return "SPremium Lv." + subscriptionLevel;
+                case ERoleType.UserPremium:
+                    return "Premium Lv." + subscriptionLevel;
+                case ERoleType.User:
+                    return "Free";
+            }
+
+            return string.Empty;
+        }
     }
 
     public static class JsonSerializationHelper

@@ -8,14 +8,18 @@ namespace Common.Implements
     public class RedisService : IRedisService
     {
         private readonly IDistributedCache _cache;
+        public readonly string _connectionString;
         private readonly string _host;
         private readonly string _port;
+        private readonly string _instanceName;
 
         public RedisService(IDistributedCache cache, RedisOptions options)
         {
             _cache = cache;
+            _connectionString = options.ConnectionString;
             _host = options.Host;
             _port = options.Port;
+            _instanceName = options.InstanceName;
         }
 
         public T? Get<T>(string key)
@@ -113,19 +117,19 @@ namespace Common.Implements
 
         public void RemoveByPattern(string pattern)
         {
-            var redis = ConnectionMultiplexer.Connect($"{_host}:{_port}");
-            var server = redis.GetServer(_host, _port);
+            var redis = ConnectionMultiplexer.Connect(_connectionString);
+            var server = redis.GetServer($"{_host}:{_port}");
 
             var keys = server.Keys(pattern: pattern);
             foreach (var key in keys)
             {
-                Remove(key.ToString());
+                Remove(key.ToString().Replace(_instanceName, string.Empty));
             }
         }
 
         public void RemoveAllServicesByPattern(string pattern)
         {
-            using ConnectionMultiplexer cm = ConnectionMultiplexer.Connect($"{_host}:{_port}");
+            using ConnectionMultiplexer cm = ConnectionMultiplexer.Connect(_connectionString);
             var database = cm.GetDatabase(0);
             var server = cm.GetServer($"{_host}:{_port}");
 

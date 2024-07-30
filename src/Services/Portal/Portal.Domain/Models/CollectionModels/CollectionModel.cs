@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Common.Enums;
 using Common.Models;
+using Portal.Domain.Enums;
 
 namespace Portal.Domain.Models.CollectionModels
 {
@@ -17,6 +19,12 @@ namespace Portal.Domain.Models.CollectionModels
         public string? ExtendName { get; set; }
 
         public string? Description { get; set; }
+
+        /// <summary>
+        /// Priority for Premium User
+        /// </summary>
+        public bool IsPriority { get; set; }
+        public EStorageType StorageType { get; set; }
     }
 
     public class ContentItemRequestModel
@@ -64,7 +72,8 @@ namespace Portal.Domain.Models.CollectionModels
         public DateTime CreatedOnUtc { get; set; }
         public DateTime? UpdatedOnUtc { get; set; }
 
-        public ulong Views { get; set;}
+        public ulong Views { get; set; }
+        public ELevelPublic LevelPublic { get; set; }
 
         [JsonIgnore]
         public long RowNum { get; set; }

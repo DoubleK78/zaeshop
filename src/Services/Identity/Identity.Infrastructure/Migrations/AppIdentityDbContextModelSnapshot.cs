@@ -50,6 +50,9 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("ExpriedRoleDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
@@ -81,6 +84,9 @@ namespace Identity.Infrastructure.Migrations
 
                     b.Property<string>("ProviderAccountId")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Region")
+                        .HasColumnType("varchar(15)");
 
                     b.Property<DateTime?>("ResetPasswordOnUtc")
                         .HasColumnType("datetime2");

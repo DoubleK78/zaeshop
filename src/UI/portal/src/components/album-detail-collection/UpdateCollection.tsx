@@ -5,7 +5,7 @@ import CollectionRequestModel from "../../models/album-detail-collection/Collect
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import classNames from "classnames";
-import React from "react";
+import React, { useState } from "react";
 
 type UpdateCollectionProps = {
     closeModal: (isReload?: boolean) => void;
@@ -15,6 +15,7 @@ type UpdateCollectionProps = {
 
 const UpdateCollection: React.FC<UpdateCollectionProps> = ({ closeModal, albumId, collection }: UpdateCollectionProps) => {
     const [t] = useTranslation();
+    const [isPriority, setIsPriority] = useState(collection.levelPublic !== 0);
 
     const {
         register,
@@ -34,7 +35,10 @@ const UpdateCollection: React.FC<UpdateCollectionProps> = ({ closeModal, albumId
         const toastId = toast.loading(t("toast.please_wait"), {
             hideProgressBar: true
         });
-        await updateCollection(collection.id, collectionRequestModel);
+        await updateCollection(collection.id, {
+            ...collectionRequestModel,
+            isPriority
+        });
 
         toast.update(toastId, {
             render: t("toast.update_sucessfully"), type: toast.TYPE.SUCCESS, isLoading: false,
@@ -70,6 +74,18 @@ const UpdateCollection: React.FC<UpdateCollectionProps> = ({ closeModal, albumId
                             {/*end modal-header*/}
                             <div className="modal-body">
                                 <div className="card-body">
+                                    <div className="form-check form-switch form-switch-success mb-4">
+                                        <label className="form-check-label" htmlFor="customSwitchPrimary">
+                                            {t('album_detail.spre_priority')}
+                                        </label>
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            id="customSwitchPrimary"
+                                            checked={isPriority}
+                                            onChange={() => setIsPriority(!isPriority)}
+                                        />
+                                    </div>
                                     <div className="mb-3 row">
                                         <label
                                             className="col-sm-2 col-form-label text-end">

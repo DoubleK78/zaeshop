@@ -13,5 +13,6 @@ namespace EmailHelper.Models
         public string? SmtpUser { get; set; }
         public string? SmtpPassword { get; set; }
         public string? MailFrom { get; set; }
+        public string? SenderName { get; set; }
     }
 }

@@ -13,7 +13,6 @@ import Select from 'react-select';
 import { toast } from "react-toastify";
 import { FilePond } from "react-filepond";
 import { ActualFileObject, FilePondFile } from "filepond";
-import convertFileToBase64 from "../../utils/covert-base64";
 import { ERegion } from "../../models/enums/Eregion";
 
 type CreateAlbumProps = {
@@ -94,17 +93,11 @@ const CreateAlbum: React.FC<CreateAlbumProps> = ({ closeModal }) => {
         };
 
         if (thumbnailFiles.length > 0) {
-            const base64File = await convertFileToBase64(thumbnailFiles[0]);
-
-            request.fileName = thumbnailFiles[0].name;
-            request.base64File = base64File?.split(',')[1];
+            request.fileNameThumbnail = thumbnailFiles[0].name;
         }
 
         if (backgroundFiles.length > 0) {
-            const base64File = await convertFileToBase64(backgroundFiles[0]);
-
-            request.fileNameOriginal = backgroundFiles[0].name;
-            request.base64FileOriginal = base64File?.split(',')[1];
+            request.fileNameBackground = backgroundFiles[0].name;
         }
 
         const response = await createAlbum(request);
