@@ -35,9 +35,9 @@ BEGIN
         c.Title AS LastCollectionTitle,
         a.Views,
         f.CreatedOnUtc,
-        f.UpdatedOnUtc,
         a.CdnThumbnailUrl,
-        a.FriendlyName
+        a.FriendlyName,
+		a.UpdatedOnUtc
         FROM dbo.Following f
         LEFT JOIN dbo.Album a ON a.Id = f.AlbumId
         OUTER APPLY (
@@ -55,9 +55,9 @@ BEGIN
             c.Title,
             a.Views,
             f.CreatedOnUtc,
-            f.UpdatedOnUtc,
             a.CdnThumbnailUrl,
-            a.FriendlyName
+            a.FriendlyName,
+			a.UpdatedOnUtc
     )
 
     SELECT 
@@ -69,9 +69,9 @@ BEGIN
         NULL AS LastCollectionTitle,
         0 AS Views,
         GETDATE() AS CreatedOnUtc,
-        NULL AS UpdatedOnUtc,
         NULL AS CdnThumbnailUrl,
         NULL AS FriendlyName,
+		NULL AS UpdatedOnUtc,
         1 AS IsTotalRecord
     FROM FilteredData
     UNION
