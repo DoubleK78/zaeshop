@@ -68,8 +68,8 @@ namespace HangFireServer.Extensions
             // 7:05 AM ICT Daily to Recalculate All Album Views
             RecurringJob.AddOrUpdate<ICollectionService>(HangfireJobName.AlbumCalculatemViewsTopTypeAll, x => x.RecalculateAlbumViewsTopTypeAllTaskAsync(), "5 0 * * *");
 
-            // 4:02 AM and 2:02 PM  Hangfire Clean Jobs (All states)
-            RecurringJob.AddOrUpdate<IActivityLogService>(HangfireJobName.HangfireCleanupJobs, x => x.CleanJobsHangfireAsync(), "2 7,21 * * *");
+            // 4:02 AM and 11:02 PM and 2:02 PM  Hangfire Clean Jobs (All states)
+            RecurringJob.AddOrUpdate<IActivityLogService>(HangfireJobName.HangfireCleanupJobs, x => x.CleanJobsHangfireAsync(), "2 7,16,21 * * *");
         }
     }
 }

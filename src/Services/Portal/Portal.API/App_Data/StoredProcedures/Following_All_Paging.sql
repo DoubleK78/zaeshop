@@ -25,8 +25,8 @@ BEGIN
             CASE WHEN ISNULL(@sortColumn, '') = '' THEN f.Id END DESC,
             CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'ASC' THEN f.CreatedOnUtc END,
             CASE WHEN @sortColumn = 'CreatedOnUtc' AND @sortDirection = 'DESC' THEN f.CreatedOnUtc END DESC,
-            CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN f.UpdatedOnUtc END,
-            CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN f.UpdatedOnUtc END DESC
+            CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'ASC' THEN a.UpdatedOnUtc END,
+            CASE WHEN @sortColumn = 'UpdatedOnUtc' AND @sortDirection = 'DESC' THEN a.UpdatedOnUtc END DESC
         ) AS RowNum,
         f.Id,
         f.UserId,
@@ -35,9 +35,9 @@ BEGIN
         c.Title AS LastCollectionTitle,
         a.Views,
         f.CreatedOnUtc,
-        f.UpdatedOnUtc,
         a.CdnThumbnailUrl,
-        a.FriendlyName
+        a.FriendlyName,
+		a.UpdatedOnUtc
         FROM dbo.Following f
         LEFT JOIN dbo.Album a ON a.Id = f.AlbumId
         OUTER APPLY (
@@ -55,9 +55,9 @@ BEGIN
             c.Title,
             a.Views,
             f.CreatedOnUtc,
-            f.UpdatedOnUtc,
             a.CdnThumbnailUrl,
-            a.FriendlyName
+            a.FriendlyName,
+			a.UpdatedOnUtc
     )
 
     SELECT 
@@ -69,9 +69,9 @@ BEGIN
         NULL AS LastCollectionTitle,
         0 AS Views,
         GETDATE() AS CreatedOnUtc,
-        NULL AS UpdatedOnUtc,
         NULL AS CdnThumbnailUrl,
         NULL AS FriendlyName,
+		NULL AS UpdatedOnUtc,
         1 AS IsTotalRecord
     FROM FilteredData
     UNION
