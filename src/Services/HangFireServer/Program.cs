@@ -1,6 +1,6 @@
 using Hangfire;
+using Hangfire.Dashboard.BasicAuthorization;
 using HangFireServer.Extensions;
-using HangFireServer.Filters;
 using HangFireServer.HealthCheck;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +25,23 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.UseHangfireDashboard(options: new DashboardOptions
 {
-    Authorization = new[] { new DashboardNoAuthorizationFilter() }
+    Authorization = new[]
+    {
+        new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
+        {
+            RequireSsl = false,
+            SslRedirect = false,
+            LoginCaseSensitive = true,
+            Users = new[]
+            {
+                new BasicAuthAuthorizationUser
+                {
+                    Login = "hangfire",
+                    Password = new byte[] { 0x2e,0x31,0x9a,0xee,0x2e,0xf7,0x63,0x67,0xf1,0x42,0x0b,0x75,0x1a,0xce,0x38,0x27,0x12,0x15,0x67,0x48 }
+                }
+            }
+        })
+    }
 });
 
 app.MapHealthChecks("/healthz");
