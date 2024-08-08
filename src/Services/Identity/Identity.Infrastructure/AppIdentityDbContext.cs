@@ -7,6 +7,8 @@ namespace Identity.Infrastructure
 {
     public class AppIdentityDbContext : IdentityDbContext<User>
     {
+        public DbSet<UserActivityLog> UserActivityLogs { get; set; }
+
         public AppIdentityDbContext(DbContextOptions<AppIdentityDbContext> options) : base(options)
         {
         }
@@ -21,6 +23,7 @@ namespace Identity.Infrastructure
 
             builder.ApplyConfiguration(new UserEntityTypeConfiguration());
             builder.ApplyConfiguration(new UserTokenEntityTypeConfiguration());
+            builder.ApplyConfiguration(new UserActivityLogEntityTypeConfiguration());
         }
     }
 }
