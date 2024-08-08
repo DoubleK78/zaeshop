@@ -8,8 +8,6 @@ const ThemeToggle = () => {
         if (storedTheme === 'dark') {
             setIsDarkMode(true);
             applyTheme('dark');
-        } else {
-            applyTheme('light');
         }
     }, []);
 
