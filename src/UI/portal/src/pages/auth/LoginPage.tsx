@@ -7,6 +7,7 @@ import { StoreState } from "../../store";
 import { useForm } from "react-hook-form";
 import classNames from 'classnames';
 import { useTranslation } from "react-i18next";
+import ThemeToggle from "../../components/shared/ThemeToggle";
 
 const LoginPage: React.FC = () => {
 
@@ -181,6 +182,12 @@ const LoginPage: React.FC = () => {
                                                     className="d-flex justify-content-center align-items-center thumb-sm bg-soft-danger rounded-circle"
                                                 >
                                                     <i className="fab fa-google align-self-center" />
+                                                </a>
+                                                <a
+                                                    href="#"
+                                                    className="d-flex justify-content-center align-items-center thumb-sm bg-soft-danger rounded-circle"
+                                                >
+                                                    <ThemeToggle />
                                                 </a>
                                             </div>
                                         </div>

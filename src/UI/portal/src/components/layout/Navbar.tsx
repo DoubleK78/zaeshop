@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { StoreState } from '../../store';
 import { signOut } from '../../store/thunks/authThunk';
 import { useTranslation } from 'react-i18next';
+import ThemeToggle from '../shared/ThemeToggle';
 
 const Navbar: React.FC = () => {
     const auth = useSelector((state: StoreState) => state.auth);
@@ -74,6 +75,9 @@ const Navbar: React.FC = () => {
             {/* Navbar */}
             <nav className="navbar-custom" id="navbar-custom">
                 <ul className="list-unstyled topbar-nav float-end mb-0">
+                    <li className='dropdown notification-list'>
+                        <ThemeToggle />
+                    </li>
                     <li className="dropdown">
                         <a
                             className="nav-link dropdown-toggle arrow-none nav-icon"
