@@ -5,10 +5,18 @@ BEGIN
     DECLARE @endDate DATETIME = GETUTCDATE();
 
     DECLARE @isFirstDayOfMonth BIT;
+    DECLARE @isSecondDayOfMonth BIT;
+
     DECLARE @isFirstDayOfYear BIT;
+    DECLARE @isSecondDayOfYear BIT;
     
     SET @isFirstDayOfMonth = CASE 
         WHEN DAY(GETUTCDATE()) = 1 THEN 1 
+        ELSE 0 
+    END
+
+    SET @isSecondDayOfMonth = CASE 
+        WHEN DAY(GETUTCDATE()) = 2 THEN 1 
         ELSE 0 
     END
     
@@ -17,31 +25,23 @@ BEGIN
         ELSE 0 
     END
 
-    CREATE TABLE #temp(AlbumId INT PRIMARY KEY, ViewsByTopDay INT, ViewsByTopWeek INT);
+    SET @isSecondDayOfYear = CASE 
+        WHEN DATEPART(DAYOFYEAR, GETUTCDATE()) = 2 THEN 1 
+        ELSE 0 
+    END
 
-    INSERT INTO #temp(AlbumId, ViewsByTopWeek, ViewsByTopDay)
-    SELECT
-      a.Id AS [AlbumId],
-      a.ViewsByTopWeek,
-      SUM(cv.[View]) AS [ViewsByTopDay]
-    FROM dbo.Album a
-      JOIN dbo.Collection c ON c.AlbumId = a.Id
-      JOIN dbo.CollectionView cv ON cv.CollectionId = c.Id
-    WHERE cv.Date >= @startDate AND cv.Date < @endDate
-    GROUP BY a.Id, a.ViewsByTopWeek
-
-    -- ViewsByTopWeek is snapshot of previous day
-    UPDATE a
-    SET
-      [ViewsByTopDay] = t.ViewsByTopDay,
-      [ViewsByTopMonth] = IIF(@isFirstDayOfMonth = 1, t.ViewsByTopDay, a.ViewsByTopMonth + t.ViewsByTopWeek),
-      [ViewsByTopYear] = IIF(@isFirstDayOfYear = 1, t.ViewsByTopDay, a.ViewsByTopYear +  t.ViewsByTopWeek) 
-    FROM dbo.Album a
-      JOIN #temp t ON t.AlbumId = a.Id
+    Update Album
+    SET [ViewsByTopMonth] = CASE
+                              WHEN @isFirstDayOfMonth = 1 OR @isSecondDayOfMonth = 1 THEN ViewsByTopMonth
+                              ELSE ViewsByTopMonth + ViewsByTopWeek
+                            END,
+        [ViewsByTopYear] = CASE
+                            WHEN @isFirstDayOfYear = 1 THEN ViewsByTopYear
+                            WHEN @isSecondDayOfYear = 1 THEN ViewsByTopWeek
+                            ELSE ViewsByTopYear + ViewsByTopWeek
+                          END
 
     -- Clean snapshot of previous day
-    Update Album
-    SET [ViewsByTopWeek] = 0
-
-    DROP TABLE #temp
+    -- Update Album
+    -- SET [ViewsByTopWeek] = 0
 END

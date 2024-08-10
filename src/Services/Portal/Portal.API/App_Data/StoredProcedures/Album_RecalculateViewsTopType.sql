@@ -24,6 +24,9 @@ BEGIN
     BEGIN
         UPDATE Album
         SET [ViewsByTopWeek] = [ViewsByTopDay]
+
+        UPDATE Album
+        SET [ViewsByTopDay] = 0
     END
 
     DECLARE @CollectionIdTable TABLE (CollectionId INT PRIMARY KEY CLUSTERED);
@@ -35,14 +38,9 @@ BEGIN
     CREATE TABLE #temp (AlbumId INT PRIMARY KEY, ViewsByTopDay INT);
 
     ;WITH AlbumIds AS (
-        SELECT DISTINCT a.Id AS AlbumId
-        FROM dbo.Album a
-        WHERE EXISTS (
-            SELECT 1
-            FROM dbo.Collection c
-            WHERE c.AlbumId = a.Id
-            AND c.Id IN (SELECT CollectionId FROM @CollectionIdTable)
-        )
+        SELECT DISTINCT c.AlbumId
+        FROM dbo.Collection c
+        WHERE EXISTS (SELECT 1 FROM @CollectionIdTable t WHERE t.CollectionId = c.Id)
     )
     INSERT INTO #temp (AlbumId, ViewsByTopDay)
     SELECT 
