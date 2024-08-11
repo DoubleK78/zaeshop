@@ -560,7 +560,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 .Distinct()
                 .ToListAsync();
 
-            return logs.Count <= 5;
+            return logs.Count > 5;
         }
     }
 }
