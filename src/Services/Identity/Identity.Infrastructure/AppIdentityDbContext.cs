@@ -15,12 +15,15 @@ namespace Identity.Infrastructure
         {
         }
 
+        public DbSet<UserActivityLog> UserActivityLogs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
             builder.ApplyConfiguration(new UserEntityTypeConfiguration());
             builder.ApplyConfiguration(new UserTokenEntityTypeConfiguration());
+            builder.ApplyConfiguration(new UserActivityLogEntityTypeConfiguration());
         }
     }
 }
