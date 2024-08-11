@@ -495,7 +495,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
             }
-            else if (user.FullName != model.Name.Split(' ').FirstOrDefault() || user.Avatar != model.Image || user.Region != model.Region)
+            else if (user.FullName != model.Name.Split(' ').FirstOrDefault() || user.Avatar != model.Image || user.Region != (model.Region ?? "vi"))
             {
                 user.FullName = model.Name.Split(' ').FirstOrDefault() ?? string.Empty;
                 user.Avatar = model.Image ?? string.Empty;
