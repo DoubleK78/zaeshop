@@ -516,6 +516,32 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 });
             }
 
+            // Log activity user logins
+            var exceedUserLogins = await CheckUserExceedLimitLoginPerDayAsync(user.Id);
+            if (exceedUserLogins)
+            {
+                // Banned User
+                if (!user.IsBanned)
+                {
+                    user.IsBanned = true;
+                    user.UpdatedOnUtc = DateTime.UtcNow;
+                    _context.Users.Update(user);
+                    await _context.SaveChangesAsync();
+                }
+
+                return new ServiceResponse<AuthenticateWithRolesResponse>(new AuthenticateWithRolesResponse(user, string.Empty, ["user"]));
+            }
+
+            var userActivityLog = new UserActivityLog
+            {
+                UserId = user.Id,
+                EventDate = DateTime.UtcNow.Date,
+                IpAddress = model.IpAddress,
+                BrowserFingerprint = model.BrowserFingerprint
+            };
+            _context.UserActivityLogs.Add(userActivityLog);
+            await _context.SaveChangesAsync();
+
             // Token expries in 30 days
             var expirationInMinutes = 60 * 24 * 30;
             var jwtToken = _jwtService.GenerateJwtToken(user, expirationInMinutes);
@@ -524,6 +550,17 @@ namespace Identity.Infrastructure.Implements.Business.Services
             var roles = await _userManager.GetRolesAsync(user);
 
             return new ServiceResponse<AuthenticateWithRolesResponse>(new AuthenticateWithRolesResponse(user, jwtToken, roles.ToList()));
+        }
+
+        public async Task<bool> CheckUserExceedLimitLoginPerDayAsync(string userId)
+        {
+            var logs = await _context.UserActivityLogs
+                .Where(o => o.UserId == userId && o.EventDate.Date == DateTime.UtcNow.Date)
+                .Take(6)
+                .Distinct()
+                .ToListAsync();
+
+            return logs.Count <= 5;
         }
     }
 }
