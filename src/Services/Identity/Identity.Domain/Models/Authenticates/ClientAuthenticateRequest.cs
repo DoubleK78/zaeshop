@@ -17,5 +17,8 @@ namespace Identity.Domain.Models.Authenticates
 
         public string? Region { get; set; }
         public bool EmailVerified { get; set; }
+
+        public string? IpAddress { get; set; }
+        public string? BrowserFingerprint { get; set; }
     }
 }
