@@ -1,9 +1,11 @@
+using System.Net;
 using System.Security.Cryptography;
 using Common;
 using Common.Enums;
 using Common.Interfaces;
 using Common.Interfaces.Messaging;
 using Common.Models;
+using Common.Shared.Models.Logs;
 using Common.Shared.Models.Users;
 using Common.ValueObjects;
 using Identity.Domain.AggregatesModel.UserAggregate;
@@ -34,6 +36,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
         private readonly DbSet<UserToken> _userTokensDbSet;
         private readonly ISyncUserPortalPublisher _syncUserPortalPublisher;
         private readonly ISyncRolesPortalPublisher _syncRolesPortalPublisher;
+        private readonly IServiceLogPublisher _serviceLogPublisher;
 
         public AccountService(
             AppIdentityDbContext context,
@@ -44,7 +47,8 @@ namespace Identity.Infrastructure.Implements.Business.Services
             ISendMailPublisher sendMailPublisher,
             IApiService apiService,
             ISyncUserPortalPublisher syncUserPortalPublisher,
-            ISyncRolesPortalPublisher syncRolesPortalPublisher)
+            ISyncRolesPortalPublisher syncRolesPortalPublisher,
+            IServiceLogPublisher serviceLogPublisher)
         {
             _context = context;
             _jwtService = jwtService;
@@ -56,6 +60,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
             _userTokensDbSet = context.Set<UserToken>();
             _syncUserPortalPublisher = syncUserPortalPublisher;
             _syncRolesPortalPublisher = syncRolesPortalPublisher;
+            _serviceLogPublisher = serviceLogPublisher;
         }
 
         #region Token
@@ -516,31 +521,50 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 });
             }
 
-            // Log activity user logins
-            var exceedUserLogins = await CheckUserExceedLimitLoginPerDayAsync(user.Id);
-            if (exceedUserLogins)
+            try
             {
-                // Banned User
-                if (!user.IsBanned)
+                // Log activity user logins
+                var exceedUserLogins = await CheckUserExceedLimitLoginPerDayAsync(user.Id);
+                if (exceedUserLogins)
                 {
-                    user.IsBanned = true;
-                    user.UpdatedOnUtc = DateTime.UtcNow;
-                    _context.Users.Update(user);
-                    await _context.SaveChangesAsync();
+                    // Banned User
+                    if (!user.IsBanned)
+                    {
+                        user.IsBanned = true;
+                        user.VerifiedOnUtc = DateTime.UtcNow;
+                        user.UpdatedOnUtc = DateTime.UtcNow;
+
+                        _context.Users.Update(user);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    return new ServiceResponse<AuthenticateWithRolesResponse>(new AuthenticateWithRolesResponse(user, string.Empty, ["user"]));
                 }
+
+                var userActivityLog = new UserActivityLog
+                {
+                    UserId = user.Id,
+                    EventDate = DateTime.UtcNow.Date,
+                    IpAddress = model.IpAddress,
+                    BrowserFingerprint = model.BrowserFingerprint
+                };
+                _context.UserActivityLogs.Add(userActivityLog);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                await _serviceLogPublisher.WriteLogAsync(new ServiceLogMessage
+                {
+                    LogLevel = ELogLevel.Error,
+                    EventName = ex.Message,
+                    StackTrace = ex.StackTrace,
+                    ServiceName = "Identity",
+                    Description = $"[Exception Acitivity]: {ex.Message}",
+                    StatusCode = HttpStatusCode.InternalServerError.ToString()
+                });
 
                 return new ServiceResponse<AuthenticateWithRolesResponse>(new AuthenticateWithRolesResponse(user, string.Empty, ["user"]));
             }
-
-            var userActivityLog = new UserActivityLog
-            {
-                UserId = user.Id,
-                EventDate = DateTime.UtcNow.Date,
-                IpAddress = model.IpAddress,
-                BrowserFingerprint = model.BrowserFingerprint
-            };
-            _context.UserActivityLogs.Add(userActivityLog);
-            await _context.SaveChangesAsync();
 
             // Token expries in 30 days
             var expirationInMinutes = 60 * 24 * 30;
@@ -557,7 +581,7 @@ namespace Identity.Infrastructure.Implements.Business.Services
             var logs = await _context.UserActivityLogs
                 .Where(o => o.UserId == userId && o.EventDate.Date == DateTime.UtcNow.Date)
                 .Take(6)
-                .Distinct()
+                .Select(x => x.Id)
                 .ToListAsync();
 
             return logs.Count > 5;
