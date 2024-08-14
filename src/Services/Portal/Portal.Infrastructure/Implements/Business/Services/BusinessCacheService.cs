@@ -21,8 +21,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
 
         public async Task ReloadCacheHomePageAsync(string locale)
         {
-            await _redisService.RemoveByPatternAsync(Const.RedisCacheKey.ComicPagingPattern);
-
             // Override Home Cache
             // 1. Popular Comic
             var popularComics = await GetComicPagingAsync(new PagingCommonRequest
@@ -43,7 +41,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 Rating = "",
                 Region = locale
             });
-            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomePopularComicsPaging, locale), popularComics, 60 * 24);
 
             // 2. Recently Comic
             var recentlyComics = await GetComicPagingAsync(new PagingCommonRequest
@@ -64,7 +61,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 Rating = "",
                 Region = locale
             });
-            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeRecentlyComicsPaging, locale), recentlyComics, 60 * 24);
 
             // 3. Top Day Comic
             var topDayComics = await GetComicPagingAsync(new PagingCommonRequest
@@ -86,7 +82,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 TopType = "day",
                 Region = locale
             });
-            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopDayComicsPaging, locale), topDayComics, 60 * 24);
 
             // 4. Top Month Comic
             var topMonthComics = await GetComicPagingAsync(new PagingCommonRequest
@@ -108,7 +103,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 TopType = "month",
                 Region = locale
             });
-            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopMonthComicsPaging, locale), topMonthComics, 60 * 24);
 
             // 5. Top Year Comic
             var topYearComics = await GetComicPagingAsync(new PagingCommonRequest
@@ -130,14 +124,22 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 TopType = "year",
                 Region = locale
             });
+
+            await _redisService.RemoveByPatternAsync(Const.RedisCacheKey.ComicPagingPattern);
+
+            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeRecentlyComicsPaging, locale), recentlyComics, 60 * 24);
+
+            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomePopularComicsPaging, locale), popularComics, 60 * 24);
+
+            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopDayComicsPaging, locale), topDayComics, 60 * 24);
+
+            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopMonthComicsPaging, locale), topMonthComics, 60 * 24);
+
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopYearComicsPaging, locale), topYearComics, 60 * 24);
         }
 
         public async Task ReloadCachePopularComicsAsync(string locale)
         {
-            // Remove cache Comic Paging
-            await _redisService.RemoveByPatternAsync(string.Format(Const.RedisCacheKey.PopularComicsPagingPattern, locale));
-
             var popularComics = await GetComicPagingAsync(new PagingCommonRequest
             {
                 PageNumber = 1,
@@ -157,14 +159,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 Region = locale
             });
 
+            // Remove cache Comic Paging
+            await _redisService.RemoveByPatternAsync(string.Format(Const.RedisCacheKey.PopularComicsPagingPattern, locale));
+
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomePopularComicsPaging, locale), popularComics, 60 * 24);
         }
 
         public async Task RelaodCacheRecentlyComicsAsync(string locale)
         {
-            // Remove cache Comic Paging
-            await _redisService.RemoveByPatternAsync(string.Format(Const.RedisCacheKey.RecentlyComicsPagingPattern, locale));
-
             var recentlyComics = await GetComicPagingAsync(new PagingCommonRequest
             {
                 PageNumber = 1,
@@ -183,14 +185,15 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 Rating = "",
                 Region = locale
             });
+
+            // Remove cache Comic Paging
+            await _redisService.RemoveByPatternAsync(string.Format(Const.RedisCacheKey.RecentlyComicsPagingPattern, locale));
+
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeRecentlyComicsPaging, locale), recentlyComics, 60 * 24);
         }
 
         public async Task ReloadCacheTopComicsAsync(string locale)
         {
-            // Remove cache Comic Paging
-            await _redisService.RemoveByPatternAsync(string.Format(Const.RedisCacheKey.TopComicsPagingPattern, locale));
-
             // Top Day Comic
             var topDayComics = await GetComicPagingAsync(new PagingCommonRequest
             {
@@ -211,7 +214,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 TopType = "day",
                 Region = locale
             });
-            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopDayComicsPaging, locale), topDayComics, 60 * 24);
 
             // Top Month Comic
             var topMonthComics = await GetComicPagingAsync(new PagingCommonRequest
@@ -233,7 +235,6 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 TopType = "month",
                 Region = locale
             });
-            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopMonthComicsPaging, locale), topMonthComics, 60 * 24);
 
             // Top Year Comic
             var topYearComics = await GetComicPagingAsync(new PagingCommonRequest
@@ -255,6 +256,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 TopType = "year",
                 Region = locale
             });
+
+            // Remove cache Comic Paging
+            await _redisService.RemoveByPatternAsync(string.Format(Const.RedisCacheKey.TopComicsPagingPattern, locale));
+
+            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopDayComicsPaging, locale), topDayComics, 60 * 24);
+
+            await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopMonthComicsPaging, locale), topMonthComics, 60 * 24);
+
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.HomeTopYearComicsPaging, locale), topYearComics, 60 * 24);
         }
 
