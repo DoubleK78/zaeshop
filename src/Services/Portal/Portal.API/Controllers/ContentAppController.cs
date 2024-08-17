@@ -54,46 +54,7 @@ namespace Portal.API.Controllers
 
             var result = new ServiceResponse<ContentAppModel>(collection);
             await _redisService.SetAsync(string.Format(Const.RedisCacheKey.ComicContent, comicFriendlyName, contentFriendlyName), result.Data, 60);
-
-            if (!isBot)
-            {
-                #region Hangfire Enqueue Background
-                await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ICollectionService>(x => x.AddViewFromUserToRedisAsync(new CollectionViewUserBuildModel
-                {
-                    CollectionId = result.Data!.Id,
-                    IdentityUserId = User.FindFirstValue("id"),
-                    AtViewedOnUtc = DateTime.UtcNow,
-                    IpAddress = IpAddress(),
-                    SessionId = HttpContext.Session.Id
-                }));
-
-                // User next chap from previous chapter
-                if (previousCollectionId.HasValue && !string.IsNullOrEmpty(identityUserId))
-                {
-                    await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
-                    {
-                        IdentityUserId = identityUserId,
-                        CollectionId = previousCollectionId.Value,
-                        CreatedOnUtc = DateTime.UtcNow,
-                        IpAddress = IpAddress(),
-                        SessionId = HttpContext.Session.Id
-                    }));
-                }
-                else if (DateTime.UtcNow.Subtract(collection.CreatedOnUtc).Hours < 4 && !string.IsNullOrEmpty(identityUserId))
-                {
-                    await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
-                    {
-                        IdentityUserId = identityUserId,
-                        CollectionId = collection.Id,
-                        CreatedOnUtc = DateTime.UtcNow,
-                        IpAddress = IpAddress(),
-                        SessionId = HttpContext.Session.Id,
-                        IsViewedNewChapter = true
-                    }));
-                }
-                #endregion
-            }
-
+            
             return Ok(result);
         }
 
