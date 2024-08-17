@@ -29,15 +29,12 @@ public class MiscController : BaseApiController
     public async Task<IActionResult> AccumulateAsync([FromBody] AccumulateModel model)
     {
         var identityUserId = GetIdentityUserIdByToken();
-        var payload = _simpleTokenService.VerifyToken<AccumulatePayload>(model.Payload, out var result);
+        var result = _simpleTokenService.VerifyToken<AccumulatePayload>(model.Token, out var payload);
 
-        if (result == null)
+        if (!result || payload == null)
             return BadRequest("invalid_token");
 
-        if (result.RequestedOnUtc.AddSeconds(15) < DateTime.UtcNow)
-            return BadRequest("invalid_token_e");
-
-        var isBot = result.IsBot;
+        var isBot = payload.IsBot;
         var now = DateTime.UtcNow;
         var ipAddress = GetIpAddress()?.Split(',').FirstOrDefault();
 
@@ -49,7 +46,7 @@ public class MiscController : BaseApiController
             #region Hangfire Enqueue Background
             await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ICollectionService>(x => x.AddViewFromUserToRedisAsync(new CollectionViewUserBuildModel
             {
-                CollectionId = result.CollectionId,
+                CollectionId = payload.CollectionId,
                 IdentityUserId = User.FindFirstValue("id"),
                 AtViewedOnUtc = DateTime.UtcNow,
                 IpAddress = ipAddress,
@@ -57,23 +54,23 @@ public class MiscController : BaseApiController
             }));
 
             // User next chap from previous chapter
-            if (result.PreviousCollectionId.HasValue && !string.IsNullOrEmpty(identityUserId))
+            if (payload.PreviousCollectionId.HasValue && !string.IsNullOrEmpty(identityUserId))
             {
                 await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
                 {
                     IdentityUserId = identityUserId,
-                    CollectionId = result.PreviousCollectionId.Value,
+                    CollectionId = payload.PreviousCollectionId.Value,
                     CreatedOnUtc = DateTime.UtcNow,
                     IpAddress = ipAddress,
                     SessionId = HttpContext.Session.Id
                 }));
             }
-            else if (DateTime.UtcNow.Subtract(result.CreatedOnUtc).Hours < 4 && !string.IsNullOrEmpty(identityUserId))
+            else if (DateTime.UtcNow.Subtract(payload.GetCreatedOnUtc()).Hours < 4 && !string.IsNullOrEmpty(identityUserId))
             {
                 await _backgroundJobClient.EnqueueWithCircuitBreakerAsync<ILevelService>(x => x.AddExperienceFromUserToRedisAsync(new LevelBuildRedisRequestModel
                 {
                     IdentityUserId = identityUserId,
-                    CollectionId = result.CollectionId,
+                    CollectionId = payload.CollectionId,
                     CreatedOnUtc = DateTime.UtcNow,
                     IpAddress = ipAddress,
                     SessionId = HttpContext.Session.Id,
