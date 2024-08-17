@@ -14,7 +14,7 @@ public class SimpleTokenService : ISimpleTokenService
         _secretKey = secretKey.ToLower();
     }
 
-    public bool VerifyToken<T>(string token, out T? payload, int limitMinutes = 1) where T : SimpleTokenPayload
+    public bool VerifyToken<T>(string token, out T? payload, int limitMinutes = 2) where T : SimpleTokenPayload
     {
         payload = null;
         var parts = token.Split('.');
