@@ -81,6 +81,8 @@ public static class PortalServiceExtensions
             });
         });
 
+        services.AddScoped<ISimpleTokenService>(x => new SimpleTokenService(config.GetSection("AppSettings").GetValue<string>("Secret")!));
+
         // Portal registers publishers for MassTransit
         services.AddScoped<ISendMailPublisher, SendMailPublisher>();
         services.AddScoped<IServiceLogPublisher, ServiceLogPublisher>();
