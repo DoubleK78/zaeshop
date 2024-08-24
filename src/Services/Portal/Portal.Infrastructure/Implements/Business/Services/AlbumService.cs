@@ -493,14 +493,14 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     albumFriendlyNames.Add(album.FriendlyName);
                 }
 
-                if (album.LevelPublic == ELevelPublic.SPremiumUser && difference.TotalHours >= 4 && difference.TotalHours < 12)
+                if (album.LevelPublic == ELevelPublic.SPremiumUser && difference.TotalHours >= 4 && difference.TotalHours < 14)
                 {
                     album.LevelPublic = ELevelPublic.PremiumUser;
                     albumFriendlyNames.Add(album.FriendlyName);
                 }
 
                 if ((album.LevelPublic == ELevelPublic.SPremiumUser || album.LevelPublic == ELevelPublic.PremiumUser) &&
-                     difference.TotalHours >= 12)
+                     difference.TotalHours >= 14)
                 {
                     album.LevelPublic = ELevelPublic.AllUser;
                     albumFriendlyNames.Add(album.FriendlyName);
