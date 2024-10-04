@@ -80,7 +80,7 @@ catch (Exception ex)
 app.UseHttpsRedirection();
 
 app.UseCors(x => x
-    .SetIsOriginAllowed(origin => origin.Contains("localhost") || origin.Contains("127.0.0.1") || origin.EndsWith(".github.io") || origin.EndsWith(".codegota.me") || origin.Contains("fastscans.net") || origin.Contains("fastscansz.com"))
+    .SetIsOriginAllowed(origin => origin.Contains("localhost") || origin.Contains("127.0.0.1") || origin.EndsWith(".github.io") || origin.EndsWith(".codegota.me") || origin.Contains("fastscans.net") || origin.Contains("fastscansz.com") || origin.Contains("fastscans1.net"))
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials());
