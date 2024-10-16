@@ -3,5 +3,5 @@ export enum EStorageType {
 }
 
 export const EStorageTypeMap = {
-    [EStorageType.S1]: "http://s1.fastscans.net"
+    [EStorageType.S1]: "https://s1.fstscnmw.org"
 }
