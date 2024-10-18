@@ -1,3 +1,4 @@
+using Common.Enums;
 using Common.Interfaces;
 using Common.Models;
 using Common.ValueObjects;
@@ -38,6 +39,11 @@ namespace Portal.Infrastructure.Implements.Business.Services
             if (user == null)
             {
                 return new ServiceResponse<CommentModel>("error_user_not_found");
+            }
+
+            if (user.CurrentExp < 3000 && user.RoleType != ERoleType.UserSuperPremium)
+            {
+                return new ServiceResponse<CommentModel>("error_user_level_not_enough");
             }
 
             var album = await _albumRepository.GetByIdAsync(request.AlbumId);
