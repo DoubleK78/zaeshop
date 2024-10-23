@@ -474,7 +474,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     ServiceName = "Hangfire",
                     Environment = prefixEnvironment + _hostingEnvironment.EnvironmentName,
                     Description = $"Stored total views from redis cache. Key {key}, At {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}",
-                    Request = JsonSerializationHelper.Serialize(value)
+                    // Request = JsonSerializationHelper.Serialize(value)
                 });
             }
         }
