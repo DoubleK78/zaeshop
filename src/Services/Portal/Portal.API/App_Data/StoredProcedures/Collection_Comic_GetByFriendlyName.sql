@@ -29,7 +29,7 @@ BEGIN
         left join dbo.AlbumAlertMessage am on am.Id = a.AlbumAlertMessageId
         left join dbo.AlbumContentType act on act.AlbumId = a.Id
         left join dbo.ContentType ct on ct.Id = act.ContentTypeId
-    where a.FriendlyName = @friendlyName
+    where a.FriendlyName = @friendlyName AND a.IsPublic = 1
     group by a.Id,
     a.Title,
     a.FriendlyName,

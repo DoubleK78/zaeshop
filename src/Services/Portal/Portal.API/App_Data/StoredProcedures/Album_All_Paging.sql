@@ -112,6 +112,7 @@ BEGIN
 			AND (ISNULL(@year, '') = '' OR (a.ReleaseYear LIKE @year + '%'))
 			AND (ISNULL(@status, '') = '' OR (a.AlbumStatus = @status))
 			AND a.Region = @region
+			AND a.IsPublic = 1
         GROUP BY a.Id,
 			   a.Title,
 			   a.Description,
