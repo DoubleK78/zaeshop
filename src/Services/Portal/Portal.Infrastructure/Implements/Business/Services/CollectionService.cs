@@ -725,7 +725,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                     updateCollections.Add(collection);
                 }
 
-                if (collection.LevelPublic == ELevelPublic.SPremiumUser && difference.TotalHours >= 4 && difference.TotalHours < 16)
+                if (collection.LevelPublic == ELevelPublic.SPremiumUser && difference.TotalHours >= 4 && difference.TotalHours < 18)
                 {
                     collection.LevelPublic = ELevelPublic.PremiumUser;
                     albumFriendlyNames.Add(collection.Album.FriendlyName);
@@ -733,7 +733,7 @@ namespace Portal.Infrastructure.Implements.Business.Services
                 }
 
                 if ((collection.LevelPublic == ELevelPublic.SPremiumUser || collection.LevelPublic == ELevelPublic.PremiumUser) &&
-                        difference.TotalHours >= 16)
+                        difference.TotalHours >= 18)
                 {
                     collection.LevelPublic = ELevelPublic.AllUser;
                     albumFriendlyNames.Add(collection.Album.FriendlyName);
