@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Common.Interfaces;
 using Hangfire;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
 using Portal.Domain.Interfaces.Business.Services;
 using Portal.Domain.Models.CollectionModels;
@@ -26,6 +27,7 @@ public class MiscController : BaseApiController
 
     [HttpPut]
     [Route("accumulate")]
+    [RequestTimeout(5000)]
     public async Task<IActionResult> AccumulateAsync([FromBody] AccumulateModel model)
     {
         var identityUserId = GetIdentityUserIdByToken();

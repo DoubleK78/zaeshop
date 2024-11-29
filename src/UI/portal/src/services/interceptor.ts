@@ -55,7 +55,11 @@ axiosApiInstance.interceptors.response.use(response => {
         }
         case 401: {
             if (!originalRequest._retry) {
-                originalRequest._retry = true;
+                originalRequest._retry = 0;
+            }
+
+            if (originalRequest._retry <= 5) {
+                originalRequest._retry++;
 
                 // Handling refresh token for multiple requests
                 // First request (token is expried) will be handled by refreshTokenAsyncFunc
