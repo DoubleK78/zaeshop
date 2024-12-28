@@ -1,2 +1,2 @@
-export const identityServer = 'https://api.fastscans4.net/identity';
-export const portalServer = 'https://api-premium.fastscans4.net';
+export const identityServer = 'https://api.fastscans6.net/identity';
+export const portalServer = 'https://api-premium.fastscans6.net';
