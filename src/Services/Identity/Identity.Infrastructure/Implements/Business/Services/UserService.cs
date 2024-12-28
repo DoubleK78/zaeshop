@@ -113,6 +113,18 @@ namespace Identity.Infrastructure.Implements.Business.Services
                 return null;
             }
 
+            if (user.IsBanned && !userModel.IsBanned)
+            {
+                var activityLogs = await _context.UserActivityLogs
+                    .Where(o => o.UserId == user.Id)
+                    .ToListAsync();
+                if (activityLogs.Count > 0)
+                {
+                    _context.UserActivityLogs.RemoveRange(activityLogs);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             bool isSyncUserPortal = user.FullName != userModel.FullName;
             user.FullName = userModel.FullName;
 
